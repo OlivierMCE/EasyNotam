@@ -9,10 +9,10 @@ SECTIONS = ['FR-ENR-5.1-fr-FR.html', 'FR-ENR-5.2-fr-FR.html', 'FR-ENR-2.1-fr-FR.
 MOIS = {'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6, 'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12}
 UA = {'User-Agent': 'Mozilla/5.0 (compatible; TriNotam-maj/1.0)'}
 
-NUM = r'(\d+)\s*°\s*(\d+)\s*\'\s*(\d+(?:[.,]\d+)?)\s*(?:\'\'|["″”’])?\s*([NS])\s*,\s*(\d+)\s*°\s*(\d+)\s*\'\s*(\d+(?:[.,]\d+)?)\s*(?:\'\'|["″”’])?\s*([EW])'
+NUM = r"(\d+)\s*°\s*(\d+)\s*['’′]\s*(\d+(?:[.,]\d+)?)\s*['’\"″”′]{0,2}\s*([NS])\s*[,\-–]?\s*(\d+)\s*°\s*(\d+)\s*['’′]\s*(\d+(?:[.,]\d+)?)\s*['’\"″”′]{0,2}\s*([EWO])"
 RE_TOKEN = re.compile(
-    r'(?P<circ>cercle de (?P<cr>[\d.,]+)\s*(?P<cu>NM|km|m)\s+de rayon centré sur\s*(?P<cc>' + NUM + r'))'
-    r'|(?P<arc>arc\s+(?P<dir>anti-horaire|horaire)\s+de\s+(?P<ar>[\d.,]+)\s*(?P<au>NM|km|m)\s+de rayon centré sur\s*(?P<ac>' + NUM + r'))'
+    r'(?P<circ>cercle de (?P<cr>[\d.,]+)\s*(?P<cu>NM|km|m)\s+de rayon centré sur\s*(?:le point\s*)?(?P<cc>' + NUM + r'))'
+    r'|(?P<arc>arc\s+(?P<dir>anti-horaire|horaire)\s+de\s+(?P<ar>[\d.,]+)\s*(?P<au>NM|km|m)\s+de rayon centré sur\s*(?:le point\s*)?(?P<ac>' + NUM + r'))'
     r'|(?P<v>' + NUM + r')', re.I)
 RE_V = re.compile(NUM)
 
@@ -51,7 +51,7 @@ def dossier_airac():
 def dms(m, o):
     lat = int(m.group(o + 1)) + int(m.group(o + 2)) / 60 + float(m.group(o + 3).replace(',', '.')) / 3600
     lon = int(m.group(o + 5)) + int(m.group(o + 6)) / 60 + float(m.group(o + 7).replace(',', '.')) / 3600
-    return (-lat if m.group(o + 4).upper() == 'S' else lat, -lon if m.group(o + 8).upper() == 'W' else lon)
+    return (-lat if m.group(o + 4).upper() == 'S' else lat, -lon if m.group(o + 8).upper() in ('W', 'O') else lon)
 
 
 def vertex(texte):

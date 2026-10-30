@@ -8,16 +8,34 @@ from build_zones import polygones
 ICI = os.path.dirname(os.path.abspath(__file__))
 DOSSIER = os.path.join(ICI, 'supaip')
 SORTIE = os.path.join(ICI, 'supzones.js')
+VERSION = 2  # à augmenter quand la lecture est améliorée : tout est relu
 RE_FICHIER = re.compile(r'SUP-AIP-(\d+)-(\d{4})\.pdf$')
 
 
-def texte_pdf(chemin):
+def textes_pdf(chemin):
+    """Texte du PDF lu par deux outils différents (on garde le meilleur résultat)."""
+    out = []
     try:
         from pypdf import PdfReader
-        return ' '.join((p.extract_text() or '') for p in PdfReader(chemin).pages)
+        out.append(' '.join((p.extract_text() or '') for p in PdfReader(chemin).pages))
     except Exception as e:
         print('  pypdf:', e)
-        return subprocess.run(['pdftotext', '-layout', chemin, '-'], capture_output=True, text=True).stdout
+    for mode in (['-layout'], []):
+        try:
+            out.append(subprocess.run(['pdftotext'] + mode + [chemin, '-'], capture_output=True, text=True).stdout)
+        except Exception as e:
+            print('  pdftotext:', e)
+            break
+    return out
+
+
+def meilleur(chemin):
+    best = []
+    for t in textes_pdf(chemin):
+        z = zones_du_texte(t)
+        if sum(len(o['p']) for o in z) > sum(len(o['p']) for o in best):
+            best = z
+    return best
 
 
 def zones_du_texte(t):
@@ -43,7 +61,9 @@ def main():
             ancien = json.loads(open(SORTIE, encoding='utf-8').read().split('=', 1)[1].rstrip().rstrip(';'))
         except Exception:
             ancien = {}
-    res = {}
+    if ancien.get('_v') != VERSION:
+        ancien = {}
+    res = {'_v': VERSION}
     for f in sorted(os.listdir(DOSSIER)) if os.path.isdir(DOSSIER) else []:
         m = RE_FICHIER.search(f)
         if not m:
@@ -54,7 +74,7 @@ def main():
             continue
         print('Lecture', f)
         try:
-            z = zones_du_texte(texte_pdf(os.path.join(DOSSIER, f)))
+            z = meilleur(os.path.join(DOSSIER, f))
         except Exception as e:
             print('  erreur', e)
             z = []
@@ -64,7 +84,7 @@ def main():
         return
     with open(SORTIE, 'w', encoding='utf-8') as f:
         f.write('window.TRI_SUPZ=' + json.dumps(res, ensure_ascii=False, separators=(',', ':')) + ';\n')
-    print('%d SUP AIP, dont %d avec des contours.' % (len(res), sum(1 for v in res.values() if v)))
+    print('%d SUP AIP, dont %d avec des contours.' % (len(res) - 1, sum(1 for k, v in res.items() if k != '_v' and v)))
 
 
 if __name__ == '__main__':
