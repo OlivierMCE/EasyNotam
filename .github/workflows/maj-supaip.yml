@@ -2,8 +2,8 @@ name: Mise à jour des SUP AIP et des zones
 
 on:
   schedule:
-    - cron: '30 4 * * *'   # tous les jours vers 5 h 30 (heure de Paris)
-  workflow_dispatch:        # bouton « Run workflow » pour lancer à la main
+    - cron: '30 4 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -21,12 +21,23 @@ jobs:
       - name: Mettre à jour les contours des zones (AIP)
         continue-on-error: true
         run: python build_zones.py
+      - name: Noms des aérodromes
+        continue-on-error: true
+        run: python build_ad.py
+      - name: Contours des zones créées par les SUP AIP
+        continue-on-error: true
+        run: |
+          pip install pypdf
+          (sudo apt-get install -y -qq poppler-utils || true)
+          python supzones.py
       - name: Enregistrer les changements
         run: |
           git config user.name "maj-supaip"
           git config user.email "maj-supaip@users.noreply.github.com"
           git add -A supaip
           if [ -f zones.js ]; then git add zones.js; fi
+          if [ -f adnames.js ]; then git add adnames.js; fi
+          if [ -f supzones.js ]; then git add supzones.js; fi
           if git diff --cached --quiet; then
             echo "Rien de nouveau."
           else
