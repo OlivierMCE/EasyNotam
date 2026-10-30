@@ -1,0 +1,31 @@
+name: Mise à jour des SUP AIP
+
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  maj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Télécharger les nouveaux SUP AIP
+        run: python update_supaip.py
+      - name: Enregistrer les changements
+        run: |
+          git config user.name "maj-supaip"
+          git config user.email "maj-supaip@users.noreply.github.com"
+          git add supaip
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau."
+          else
+            git commit -m "Mise à jour des SUP AIP"
+            git push
+          fi
