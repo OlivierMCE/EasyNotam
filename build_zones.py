@@ -30,14 +30,22 @@ def get(url, essais=4):
 
 
 def dossier_airac():
-    page = get(SITE + '/').decode('utf-8', 'replace')
-    m = re.search(r'dvd/eAIP_(\d{1,2})_([A-Z]{3})_(\d{4})/FRANCE', page)
-    if not m:
-        sys.exit('Dossier eAIP introuvable sur la page d\'accueil du SIA.')
-    jj, mmm, aaaa = int(m.group(1)), m.group(2), int(m.group(3))
-    nom = 'eAIP_%02d_%s_%d' % (jj, mmm, aaaa)
-    airac = '%d-%02d-%02d' % (aaaa, MOIS[mmm], jj)
-    return nom, airac
+    """Nom du dossier eAIP en vigueur et date AIRAC, lus sur la page d'accueil du SIA (sinon calculés)."""
+    try:
+        page = get(SITE + '/').decode('utf-8', 'replace')
+        m = re.search(r'dvd(?:/|%2F)eAIP_(\d{1,2})_([A-Z]{3})_(\d{4})(?:/|%2F)FRANCE', page, re.I)
+        if m:
+            jj, mmm, aaaa = int(m.group(1)), m.group(2).upper(), int(m.group(3))
+            return 'eAIP_%02d_%s_%d' % (jj, mmm, aaaa), '%d-%02d-%02d' % (aaaa, MOIS[mmm], jj)
+        print('Dossier eAIP non trouvé sur la page d\'accueil : calcul de la date AIRAC.')
+    except Exception as e:
+        print('Page d\'accueil illisible (%s) : calcul de la date AIRAC.' % e)
+    import datetime
+    ref = datetime.date(2026, 10, 29)  # début d'un cycle AIRAC, les cycles durent 28 jours
+    n = (datetime.date.today() - ref).days // 28
+    d = ref + datetime.timedelta(days=28 * n)
+    mois = {v: k for k, v in MOIS.items()}
+    return 'eAIP_%02d_%s_%d' % (d.day, mois[d.month], d.year), d.isoformat()
 
 
 def dms(m, o):
