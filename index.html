@@ -923,8 +923,25 @@ const NotamCore = (() => {
     return { cat: CAT.other, why: '' };
   }
 
+  /* Noms d'aérodromes : base fournie par l'appli (adnames.js) + noms lus dans les titres du PDF */
+  let AD_NAMES = {};
+  function setAdNames(o) { AD_NAMES = o || {}; }
+  function fillNames(items) {
+    const known = {};
+    items.forEach(it => { const m = /^([A-Z]{4})\s+(\S.*)$/.exec(it.place || ''); if (m && !/ FIR\b/.test(it.place)) known[m[1]] = m[2]; });
+    items.forEach(it => {
+      const pl = (it.place || '').trim();
+      if (/^[A-Z]{4}\s+\S/.test(pl) && !/^[A-Z]{4}\s+FIR\b/.test(pl)) return;
+      if (pl && !/^[A-Z]{4}$/.test(pl) && !/ FIR\b/.test(pl)) return;
+      const code = /^[A-Z]{4}$/.test(pl) ? pl : (it.locs.length === 1 ? it.locs[0] : '');
+      const nm = code && (known[code] || AD_NAMES[code]);
+      if (nm) it.place = code + ' ' + nm;
+    });
+  }
+
   function analyze(text) {
     const parsed = parse(text);
+    fillNames(parsed.items);
     const h = parsed.header;
     const ctx = { win: h && h.departure && h.to ? { from: h.departure, to: h.to } : null };
     const results = parsed.items.map(item => {
@@ -1076,7 +1093,7 @@ const NotamCore = (() => {
     return pages.join('\n');
   }
 
-  const api = { supRefs, keyOf, fingerprint, PROFILE, adGroups, LEVELS, CATEGORIES, parse, parseHeader, categorize, analyze, highlight, buildSummary, pdfToText, fmtDate };
+  const api = { setAdNames, supRefs, keyOf, fingerprint, PROFILE, adGroups, LEVELS, CATEGORIES, parse, parseHeader, categorize, analyze, highlight, buildSummary, pdfToText, fmtDate };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   return api;
 })();
@@ -1311,7 +1328,29 @@ const NotamCore = (() => {
     ZN.bases.forEach(function (o) { if (tn.indexOf(' ' + o.b + ' ') >= 0) o.keys.forEach(add); });
     return out;
   }
+  function szFor(it) {
+    var z = window.TRI_SUPZ; if (!z) return [];
+    var out = [];
+    C.supRefs(it).forEach(function (k) { (z[k] || []).forEach(function (o) { out.push(o); }); });
+    return out;
+  }
+  function szInit() {
+    if (window.TRI_SUPZ) return;
+    var sc = document.createElement('script'); sc.src = 'supzones.js';
+    sc.onload = function () { render(); };
+    sc.onerror = function () { sc.remove(); };
+    document.head.appendChild(sc);
+  }
+  function adInit() {
+    if (window.TRI_AD) { C.setAdNames(window.TRI_AD); return; }
+    var sc = document.createElement('script'); sc.src = 'adnames.js';
+    sc.onload = function () { if (window.TRI_AD) C.setAdNames(window.TRI_AD); };
+    sc.onerror = function () { sc.remove(); };
+    document.head.appendChild(sc);
+  }
   function znInit() {
+    adInit();
+    szInit();
     if (window.TRI_ZONES) { znLoad(); return; }
     var sc = document.createElement('script'); sc.src = 'zones.js';
     sc.onload = function () { if (znLoad()) render(); };
@@ -1337,6 +1376,10 @@ const NotamCore = (() => {
       }
       var shapes = g.shapes, zl = g.exact ? [] : znFor(it), zn = zl.map(function (z) { return z.n; }).join(' · ');
       if (zl.length) { shapes = []; zl.forEach(function (z) { z.p.forEach(function (p) { shapes.push({ t: 'poly', p: p }); }); }); }
+      if (!zl.length && !g.exact) {
+        var sl = szFor(it);
+        if (sl.length) { shapes = []; sl.forEach(function (z) { z.p.forEach(function (p) { shapes.push({ t: 'poly', p: p }); }); }); zn = sl.map(function (z) { return z.n; }).filter(Boolean).join(' · '); }
+      }
       shapes.forEach(function (s) {
         var base = { res: r, key: key, done: done, tone: r.cat.tone, zn: zn };
         if (s.t === 'poly') out.push(Object.assign({ t: 'poly', p: s.p }, base));
