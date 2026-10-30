@@ -1280,6 +1280,45 @@ const NotamCore = (() => {
     });
     return b;
   }
+  /* ---------- Contours des zones de l'AIP (zones.js, mis à jour automatiquement) ---------- */
+  var ZN = { by: {}, bases: [], ready: false };
+  function znNorm(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim(); }
+  function znLoad() {
+    var d = window.TRI_ZONES; if (!d || !d.z) return false;
+    ZN.by = {}; var bm = {};
+    d.z.forEach(function (z) {
+      ZN.by[z.k] = z;
+      if (!/^(R|D|P|TRA|TSA|CBA|ZIT|[A-Z]{1,4})\d/.test(z.k) || /^(TMA|CTR|CTA|CTL|SIV|ATZ|TIZ|TIA|FIZ)/.test(z.t)) {
+        var b = znNorm(z.b || z.n); if (b.length >= 7) (bm[b] = bm[b] || []).push(z.k);
+      }
+    });
+    ZN.bases = Object.keys(bm).sort(function (a, b) { return b.length - a.length; }).map(function (b) { return { b: b, keys: bm[b] }; });
+    ZN.ready = true; return true;
+  }
+  function znFor(it) {
+    if (!ZN.ready) return [];
+    var text = (it.text || '').toUpperCase().replace(/\s+/g, ' '), found = {}, out = [];
+    function add(k) { if (ZN.by[k] && !found[k]) { found[k] = 1; out.push(ZN.by[k]); } }
+    var re = /LF[\s-]*(R|D|P|TRA|TSA|CBA|ZIT)[\s-]*(\d{1,3}(?:\.\d)?)(?![\d])/g, m;
+    while ((m = re.exec(text))) {
+      var head = m[1] + m[2], tail = text.slice(re.lastIndex), lm = /^((?:\s*(?:[\/,&-]|ET|AND|OU)?\s*[A-Z]\d?(?![A-Z0-9]))+)/.exec(tail), letters = lm ? lm[1].match(/[A-Z]\d?/g).filter(function (x) { return x !== 'ET' && x !== 'OU'; }) : [];
+      letters = letters.filter(function (x) { return ZN.by[head + x]; });
+      if (letters.length) letters.forEach(function (x) { add(head + x); });
+      else if (ZN.by[head]) add(head);
+      else Object.keys(ZN.by).forEach(function (k) { if (k.indexOf(head) === 0 && /^[A-Z]\d?$/.test(k.slice(head.length))) add(k); });
+    }
+    var tn = ' ' + znNorm(text) + ' ';
+    ZN.bases.forEach(function (o) { if (tn.indexOf(' ' + o.b + ' ') >= 0) o.keys.forEach(add); });
+    return out;
+  }
+  function znInit() {
+    if (window.TRI_ZONES) { znLoad(); return; }
+    var sc = document.createElement('script'); sc.src = 'zones.js';
+    sc.onload = function () { if (znLoad()) render(); };
+    sc.onerror = function () { sc.remove(); };
+    document.head.appendChild(sc);
+  }
+
   function mapItems(vis) {
     var out = [], ads = {};
     vis.forEach(function (r) {
@@ -1296,8 +1335,10 @@ const NotamCore = (() => {
         if (!done && rk < o.rank) o.rank = rk;
         return;
       }
-      g.shapes.forEach(function (s) {
-        var base = { res: r, key: key, done: done, tone: r.cat.tone };
+      var shapes = g.shapes, zl = g.exact ? [] : znFor(it), zn = zl.map(function (z) { return z.n; }).join(' · ');
+      if (zl.length) { shapes = []; zl.forEach(function (z) { z.p.forEach(function (p) { shapes.push({ t: 'poly', p: p }); }); }); }
+      shapes.forEach(function (s) {
+        var base = { res: r, key: key, done: done, tone: r.cat.tone, zn: zn };
         if (s.t === 'poly') out.push(Object.assign({ t: 'poly', p: s.p }, base));
         else out.push(Object.assign({ t: 'circle', lat: s.lat, lon: s.lon, r: s.r || 5, apx: !s.r }, base));
       });
@@ -1373,7 +1414,7 @@ const NotamCore = (() => {
     box.innerHTML = title + rows.map(function (x) {
       var it = x.r.item, lv = x.r.level, snip = (it.text || it.raw || '').replace(/\s+/g, ' ').slice(0, 140);
       return '<div class="mi-row" data-go="' + esc(x.key) + '">' + (lv ? '<i class="dot mk-' + lv + '"></i>' : '') + '<span class="mi-id">' + esc(x.key) + '</span><span class="mi-tx">' + esc(snip) + '</span><span class="mi-go">Voir ›</span></div>';
-    }).join('') + (o.t !== 'ad' && o.apx ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Position seule : cercle de 5 NM autour du point.</span></div>' : '');
+    }).join('') + (o.t !== 'ad' && o.zn ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Contour de l’AIP : ' + esc(o.zn) + '</span></div>' : '') + (o.t !== 'ad' && o.apx ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Position seule : cercle de 5 NM autour du point.</span></div>' : '');
   }
   function mapSelect(o) {
     if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
@@ -1752,6 +1793,7 @@ const NotamCore = (() => {
   });
 
   initMap();
+  znInit();
   render();
 })();
 </script>
