@@ -25,7 +25,8 @@ jobs:
         run: |
           git config user.name "maj-supaip"
           git config user.email "maj-supaip@users.noreply.github.com"
-          git add supaip zones.js
+          git add -A supaip
+          if [ -f zones.js ]; then git add zones.js; fi
           if git diff --cached --quiet; then
             echo "Rien de nouveau."
           else
