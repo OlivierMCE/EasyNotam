@@ -1,0 +1,1762 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12202E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tri NOTAM">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>:root{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head><body>
+<title>Tri NOTAM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Mise en page : titre large, cartes blanches arrondies sur fond gris clair, pastilles et réglages à la façon d'iOS */
+:root {
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: var(--font);
+
+  --bg: #F5F5F7; --surface: #FFFFFF; --surface-2: #FFFFFF; --fill: #F2F2F4; --fill-2: #E8E8ED;
+  --ink: #1D1D1F; --muted: #6E6E73; --line: rgba(0,0,0,.09); --line-strong: rgba(0,0,0,.16);
+  --accent: #0071E3; --accent-soft: rgba(0,113,227,.10); --on-accent: #FFFFFF;
+  --ok: #1D7A38; --ok-bg: #E3F6E8; --err: #D70015; --err-bg: #FFEBEA;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
+  --shadow-hover: 0 2px 4px rgba(0,0,0,.05), 0 10px 28px rgba(0,0,0,.09);
+
+  --t-red: #D70015; --t-red-bg: rgba(255,59,48,.12);
+  --t-amber: #B25000; --t-amber-bg: rgba(255,149,0,.14);
+  --t-slate: #3E566F; --t-slate-bg: rgba(62,86,111,.12);
+  --t-blue: #0058B0; --t-blue-bg: rgba(0,113,227,.12);
+  --t-green: #1D7A38; --t-green-bg: rgba(52,199,89,.16);
+  --t-grey: #6E6E73; --t-grey-bg: rgba(120,120,128,.12);
+  --t-ink: #1D1D1F; --t-ink-bg: rgba(0,0,0,.07);
+  --t-violet: #6E3FB5; --t-violet-bg: rgba(130,80,200,.12);
+  --t-brown: #7A5230; --t-brown-bg: rgba(150,100,50,.13);
+  --m-red: #FF3B30; --m-orange: #FF9500; --m-yellow: #FFCC00; --m-grey: #AEAEB2;
+  --note-bg: #FFF8D6; --note-line: rgba(214,160,0,.35);
+  --hl-danger: rgba(255,59,48,.16); --hl-user: rgba(52,199,89,.30);
+  --glass: rgba(255,255,255,.58); --glass-card: rgba(255,255,255,.82); --glass-hi: rgba(255,255,255,.95); --glass-edge: rgba(0,0,0,.06);
+  --blob-a: rgba(0,113,227,.22); --blob-b: rgba(255,149,0,.16); --blob-c: rgba(175,82,222,.16); --pill: rgba(120,120,128,.14);
+  --spring: cubic-bezier(.34, 1.56, .64, 1); --ease: cubic-bezier(.2, .8, .2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #1C1C1E; --surface-2: #1C1C1E; --fill: #2C2C2E; --fill-2: #3A3A3C;
+    --ink: #F5F5F7; --muted: #98989D; --line: rgba(255,255,255,.10); --line-strong: rgba(255,255,255,.18);
+    --accent: #0A84FF; --accent-soft: rgba(10,132,255,.18); --on-accent: #FFFFFF;
+    --ok: #4CD964; --ok-bg: rgba(52,199,89,.16); --err: #FF6961; --err-bg: rgba(255,69,58,.16);
+    --shadow: 0 0 0 rgba(0,0,0,0); --shadow-hover: 0 0 0 rgba(0,0,0,0);
+    --t-red: #FF6961; --t-red-bg: rgba(255,69,58,.18); --t-amber: #FFB340; --t-amber-bg: rgba(255,159,10,.18);
+    --t-slate: #A9BED4; --t-slate-bg: rgba(140,170,200,.16); --t-blue: #64A8FF; --t-blue-bg: rgba(10,132,255,.20);
+    --t-green: #5FDB7E; --t-green-bg: rgba(48,209,88,.18); --t-grey: #A1A1A6; --t-grey-bg: rgba(160,160,170,.16);
+    --t-ink: #F5F5F7; --t-ink-bg: rgba(255,255,255,.12); --t-violet: #C7A6F0; --t-violet-bg: rgba(190,130,255,.18);
+    --t-brown: #E0B88F; --t-brown-bg: rgba(210,160,100,.18);
+    --m-red: #FF453A; --m-orange: #FF9F0A; --m-yellow: #FFD60A; --m-grey: #636366;
+    --note-bg: #3A3522; --note-line: rgba(255,214,10,.30);
+    --hl-danger: rgba(255,69,58,.32); --hl-user: rgba(48,209,88,.34);
+    --glass: rgba(44,44,46,.55); --glass-card: rgba(44,44,46,.70); --glass-hi: rgba(255,255,255,.16); --glass-edge: rgba(255,255,255,.07);
+    --blob-a: rgba(10,132,255,.30); --blob-b: rgba(255,159,10,.14); --blob-c: rgba(191,90,242,.22); --pill: rgba(235,235,245,.14);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #1C1C1E; --surface-2: #1C1C1E; --fill: #2C2C2E; --fill-2: #3A3A3C;
+  --ink: #F5F5F7; --muted: #98989D; --line: rgba(255,255,255,.10); --line-strong: rgba(255,255,255,.18);
+  --accent: #0A84FF; --accent-soft: rgba(10,132,255,.18); --on-accent: #FFFFFF;
+  --ok: #4CD964; --ok-bg: rgba(52,199,89,.16); --err: #FF6961; --err-bg: rgba(255,69,58,.16);
+  --shadow: 0 0 0 rgba(0,0,0,0); --shadow-hover: 0 0 0 rgba(0,0,0,0);
+  --t-red: #FF6961; --t-red-bg: rgba(255,69,58,.18); --t-amber: #FFB340; --t-amber-bg: rgba(255,159,10,.18);
+  --t-slate: #A9BED4; --t-slate-bg: rgba(140,170,200,.16); --t-blue: #64A8FF; --t-blue-bg: rgba(10,132,255,.20);
+  --t-green: #5FDB7E; --t-green-bg: rgba(48,209,88,.18); --t-grey: #A1A1A6; --t-grey-bg: rgba(160,160,170,.16);
+  --t-ink: #F5F5F7; --t-ink-bg: rgba(255,255,255,.12); --t-violet: #C7A6F0; --t-violet-bg: rgba(190,130,255,.18);
+  --t-brown: #E0B88F; --t-brown-bg: rgba(210,160,100,.18);
+  --m-red: #FF453A; --m-orange: #FF9F0A; --m-yellow: #FFD60A; --m-grey: #636366;
+  --note-bg: #3A3522; --note-line: rgba(255,214,10,.30);
+  --hl-danger: rgba(255,69,58,.32); --hl-user: rgba(48,209,88,.34);
+  --glass: rgba(44,44,46,.55); --glass-card: rgba(44,44,46,.70); --glass-hi: rgba(255,255,255,.16); --glass-edge: rgba(255,255,255,.07);
+  --blob-a: rgba(10,132,255,.30); --blob-b: rgba(255,159,10,.14); --blob-c: rgba(191,90,242,.22); --pill: rgba(235,235,245,.14);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.47; letter-spacing: -.011em; -webkit-font-smoothing: antialiased; }
+.shell {
+  max-width: 1000px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px; display: grid; gap: 22px; container-type: inline-size; container-name: board;
+}
+.shell > * { min-width: 0; }
+button, input, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 1px; box-shadow: 0 0 0 1.5px var(--accent); }
+
+.top { display: grid; gap: 6px; padding-top: 6px; }
+.top h1 { margin: 0; font-size: clamp(34px, 7vw, 52px); line-height: 1.05; font-weight: 700; letter-spacing: -.035em; text-wrap: balance; }
+.top p { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.4; max-width: 60ch; text-wrap: pretty; }
+
+.label { font-size: 13px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--muted); }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; padding: 9px 18px; cursor: pointer; border: 0; border-radius: 980px;
+  background: var(--fill); color: var(--ink); font-size: 14.5px; font-weight: 500; line-height: 1.2; transition: background .15s, transform .15s, filter .15s;
+}
+.btn:hover { background: var(--fill-2); }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { filter: brightness(1.08); background: var(--accent); }
+.btn.small { padding: 6px 13px; font-size: 13px; }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+
+.drop { display: grid; gap: 12px; padding: 22px; background: var(--surface); border: 1.5px dashed var(--line-strong); border-radius: 22px; transition: border-color .2s, background .2s; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop-row { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center; }
+.drop-row > div:first-child { flex: 1 1 280px; min-width: 0; }
+.drop strong { display: block; font-size: 21px; font-weight: 650; letter-spacing: -.02em; }
+.drop .sub { color: var(--muted); font-size: 14.5px; }
+.drop input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.loaded { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.loaded li { padding: 3px 11px; border-radius: 980px; background: var(--fill); color: var(--muted); font-size: 12.5px; }
+.loaded li.file { background: var(--ok-bg); color: var(--ok); font-weight: 600; overflow-wrap: anywhere; }
+.msg { margin: 0; padding: 10px 14px; font-size: 13.5px; border-radius: 12px; background: var(--fill); }
+.msg.err { background: var(--err-bg); color: var(--err); }
+.msg.busy { background: var(--accent-soft); }
+
+.catbar { display: grid; gap: 12px; }
+.catbar-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
+.cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 10px; }
+.cbtn {
+  --tone: var(--t-grey); display: grid; gap: 2px; align-content: start; padding: 14px 16px; text-align: left; cursor: pointer; min-width: 0;
+  background: var(--surface); border: 0; border-radius: 18px; box-shadow: var(--shadow); transition: transform .15s, box-shadow .2s, opacity .2s;
+}
+.cbtn:hover { box-shadow: var(--shadow-hover); }
+.cbtn:active { transform: scale(.98); }
+.cbtn.red { --tone: var(--t-red); } .cbtn.amber { --tone: var(--t-amber); } .cbtn.slate { --tone: var(--t-slate); }
+.cbtn.ink { --tone: var(--t-ink); } .cbtn.violet { --tone: var(--t-violet); } .cbtn.brown { --tone: var(--t-brown); }
+.cbtn.blue { --tone: var(--t-blue); } .cbtn.green { --tone: var(--t-green); } .cbtn.grey { --tone: var(--t-grey); }
+.cbtn .n { font-size: 30px; line-height: 1.05; font-weight: 700; letter-spacing: -.03em; color: var(--tone); font-variant-numeric: tabular-nums; }
+.cbtn .l { font-size: 13px; font-weight: 500; color: var(--muted); line-height: 1.25; overflow-wrap: break-word; hyphens: manual; }
+.cbtn[aria-pressed="false"] { opacity: .5; }
+.cbtn .n { transition: transform .35s var(--spring); }
+.cbtn[aria-pressed="false"] .n { text-decoration: line-through; text-decoration-thickness: 2px; transform: scale(.88); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.controls .field { flex: 1 1 240px; display: grid; gap: 6px; min-width: 0; }
+input[type="search"] {
+  width: 100%; min-width: 0; height: 44px; background: var(--surface); border: 0; border-radius: 12px; padding: 0 14px; font-size: 16px; box-shadow: inset 0 0 0 1px var(--line);
+  -webkit-appearance: none; appearance: none;
+}
+input[type="search"]::placeholder { color: var(--muted); opacity: .8; }
+.controls .btn { height: 44px; }
+.status { font-size: 13.5px; color: var(--muted); min-height: 1.4em; margin: 0; }
+#copyfb { width: 100%; min-height: 110px; font-family: var(--font-mono); font-size: 12px; background: var(--surface); border: 0; border-radius: 12px; padding: 12px; box-shadow: inset 0 0 0 1px var(--line); }
+.disclaimer { margin: 0; font-size: 13px; color: var(--muted); max-width: 80ch; text-wrap: pretty; }
+
+.group { --tone: var(--t-grey); --tone-bg: var(--t-grey-bg); display: grid; gap: 0; }
+.group.red { --tone: var(--t-red); --tone-bg: var(--t-red-bg); } .group.amber { --tone: var(--t-amber); --tone-bg: var(--t-amber-bg); }
+.group.ink { --tone: var(--t-ink); --tone-bg: var(--t-ink-bg); } .group.violet { --tone: var(--t-violet); --tone-bg: var(--t-violet-bg); }
+.group.brown { --tone: var(--t-brown); --tone-bg: var(--t-brown-bg); } .group.slate { --tone: var(--t-slate); --tone-bg: var(--t-slate-bg); }
+.group.blue { --tone: var(--t-blue); --tone-bg: var(--t-blue-bg); } .group.green { --tone: var(--t-green); --tone-bg: var(--t-green-bg); }
+.group.grey { --tone: var(--t-grey); --tone-bg: var(--t-grey-bg); }
+.group > h2 { margin: 0 0 12px; display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; letter-spacing: -.025em; }
+.group > h2::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--tone); flex: none; }
+.group > h2 span { margin-left: auto; padding: 1px 10px; border-radius: 980px; background: var(--fill); color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.group + .group { margin-top: 18px; }
+
+.strip { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); margin-bottom: 12px; cursor: pointer; overflow: hidden; transition: background .3s, opacity .3s, box-shadow .2s; }
+.strip:hover { box-shadow: var(--shadow-hover); }
+.cols { display: grid; grid-template-columns: 190px minmax(0, 1fr) 150px; grid-template-areas: "idc body when"; gap: 0 4px; }
+.cols > div { padding: 18px 18px; min-width: 0; }
+.cols > .idc { grid-area: idc; display: grid; gap: 4px; align-content: start; }
+.cols > .body { grid-area: body; display: grid; gap: 10px; align-content: start; padding-inline: 8px; }
+.cols > .when { grid-area: when; display: grid; gap: 1px; align-content: start; font-size: 13px; font-variant-numeric: tabular-nums; }
+.nid { font-family: var(--font-mono); font-weight: 600; font-size: 12.5px; overflow-wrap: anywhere; }
+.strip:not(.ad) .cols > .idc .nid::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--tone); margin-right: 7px; vertical-align: 1px; }
+.icao { font-size: 19px; font-weight: 650; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.plc { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; line-height: 1.35; }
+.etext { margin: 0; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sched, .lim { margin: 0; font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.why { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.why li { padding: 2px 10px; border-radius: 980px; background: var(--tone-bg); color: var(--tone); font-size: 12.5px; font-weight: 500; }
+.strip.ad .why li { background: var(--fill); color: var(--muted); }
+.when .k { text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; font-weight: 600; color: var(--muted); margin-top: 10px; }
+.when .k:first-child { margin-top: 0; }
+.strip.dim .body, .strip.dim .when .v { opacity: .55; }
+
+.mark { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 2px 11px 2px 8px; border-radius: 980px; background: var(--fill); font-size: 12px; font-weight: 650; letter-spacing: .01em; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--mk); flex: none; }
+.mk-red { --mk: var(--m-red); } .mk-orange { --mk: var(--m-orange); } .mk-yellow { --mk: var(--m-yellow); } .mk-grey { --mk: var(--m-grey); }
+.adblock + .adblock { margin-top: 20px; }
+.adblock > h3 { margin: 0 0 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
+.adblock > h3 small { font-size: 13px; letter-spacing: 0; color: var(--muted); font-weight: 400; }
+.lvls { display: inline-flex; gap: 10px; margin-left: auto; font-size: 12.5px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.lvls span { display: inline-flex; align-items: center; gap: 5px; }
+.legend { margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius: 4px; }
+.hl-danger { background: var(--hl-danger); font-weight: 600; }
+.hl-user { background: var(--hl-user); font-weight: 600; }
+.hl-num { font-weight: 600; }
+
+/* NOTAM pris en compte : la carte se replie en une ligne grisée */
+.fold, .sumrow { display: grid; transition: grid-template-rows .34s cubic-bezier(.3, .7, .2, 1); }
+.fold { grid-template-rows: 1fr; }
+.sumrow { grid-template-rows: 0fr; }
+.foldin, .sumin { overflow: hidden; min-height: 0; }
+.strip.done .fold { grid-template-rows: 0fr; }
+.strip.done .sumrow { grid-template-rows: 1fr; }
+.strip.done { background: var(--fill); opacity: .65; box-shadow: none; }
+.sumc { display: flex; align-items: center; gap: 10px; padding: 11px 18px; font-size: 13px; min-width: 0; }
+.sumc .snip { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+.sumc .nid, .sumc .icao { flex: none; font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
+.sumc .okmark { flex: none; color: var(--ok); font-size: 12px; font-weight: 600; }
+.sumc .notemk { flex: none; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; padding: 1px 9px; border-radius: 980px; background: var(--note-bg); }
+.sumc .notemk:empty { display: none; }
+.strip.has-note:not(.done) .addnote { display: none; }
+
+/* Notes : un post-it jaune discret sous le texte du NOTAM */
+.noterow { margin-top: 2px; }
+.addnote { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.addnote:hover { background: var(--accent-soft); filter: brightness(.95); }
+.notebox {
+  display: block; width: 100%; min-height: 64px; resize: vertical; background: var(--note-bg); color: var(--ink); border: 0; border-radius: 12px;
+  padding: 11px 14px; font-size: 14.5px; line-height: 1.45; box-shadow: inset 0 0 0 1px var(--note-line);
+}
+.notebox:focus { outline: none; box-shadow: inset 0 0 0 1px var(--note-line), 0 0 0 4px rgba(255,204,0,.28); }
+.notebox::placeholder { color: var(--muted); }
+
+.vh { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.nfbar { display: grid; gap: 14px; padding: 22px; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
+.nfbar strong { display: block; font-size: 21px; font-weight: 650; letter-spacing: -.02em; margin-bottom: 2px; }
+.nfbar .sub { color: var(--muted); font-size: 14.5px; line-height: 1.45; display: block; max-width: 70ch; text-wrap: pretty; }
+.empty { padding: 28px; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); color: var(--muted); text-align: center; }
+.empty strong { display: block; color: var(--ink); font-size: 19px; font-weight: 650; letter-spacing: -.02em; margin-bottom: 4px; }
+
+
+/* Verre liquide : surfaces translucides floutées sur un fond aux halos de couleur, reflet fin en haut de chaque surface */
+body { background-color: var(--bg); background-image: radial-gradient(60% 45% at 12% -5%, var(--blob-a), transparent 70%), radial-gradient(45% 40% at 95% 8%, var(--blob-b), transparent 70%), radial-gradient(55% 45% at 80% 100%, var(--blob-c), transparent 70%); background-repeat: no-repeat; background-attachment: fixed; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.drop, .nfbar, .empty, .cbtn, .controls {
+  background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px);
+  box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--shadow);
+}
+.drop { border: 1.5px dashed var(--line-strong); box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow); }
+.drop.over { background: var(--accent-soft); }
+.strip { background: var(--glass-card); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--shadow); }
+.strip:hover { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--shadow-hover); }
+.strip.done { background: var(--pill); box-shadow: none; }
+.addnote { background: var(--accent-soft); }
+.loaded li, .mark, .group > h2 span { background: var(--pill); }
+.loaded li.file { background: var(--ok-bg); }
+.controls { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 5; align-items: center; gap: 8px; padding: 8px; border-radius: 22px; }
+.controls .field { flex: 1 1 200px; }
+.controls .btn { height: 40px; }
+input[type="search"] {
+  height: 40px; padding: 0 14px 0 38px; border-radius: 14px; background-color: var(--glass-card); box-shadow: inset 0 0 0 1px var(--glass-edge);
+  background-repeat: no-repeat; background-position: 12px 50%; background-size: 17px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+}
+input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-soft); }
+
+/* Animations au toucher : ressort au relâchement, léger enfoncement à l'appui */
+.btn, .strip { transition: transform .5s var(--spring), background-color .2s, box-shadow .25s, opacity .3s, filter .2s; }
+.cbtn { transition: transform .45s var(--spring), opacity .35s var(--ease), box-shadow .25s; will-change: transform; }
+.btn:active { transform: scale(.93); transition: transform .12s var(--ease), background-color .2s; }
+.cbtn:active { transform: scale(.94); transition: transform .12s var(--ease); }
+.strip:active { transform: scale(.992); transition: transform .12s var(--ease), background-color .3s, opacity .3s; }
+@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(.92); } 70% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes checkpop { 0% { transform: scale(.5); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+.strip.done .okmark { display: inline-block; animation: checkpop .55s var(--spring) both; }
+.notebox, .addnote { animation: rise .35s var(--ease); }
+.enter .group, .enter .empty { animation: rise .6s var(--ease) both; }
+.enter .group:nth-child(2) { animation-delay: .07s; } .enter .group:nth-child(3) { animation-delay: .14s; } .enter .group:nth-child(n+4) { animation-delay: .2s; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+
+/* Carte */
+.mapcard { margin: 0 0 18px; padding: 0; border-radius: 24px; overflow: hidden; background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--shadow); }
+.mapcard[hidden] { display: none; }
+.maphead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px 10px; }
+.maphead h2 { margin: 0; font-size: 19px; font-weight: 650; letter-spacing: -.02em; flex: 1 1 auto; }
+.mapfold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s var(--ease); }
+.mapcard.shut .mapfold { grid-template-rows: 0fr; }
+.mapfoldin { overflow: hidden; min-height: 0; }
+.mapfilters { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; }
+.mchip { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 980px; padding: 6px 12px; font: 500 13px/1.2 var(--font); color: var(--ink); background: var(--pill); cursor: pointer; transition: transform .4s var(--spring), opacity .3s var(--ease), background-color .2s; }
+.mchip:active { transform: scale(.93); transition: transform .12s var(--ease); }
+.mchip i { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--t-grey)); flex: none; }
+.mchip b { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mchip[aria-pressed="false"] { opacity: .45; }
+.mchip[aria-pressed="false"] span { text-decoration: line-through; }
+.mchip.nf { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.mchip.nf[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.mchip.nf[aria-pressed="true"] b { color: inherit; opacity: .8; }
+.mapview { position: relative; height: clamp(320px, 62vh, 640px); margin: 0 10px 10px; border-radius: 18px; overflow: hidden; background: var(--fill); box-shadow: inset 0 0 0 1px var(--line); touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.mapview.drag { cursor: grabbing; }
+.mapview svg { display: block; width: 100%; height: 100%; }
+.mapzoom { position: absolute; right: 10px; top: 10px; display: grid; gap: 6px; }
+.mapzoom button { width: 38px; height: 38px; border: 0; border-radius: 12px; font: 600 20px/1 var(--font); color: var(--ink); background: var(--glass-card); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px var(--glass-edge), var(--shadow); cursor: pointer; transition: transform .4s var(--spring); }
+.mapzoom button:active { transform: scale(.88); transition: transform .12s var(--ease); }
+.maplegend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 16px 12px; color: var(--muted); font-size: 12.5px; }
+.maplegend span { display: inline-flex; align-items: center; gap: 6px; }
+.maplegend svg { width: 22px; height: 14px; }
+.mapinfo { margin: 0 10px 10px; padding: 12px 14px; border-radius: 16px; background: var(--glass-card); box-shadow: inset 0 0 0 1px var(--glass-edge); font-size: 13.5px; animation: rise .35s var(--ease); }
+.mapinfo[hidden] { display: none; }
+.mapinfo .mi-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.mapinfo .mi-row:first-of-type { border-top: 0; }
+.mapinfo .mi-id { font-weight: 650; font-size: 12.5px; flex: none; }
+.mapinfo .mi-tx { flex: 1 1 auto; min-width: 0; color: var(--muted); font-family: var(--font-mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapinfo .mi-go { flex: none; color: var(--accent); font-weight: 600; font-size: 12.5px; }
+.mapinfo h4 { margin: 0 0 4px; font-size: 14.5px; font-weight: 650; }
+.msea { fill: var(--fill); }
+.mland { fill: var(--surface); stroke: var(--line-strong); stroke-width: calc(var(--u) * 1); stroke-linejoin: round; }
+.mcoast { fill: none; stroke: var(--line-strong); stroke-width: calc(var(--u) * 1); stroke-dasharray: calc(var(--u) * 2) calc(var(--u) * 3); }
+.mgrid { stroke: var(--line); stroke-width: calc(var(--u) * 1); fill: none; }
+.mcity { fill: var(--muted); }
+.mctxt { fill: var(--muted); font-family: var(--font); font-weight: 500; paint-order: stroke; stroke: var(--surface); stroke-width: calc(var(--u) * 3); stroke-linejoin: round; pointer-events: none; }
+.mshape { --c: var(--t-grey); cursor: pointer; transition: opacity .3s; }
+.mshape .f { fill: var(--c); fill-opacity: .2; stroke: var(--c); stroke-width: calc(var(--u) * 2); stroke-linejoin: round; transition: fill-opacity .2s; }
+.mshape:hover .f { fill-opacity: .38; }
+.mshape.apx .f { fill-opacity: .12; stroke-width: calc(var(--u) * 1.6); stroke-dasharray: calc(var(--u) * 5) calc(var(--u) * 4); }
+.mshape.apx:hover .f { fill-opacity: .28; }
+.mshape.pt .f { fill-opacity: .9; stroke: var(--surface); stroke-width: calc(var(--u) * 2); }
+.mshape.sel .f { stroke-width: calc(var(--u) * 3.5); fill-opacity: .45; }
+.mshape.done { opacity: .28; }
+.mshape.red { --c: var(--t-red); } .mshape.amber { --c: var(--t-amber); } .mshape.slate { --c: var(--t-slate); } .mshape.ink { --c: var(--t-ink); }
+.mshape.violet { --c: var(--t-violet); } .mshape.brown { --c: var(--t-brown); } .mshape.blue { --c: var(--t-blue); } .mshape.green { --c: var(--t-green); } .mshape.grey { --c: var(--t-grey); }
+.mshape.lv-red { --c: var(--m-red); } .mshape.lv-orange { --c: var(--m-orange); } .mshape.lv-yellow { --c: var(--m-yellow); } .mshape.lv-grey { --c: var(--m-grey); }
+.mshape.ad .f { fill-opacity: 1; stroke: #fff; stroke-width: calc(var(--u) * 2.5); }
+.mshape.ad.sel .f { stroke: var(--ink); }
+.madt { fill: var(--ink); font-family: var(--font); font-weight: 650; paint-order: stroke; stroke: var(--surface); stroke-width: calc(var(--u) * 3.5); stroke-linejoin: round; pointer-events: none; }
+.madn { fill: #fff; font-family: var(--font); font-weight: 700; text-anchor: middle; pointer-events: none; }
+@keyframes flashrow { 0% { box-shadow: 0 0 0 0 var(--accent-soft), inset 0 0 0 2px var(--accent); } 100% { box-shadow: 0 0 0 14px transparent, inset 0 0 0 2px transparent; } }
+.strip.flash { animation: flashrow 1.4s var(--ease) 1; }
+@media (prefers-reduced-motion: reduce) { .mapfold { transition: none; } }
+
+
+/* Liens SUP AIP */
+.supl { color: var(--accent); font-weight: 650; text-decoration: none; border-radius: 6px; padding: 0 2px; margin: 0 -2px; background: var(--accent-soft); transition: background-color .2s, transform .4s var(--spring); display: inline-block; }
+.supl:hover { background: rgba(0,113,227,.22); }
+.supl:active { transform: scale(.95); transition: transform .12s var(--ease); }
+
+@container board (max-width: 720px) {
+  .cols { grid-template-columns: minmax(0, 1fr); grid-template-areas: "idc" "body" "when"; }
+  .cols > div { padding: 14px 16px; }
+  .cols > .idc { padding-bottom: 0; }
+  .cols > .body { padding-inline: 16px; }
+  .cols > .when { padding-top: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
+  .cols > .when .k:nth-of-type(2) { margin-top: 0; }
+  .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sumc { padding-inline: 14px; }
+  .sumc .snip { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .fold, .sumrow, .strip, .btn, .cbtn { transition: none; } }
+</style>
+
+<div class="shell">
+  <header class="top">
+    <h1>Tri NOTAM</h1>
+  </header>
+
+  <section class="drop" id="drop" aria-label="Importer un briefing">
+    <div class="drop-row">
+      <div>
+        <strong>Importer le PDF SOFIA-Briefing</strong>
+      </div>
+      <div class="btnrow">
+        <label class="btn primary" for="file" id="fileBtn" tabindex="0" role="button">Choisir un PDF</label>
+        <label class="btn" for="listFile" tabindex="0" role="button" id="listBtnTop">Importer une liste de non facteurs</label>
+        <input id="file" type="file" accept=".pdf,application/pdf">
+      </div>
+    </div>
+    <ul class="loaded" id="loaded"></ul>
+    <p class="msg" id="importMsg" hidden role="status"></p>
+  </section>
+
+  <section class="catbar" aria-label="Catégories">
+    <div class="catbar-head">
+      <span class="label">Catégories affichées</span>
+      <div class="btnrow">
+        <button class="btn small" type="button" id="bHideDone" aria-pressed="false">Masquer les NOTAM grisés</button>
+        <button class="btn small" type="button" id="bAll">Tout afficher</button>
+        <button class="btn small" type="button" id="bNone">Tout masquer</button>
+      </div>
+    </div>
+    <div class="cats" id="cats" role="group" aria-label="Afficher ou masquer une catégorie"></div>
+  </section>
+
+  <div class="controls">
+    <div class="field">
+      <input id="search" type="search" placeholder="Rechercher" aria-label="Rechercher" autocomplete="off">
+    </div>
+    <button class="btn primary" type="button" id="bCopy">Copier la liste</button>
+  </div>
+  <p class="status" id="status" role="status"></p>
+  <textarea id="copyfb" readonly hidden aria-label="Liste à copier"></textarea>
+
+  <section class="mapcard" id="mapcard" hidden aria-label="Carte des NOTAM">
+    <div class="maphead">
+      <h2>Carte</h2>
+      <span class="status" id="mapcount" style="margin:0"></span>
+      <button class="btn small" type="button" id="mapToggle" aria-pressed="true">Masquer</button>
+    </div>
+    <div class="mapfold"><div class="mapfoldin">
+      <div class="mapfilters" id="mapfilters" role="group" aria-label="Filtrer la carte"></div>
+      <div class="mapview" id="mapview">
+        <svg id="msvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de France avec les NOTAM"></svg>
+        <div class="mapzoom"><button type="button" id="mZin" aria-label="Zoomer">+</button><button type="button" id="mZout" aria-label="Dézoomer">−</button><button type="button" id="mHome" aria-label="Recentrer" style="font-size:15px">⌖</button></div>
+      </div>
+      <div class="mapinfo" id="mapinfo" hidden></div>
+      <div class="maplegend">
+        <span><svg viewBox="0 0 22 14"><path d="M3 11L8 3L19 5L16 12Z" fill="var(--t-amber)" fill-opacity=".25" stroke="var(--t-amber)" stroke-width="2"/></svg>Contour exact du NOTAM</span>
+        <span><svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="8" ry="5.5" fill="var(--t-violet)" fill-opacity=".25" stroke="var(--t-violet)" stroke-width="2"/></svg>Cercle (centre et rayon du NOTAM)</span>
+        <span><svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="5" ry="5" fill="var(--t-grey)" fill-opacity=".12" stroke="var(--t-grey)" stroke-width="1.4" stroke-dasharray="3 2"/></svg>Position seule : cercle de 5 NM</span>
+      </div>
+    </div></div>
+  </section>
+
+  <div id="results"></div>
+
+  <section class="nfbar" aria-label="NOTAM non facteurs">
+    <div>
+      <strong>NOTAM non facteurs</strong>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" type="button" id="bExport">Exporter les NOTAM non facteurs</button>
+      <label class="btn" for="listFile" tabindex="0" role="button" id="listBtn">Importer une liste</label>
+      <input id="listFile" class="vh" type="file" accept=".json,application/json">
+    </div>
+    <p class="msg" id="listMsg" hidden role="status"></p>
+  </section>
+
+  <p class="disclaimer">Aide à la lecture uniquement. Le briefing officiel fait foi : vérifie toujours en entier les NOTAM de départ, d’arrivée et de dégagement. Le rangement repose sur le texte des NOTAM : en cas de doute, ouvre « Autre ».</p>
+</div>
+
+<script>
+'use strict';
+/* Noyau NOTAM : lecture du briefing imprimé de SOFIA-Briefing (PIB), rangement par catégorie, surlignage. Aucune dépendance DOM. */
+const NotamCore = (() => {
+  const pad = n => String(n).padStart(2, '0');
+  const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    return pad(d.getUTCDate()) + ' ' + MONTHS[d.getUTCMonth()] + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + 'Z';
+  }
+
+  /* ---------- Catégories, dans l'ordre d'affichage ---------- */
+  const CATEGORIES = [
+    { id: 'aerodrome', label: 'Aérodromes', tone: 'ink' },
+    { id: 'sup_on', label: 'SUP AIP actifs', tone: 'red' },
+    { id: 'sup_maybe', label: 'SUP AIP potentiellement actifs', tone: 'amber' },
+    { id: 'sup_off', label: 'SUP AIP inactifs', tone: 'slate' },
+    { id: 'zones_on', label: 'Zones actives', tone: 'red' },
+    { id: 'parachute', label: 'Zone de parachutage', tone: 'blue' },
+    { id: 'aeromodel', label: 'Zone aéromodélisme', tone: 'green' },
+    { id: 'radio', label: 'Radiocommunications', tone: 'violet' },
+    { id: 'obstacle', label: 'Obstacle', tone: 'brown' },
+    { id: 'other', label: 'Autre', tone: 'grey' },
+    { id: 'nonfact', label: 'Non facteurs', tone: 'grey' }
+  ];
+  /* Marqueurs d'importance des NOTAM d'aérodrome */
+  const LEVELS = [
+    { id: 'red', label: 'Rouge', hint: 'aérodrome inaccessible' },
+    { id: 'orange', label: 'Orange', hint: 'fort impact sur le vol' },
+    { id: 'yellow', label: 'Jaune', hint: 'impact mineur' },
+    { id: 'grey', label: 'Gris', hint: 'information' }
+  ];
+  const CAT = {};
+  CATEGORIES.forEach(c => { CAT[c.id] = c; });
+
+  /* ---------- Champs d'un NOTAM ---------- */
+  const ORDER_PIB = ['A', 'Q', 'D', 'E', 'F', 'G']; /* dans le PIB, A) précède Q) */
+
+  function parseQ(s) {
+    if (!s) return null;
+    const p = s.replace(/\s+/g, '').split('/');
+    if (p.length < 2) return null;
+    const lo = /^\d{3}$/.test(p[5] || '') ? parseInt(p[5], 10) : null;
+    const up = /^\d{3}$/.test(p[6] || '') ? parseInt(p[6], 10) : null;
+    const g = /^(\d{2})(\d{2})([NS])(\d{3})(\d{2})([EW])(\d{3})$/.exec(p[7] || '');
+    const pos = g ? { lat: (+g[1] + g[2] / 60) * (g[3] === 'S' ? -1 : 1), lon: (+g[4] + g[5] / 60) * (g[6] === 'W' ? -1 : 1), r: +g[7] } : null;
+    return { fir: p[0], code: /^Q[A-Z]{4}$/.test(p[1]) ? p[1] : '', lower: lo, upper: up, pos: pos };
+  }
+
+  /* ---------- Géométrie : contours exacts du texte E), sinon cercle du champ Q ---------- */
+  const COORD_RE = /(\d{4}(?:\d{2})?)([NS])[\s,]*(\d{5}(?:\d{2})?)([EW])/g;
+  function toDeg(v, hem) {
+    const dl = (hem === 'N' || hem === 'S') ? 2 : 3;
+    const d = +v.slice(0, dl), m = +v.slice(dl, dl + 2), s = v.length > dl + 2 ? +v.slice(dl + 2, dl + 4) : 0;
+    if (m >= 60 || s >= 60) return null;
+    const x = d + m / 60 + s / 3600;
+    return (hem === 'S' || hem === 'W') ? -x : x;
+  }
+  function geoOf(it) {
+    const q = it.q && it.q.pos ? it.q.pos : null;
+    const out = { q: q, shapes: [], exact: false };
+    if (it.area === 'ad') return out;
+    const t = (it.fields.E || '').replace(/\s*\n\s*/g, '');
+    const hits = [];
+    let m;
+    COORD_RE.lastIndex = 0;
+    while ((m = COORD_RE.exec(t))) {
+      const lat = toDeg(m[1], m[2]), lon = toDeg(m[3], m[4]);
+      if (lat == null || lon == null || lat < 30 || lat > 62 || lon < -20 || lon > 30) continue;
+      hits.push({ lat: lat, lon: lon, at: m.index, end: m.index + m[0].length });
+    }
+    const runs = [];
+    hits.forEach(function (h) {
+      const last = runs[runs.length - 1];
+      if (last && /^[\s,\-–—]*$/.test(t.slice(last[last.length - 1].end, h.at))) last.push(h); else runs.push([h]);
+    });
+    runs.forEach(function (r) {
+      if (r.length >= 3) {
+        const p = r.map(function (h) { return [h.lat, h.lon]; });
+        out.shapes.push({ t: 'poly', p: p });
+      } else {
+        r.forEach(function (h) {
+          const before = t.slice(Math.max(0, h.at - 160), h.at);
+          const rm = /(?:RAYON|RADIUS)\s*(?:DE\s*|OF\s*)?(\d+(?:[.,]\d+)?)\s*(NM|KM|M)\b/i.exec(before) || /(\d+(?:[.,]\d+)?)\s*(NM|KM)\b[^.]{0,40}(?:CENTRE|CENTER)/i.exec(before);
+          let rad = 0;
+          if (rm) { rad = parseFloat(rm[1].replace(',', '.')); const u = rm[2].toUpperCase(); if (u === 'KM') rad /= 1.852; else if (u === 'M') rad /= 1852; }
+          out.shapes.push({ t: 'circle', lat: h.lat, lon: h.lon, r: rad });
+        });
+      }
+    });
+    out.exact = out.shapes.length > 0;
+    if (!out.exact && q && q.r < 999) out.shapes.push({ t: 'circle', lat: q.lat, lon: q.lon, r: 0 });
+    return out;
+  }
+
+  function splitFields(body) {
+    const re = /^[ \t]*([QABCDEFG])\)[ \t]*/gm;
+    const marks = [];
+    let last = -1, m;
+    while ((m = re.exec(body))) {
+      const k = ORDER_PIB.indexOf(m[1]);
+      if (k > last) { marks.push({ L: m[1], at: m.index, from: re.lastIndex }); last = k; }
+    }
+    const f = {};
+    marks.forEach((mk, i) => {
+      const to = i + 1 < marks.length ? marks[i + 1].at : body.length;
+      f[mk.L] = body.slice(mk.from, to).replace(/\s+$/, '').replace(/^\s+/, '');
+    });
+    return f;
+  }
+
+  function makeItem(o) {
+    const f = o.fields;
+    const it = {
+      id: o.id, origin: o.origin || '', q: parseQ(f.Q), fields: f,
+      locs: (f.A || '').split(/[\s,]+/).filter(x => /^[A-Z]{4}$/.test(x)),
+      start: o.start, end: o.end, perm: !!o.perm, est: !!o.est,
+      schedule: f.D || '', text: (f.E || '').replace(/[ \t]+\n/g, '\n').trim(),
+      lowerTxt: f.F || '', upperTxt: f.G || '',
+      place: o.place || '', section: o.section || '', major: o.major || '',
+      area: o.area || 'route', role: o.role || '',
+      dupes: 0, raw: o.raw || ''
+    };
+    it.geo = geoOf(it);
+    return it;
+  }
+
+  /* ---------- Format imprimé de SOFIA-Briefing (PIB) ---------- */
+  const ID_RE = /^(\s*)([A-Z]{4})-([A-Z]\d{4}\/\d{2})\s*$/;
+  const FOOT_RE = /^\s*SIA France - SOFIA-Briefing\b.*$/i;
+  const PAGE_RE = /^\s*\d+\s*\/\s*\d+\s*$/;
+  const MAJOR_RE = /^\s*(?:EN-ROUTE|A[ÉE]RODROMES?|ROUTES?)\s*$/i;
+  const SECTION_RE = /^\s*(?:ORGANISATION DE L.ESPACE A[ÉE]RIEN ET PROC[ÉE]DURES|SERVICES DE LA CIRCULATION A[ÉE]RIENNE ET VOLMET|INSTALLATIONS DE COMMUNICATION ET DE SURVEILLANCE|GNSS - INSTALLATIONS DE RADIONAVIGATION|RESTRICTIONS DE L.ESPACE A[ÉE]RIEN|AVERTISSEMENTS|OBSTACLES|AUTRES INFORMATIONS)\s*$/i;
+  const AD_MAJOR_RE = /^\s*A[ÉE]RODROMES\s+S[ÉE]LECTIONN[ÉE]S\s*$/i;
+  const AD_ROLE_RE = /^\s*A[ÉE]RODROMES?\s+(?:DE|D['’])\s*\S.*$/i;
+  const AD_SECTION_RE = /^\s*(?:INSTALLATIONS ET SERVICES|AIRE DE (?:MANŒUVRE|MANOEUVRE|MOUVEMENT|TRAFIC)|BALISAGE|PROC[ÉE]DURES|M[ÉE]T[ÉE]OROLOGIE ET [ÉE]QUIPEMENTS|OBSTACLES|AIDES?\b.*|ORGANISATION\b.*|AIRE\b.*|SERVICES\b.*)\s*$/i;
+  const PLACE_RE = /^\s*([A-Z]{2}[A-Z0-9]{2})\s+(?!-)[A-Z]/;
+  const DU_RE = /DU:\s*(\d{2}) (\d{2}) (\d{4}) (\d{2}):(\d{2})\s+AU:\s*(?:(\d{2}) (\d{2}) (\d{4}) (\d{2}):(\d{2})|PERM)(\s*EST)?/;
+  const indentOf = l => /^ */.exec(l)[0].length;
+
+  function parseHeader(text) {
+    const t = String(text || '').replace(/\f/g, '\n');
+    const cut = t.search(/^\s*(?:(?:EN-ROUTE|A[ÉE]RODROMES?)\s*|[A-Z]{4}-[A-Z]\d{4}\/\d{2}\s*)$/m);
+    const chunk = (cut >= 0 ? t.slice(0, cut) : t.slice(0, 2500)).slice(0, 3000);
+    if (!/Date et Heure de production|R[èe]gle de vol|^\s*PIB\b/im.test(chunk)) return null;
+    const h = { title: (chunk.split('\n').map(s => s.trim()).filter(Boolean)[0] || ''), production: null, departure: null, durationMin: null, to: null, firs: [] };
+    const dre = /(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2})/g;
+    const ds = [];
+    let m;
+    while ((m = dre.exec(chunk)) && ds.length < 2) ds.push({ at: m.index + m[0].length, d: new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4], +m[5])) });
+    if (ds[0]) h.production = ds[0].d;
+    if (ds[1]) {
+      h.departure = ds[1].d;
+      const dm = /(?:^|\s)(\d{4})(?=\s|$)/.exec(chunk.slice(ds[1].at));
+      if (dm) {
+        const n = parseInt(dm[1], 10);
+        h.durationMin = Math.floor(n / 100) * 60 + (n % 100);
+        h.to = new Date(h.departure.getTime() + h.durationMin * 60000);
+      }
+    }
+    const lm = /Liste des FIR/i.exec(chunk);
+    if (lm) h.firs = chunk.slice(lm.index + lm[0].length).match(/\b[A-Z]{4}\b/g) || [];
+    return h;
+  }
+
+  /* classe des lignes de titre en {major, section, place} */
+  function applyHeadings(lines, ctx) {
+    const out = Object.assign({ area: 'route', role: '' }, ctx);
+    let placeOpen = false;
+    lines.forEach(l => {
+      const t = l.trim();
+      if (!t) return;
+      if (AD_MAJOR_RE.test(t)) { out.major = t; out.area = 'ad'; out.role = ''; out.section = ''; out.place = ''; placeOpen = false; return; }
+      if (MAJOR_RE.test(t)) { out.major = t; out.area = 'route'; out.role = ''; out.section = ''; out.place = ''; placeOpen = false; return; }
+      if (AD_ROLE_RE.test(t)) { out.area = 'ad'; if (!out.major) out.major = t; }
+      if (out.area === 'ad') {
+        placeOpen = false;
+        if (AD_ROLE_RE.test(t)) { out.role = t; out.place = ''; out.section = ''; return; }
+        if (!AD_SECTION_RE.test(t) && PLACE_RE.test(t)) { out.place = t; out.section = ''; return; }
+        out.section = t; return;
+      }
+      if (SECTION_RE.test(t)) { out.section = t; out.place = ''; placeOpen = false; return; }
+      if (PLACE_RE.test(t)) { out.place = t; placeOpen = true; return; }
+      if (placeOpen && / FIR\b/.test(out.place) && /^[A-ZÉÈ' -]+$/.test(t)) { out.place += ' ' + t; return; }
+      placeOpen = false;
+      out.section = t; out.place = '';
+    });
+    return out;
+  }
+
+  /* sépare le texte d'un NOTAM des titres qui le suivent (indentation, ou ligne vide + titre reconnu) */
+  function splitTrailingHeadings(lines, baseIndent, hasIndent, nextLocs) {
+    let end = lines.length;
+    while (end > 0 && !lines[end - 1].trim()) end--;
+    let j = end;
+    if (hasIndent) {
+      let k = end;
+      while (k > 0) {
+        const l = lines[k - 1];
+        if (!l.trim()) { k--; continue; }
+        if (indentOf(l) < baseIndent - 2) k--; else break;
+      }
+      j = k;
+      while (j < end && !lines[j].trim()) j++;
+      if (j >= end) j = end;
+    } else {
+      let b = -1;
+      for (let i = end - 1; i >= 0; i--) if (!lines[i].trim()) { b = i; break; }
+      if (b >= 0) {
+        const cand = lines.slice(b + 1, end);
+        let ok = cand.length > 0, placeOpen = false;
+        cand.forEach(l => {
+          const t = l.trim();
+          if (MAJOR_RE.test(t) || SECTION_RE.test(t)) { placeOpen = false; return; }
+          const pm = PLACE_RE.exec(t);
+          if (pm && nextLocs && nextLocs.indexOf(pm[1]) >= 0 && !/[0-9:.]/.test(t)) { placeOpen = true; return; }
+          if (placeOpen && /^[A-ZÉÈÀ' -]+$/.test(t)) return;
+          ok = false;
+        });
+        if (ok) j = b + 1;
+      }
+    }
+    let keep = j;
+    while (keep > 0 && !lines[keep - 1].trim()) keep--;
+    return { body: lines.slice(0, keep), heads: lines.slice(j, end) };
+  }
+
+  function parsePib(text) {
+    const src = String(text || '').replace(/\r\n?/g, '\n').replace(/\f/g, '\n').split('\n');
+    const lines = [];
+    for (let i = 0; i < src.length; i++) {
+      if (FOOT_RE.test(src[i])) {
+        lines.push('');
+        let k = i + 1;
+        while (k < src.length && !src[k].trim()) k++;
+        if (k < src.length && PAGE_RE.test(src[k])) i = k;
+        continue;
+      }
+      lines.push(src[i]);
+    }
+    const blocks = [];
+    const pre = [];
+    let cur = null;
+    lines.forEach(l => {
+      const m = ID_RE.exec(l);
+      if (m) { cur = { origin: m[2], id: m[3], indent: m[1].length, lines: [] }; blocks.push(cur); return; }
+      if (cur) cur.lines.push(l); else pre.push(l);
+    });
+    const hasIndent = blocks.some(b => b.indent > 0);
+    const header = parseHeader(pre.join('\n'));
+    const firstMajor = pre.findIndex(l => MAJOR_RE.test(l) || AD_MAJOR_RE.test(l) || AD_ROLE_RE.test(l));
+    const preHeads = firstMajor >= 0 ? pre.slice(firstMajor) : [];
+
+    let ctx = applyHeadings(preHeads, { major: '', section: '', place: '', area: 'route', role: '' });
+    const items = [];
+    blocks.forEach((b, i) => {
+      const next = blocks[i + 1];
+      const nextLocs = next ? (() => {
+        const al = next.lines.find(l => /^\s*A\)/.test(l));
+        return al ? al.replace(/^\s*A\)/, '').trim().split(/[\s,]+/) : [];
+      })() : [];
+      const sp = splitTrailingHeadings(b.lines, b.indent, hasIndent, nextLocs);
+      const itemCtx = ctx;
+      ctx = applyHeadings(sp.heads, ctx);
+
+      const body = sp.body.slice();
+      const du = body.findIndex(l => /^\s*DU:/.test(l));
+      let start = null, end = null, perm = false, est = false;
+      if (du >= 0) {
+        const dm = DU_RE.exec(body[du]);
+        if (dm) {
+          start = new Date(Date.UTC(+dm[3], +dm[2] - 1, +dm[1], +dm[4], +dm[5]));
+          if (dm[6]) end = new Date(Date.UTC(+dm[8], +dm[7] - 1, +dm[6], +dm[9], +dm[10])); else perm = true;
+          est = !!dm[11];
+        }
+        body.splice(du, 1);
+      }
+      const first = body.find(l => l.trim());
+      const base = first ? indentOf(first) : 0;
+      const txt = body.map(l => l.slice(Math.min(base, indentOf(l)))).join('\n');
+      items.push(makeItem({
+        id: b.id, origin: b.origin, fields: splitFields(txt), raw: txt.trim(), start, end, perm, est,
+        place: itemCtx.place, section: itemCtx.section, major: itemCtx.major, area: itemCtx.area, role: itemCtx.role
+      }));
+    });
+    return { items, header };
+  }
+
+  function parse(text) {
+    const r = parsePib(String(text || ''));
+    const map = new Map(), items = [];
+    let dup = 0;
+    r.items.forEach(it => {
+      const key = it.origin + '-' + it.id;
+      const seen = map.get(key);
+      if (seen) {
+        it.locs.forEach(l => { if (seen.locs.indexOf(l) < 0) seen.locs.push(l); });
+        seen.dupes += 1; dup += 1;
+        return;
+      }
+      map.set(key, it); items.push(it);
+    });
+    return { items, header: r.header, dup };
+  }
+
+  /* ---------- Rangement par catégorie ---------- */
+  const normText = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ');
+  const RE_SUP = /SUP[ -]*AIP/;
+  const RE_TRIGGER = /NOTAM[ -]*TRIGGER/;
+  /* « activable par NOTAM » et ses variantes : ACTIVABLES / ACTIVEES / ACTIVATION ANNONCEE / PREVISION D'ACTIVITE PAR NOTAM */
+  const RE_BYNOTAM = /(?:ACTIV|ANNONC)[^]{0,90}?PAR NOTAM/;
+  const RE_SUP_ACTIVE = /SUP[ -]*AIP(?: AIRAC)?(?: [0-9]+\/[0-9]+)? (?:ACTIFS?|ACTIVES?|ACTIVEES?)\b|\b(?:ACTIFS?|ACTIVES?|ACTIVEES?) (?:SUP[ -]*AIP)/;
+  const RE_ZTEMP = /ZONES? (?:REGLEMENTEES?|INTERDITES?) TEMPORAIRES?|ZONES? TEMPORAIREMENT (?:REGLEMENTEES?|INTERDITES?)|\bZ(?:RT|IT)\b/;
+  const RE_ZACT = /\b(?:LF-?[RDP] ?\d+|R ?\d{1,3}[A-Z]?|RTBA|AIRFORCE)\b[^]{0,200}?\bACT(?:IVE|IVEE|IVES|IVEES)?\b/;
+  const RE_PARACHUTE = /PARACHUT|\bPJE\b|LARGAGE/;
+  const RE_AEROMODEL = /AEROMODEL|MODELES? REDUITS?/;
+
+  const RE_HS = /HORS SERVICE|INUTILISABLES?|\bINOP\b|INOPERANT|INDISPONIBLES?|\bU\/S\b|NON DISPONIBLES?|NON ASSURE|NON UTILISABLES?|DEGRADE|INTERROMPU|UNSERVICEABLE/;
+  const RE_CLOSED = /FERME|\bCLSD\b|CLOSED/;
+  const RE_AD_CLOSED = /(?:AERODROME|\bAD\b|PLATEFORME|TERRAIN) (?:EST )?(?:FERME|NON UTILISABLE|INUTILISABLE|CLSD|CLOSED)|FERME(?:E)? A LA CIRCULATION AERIENNE|TOUTES (?:LES )?PISTES (?:SONT )?(?:FERMEES|NON UTILISABLES)|TOUS LES MOUVEMENTS (?:SONT )?INTERDITS/;
+  const RE_UNPAVED = /NON REVETUE|HERBE|GAZON|UNPAVED|\bGRASS\b/;
+  const RE_TWY = /\b(?:TWY|TAXIWAY|VOIE DE ROULAGE|VOIES? DE CIRCULATION)\b/;
+  const RE_RWY = /\b(?:PISTE|RWY|RUNWAY)\b/;
+  const RE_FREQCHG = /FREQ|\bMHZ\b|KHZ/;
+
+  /* ---------- Profil de l'avion ---------- */
+  const PROFILE = {
+    runwayMain: 1600, runwayAlt: 1000, rffsMin: 2, maxFL: 250,
+    approaches: 'ILS, VOR, RNP (hors LNAV/VNAV, hors NDB)', fuel: 'F-34, JET A1, JP-8'
+  };
+  const WEEK = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
+  const RE_DAYS = /((?:LUN|MAR|MER|JEU|VEN|SAM|DIM)(?:\s*(?:-|,|ET)\s*(?:LUN|MAR|MER|JEU|VEN|SAM|DIM))*)\s*:\s*((?:\d{4}\s*-\s*\d{4}\s*)+)/g;
+
+  /* Niveaux RFFS lus dans le NOTAM : ranges[jour 0=lundi] = [[début, fin] en minutes UTC] pour les niveaux >= rffsMin */
+  function rffsRanges(x) {
+    const ranges = [[], [], [], [], [], [], []];
+    let found = false;
+    x.split(/NIVEAUX?\s*(?=\d)/).slice(1).forEach(chunk => {
+      const lvl = parseInt(chunk, 10);
+      if (!(lvl >= PROFILE.rffsMin)) return;
+      if (/\bH24\b/.test(chunk)) { ranges.forEach(r => r.push([0, 1440])); found = true; }
+      let m;
+      RE_DAYS.lastIndex = 0;
+      while ((m = RE_DAYS.exec(chunk))) {
+        const toks = m[1].match(/LUN|MAR|MER|JEU|VEN|SAM|DIM/g).map(d => WEEK.indexOf(d));
+        let days = toks;
+        if (/-/.test(m[1]) && toks.length === 2) { days = []; for (let d = toks[0]; d <= toks[1]; d++) days.push(d); }
+        const times = m[2].match(/\d{4}\s*-\s*\d{4}/g).map(t => { const q = t.replace(/\s/g, '').split('-'); return [q[0], q[1]]; });
+        days.forEach(d => times.forEach(t => {
+          const a = parseInt(t[0].slice(0, 2), 10) * 60 + parseInt(t[0].slice(2), 10);
+          let b = parseInt(t[1].slice(0, 2), 10) * 60 + parseInt(t[1].slice(2), 10);
+          if (b >= 1439) b = 1440;
+          if (b > a) ranges[d].push([a, b]);
+          else { ranges[d].push([a, 1440]); ranges[(d + 1) % 7].push([0, b]); }
+        }));
+        found = true;
+      }
+    });
+    return found ? ranges : null;
+  }
+  function rffsCovered(ranges, item, win) {
+    const from = Math.max(win.from.getTime(), item.start ? item.start.getTime() : 0);
+    const to = Math.min(win.to.getTime(), item.perm || !item.end ? Infinity : item.end.getTime());
+    for (let t = from; t <= to; t += 600000) {
+      const d = new Date(t), day = (d.getUTCDay() + 6) % 7, mn = d.getUTCHours() * 60 + d.getUTCMinutes();
+      if (!ranges[day].some(r => mn >= r[0] && mn < r[1])) return false;
+    }
+    return true;
+  }
+
+  /* Approches : lesquelles sont utilisables avec cet avion ? */
+  function approachInfo(x) {
+    const s = x.replace(/LNAV[ \/-]*VNAV/g, ' §VNAV ');
+    const hadVnav = s !== x;
+    const useful = /\bILS\b|\bLOC\b|\bLOCALIZER\b|\bVOR\b|\bLPV\b|\bLNAV\b|\bLP\b/.test(s) || (/\bRNP\b|\bRNAV\b/.test(s) && !hadVnav);
+    const unusable = /\bNDB\b/.test(x) || hadVnav;
+    return { useful, unusable: !useful && unusable };
+  }
+
+  const RE_JET = /\bJET\b|JET ?A-?1|\bF-?34\b|JP-?8|KEROSENE|\bTR0\b/;
+  const RE_AVGAS = /AVGAS|100 ?LL|\bUL ?91\b|MOGAS|\bSP ?9[58]\b/;
+  const RE_SHORT = /RACCOURCI|REDUIT|\bTORA\b|\bTODA\b|\bASDA\b|\bLDA\b|DISTANCES? DECLAREES|LONGUEUR/;
+
+  /* Marqueur d'un NOTAM d'aérodrome : rouge = inaccessible pour ton avion, orange = fort impact, jaune = impact mineur, gris = information ou sans objet pour ton avion */
+  function adLevel(item, x, subj, ctx) {
+    const q = item.q && item.q.code || '';
+    const f = subj.charAt(0), hs = RE_HS.test(x), closed = RE_CLOSED.test(x);
+    const main = /DEPART|ARRIVEE|DESTINATION/.test(normText(item.role));
+    if (RE_AD_CLOSED.test(x) || /^QFALC$/.test(q)) return { id: 'red', why: 'Aérodrome fermé ou inutilisable' };
+
+    /* Aérodrome inutilisable comme dégagement */
+    if (/NE PEUT (?:PAS )?ETRE (?:CHOISI|UTILISE|RETENU|PRIS)[^]{0,60}DEGAGEMENT|(?:NON|PAS) UTILISABLE (?:COMME|EN|POUR) (?:AD |AERODROME )?(?:DE )?DEGAGEMENT|INTERDIT (?:COMME|EN) DEGAGEMENT/.test(x))
+      return main ? { id: 'yellow', why: 'Ne peut servir de dégagement' } : { id: 'red', why: 'Ne peut pas être utilisé comme dégagement' };
+
+    /* ATS / contrôle non assuré */
+    if (/\bATS NON ASSURES?|\bATS NON DISPONIBLES?|(?:CONTROLE|TOUR|\bTWR\b|\bAPP\b|APPROCHE|\bAFIS\b|SERVICE ATC|\bATC\b)[^]{0,60}NON ASSURE/.test(x))
+      return { id: main ? 'orange' : 'yellow', why: 'ATS non assuré' };
+
+    /* RFFS : niveau 2 requis */
+    if (subj === 'FF' || /\bRFFS\b|\bSSLIA\b/.test(x)) {
+      const rg = rffsRanges(x);
+      if (!rg || !ctx || !ctx.win) return { id: 'orange', why: 'Niveau RFFS à vérifier (niveau ' + PROFILE.rffsMin + ' requis)' };
+      return rffsCovered(rg, item, ctx.win)
+        ? { id: 'grey', why: 'RFFS niveau ' + PROFILE.rffsMin + ' ou plus assuré sur ton créneau' }
+        : { id: main ? 'red' : 'orange', why: 'RFFS niveau ' + PROFILE.rffsMin + ' non assuré sur tout ton créneau' };
+    }
+
+    /* Carburant : F-34 / JET A1 / JP-8 */
+    if (subj === 'FU' || /AVITAILLEMENT|CARBURANT/.test(x)) {
+      if (RE_JET.test(x)) {
+        return /INDISPONIBLE|NON ASSURE|HORS SERVICE|FERME|NON DISPONIBLE|EPUISE|PAS DE (?:JET|CARBURANT)/.test(x)
+          ? { id: main ? 'orange' : 'yellow', why: 'Carburant jet indisponible' }
+          : { id: 'yellow', why: 'Avitaillement jet : horaires ou conditions' };
+      }
+      if (RE_AVGAS.test(x)) return { id: 'grey', why: 'Avgas seulement : sans objet pour ton avion' };
+      return { id: 'grey', why: '' };
+    }
+
+    /* Piste : longueur utilisable */
+    if ((subj.charAt(0) === 'M' || RE_RWY.test(x)) && RE_SHORT.test(x) && !RE_UNPAVED.test(x)) {
+      const need = main ? PROFILE.runwayMain : PROFILE.runwayAlt;
+      const vals = [];
+      let m;
+      const rg = /(?:TORA|TODA|ASDA|LDA)[^0-9]{0,18}(\d{3,4})/g;
+      while ((m = rg.exec(x))) vals.push(parseInt(m[1], 10));
+      if (!vals.length) { const rm = /(\d{3,4}) ?M\b/g; while ((m = rm.exec(x))) vals.push(parseInt(m[1], 10)); }
+      if (!vals.length) return { id: 'orange', why: 'Piste raccourcie : vérifie les ' + need + ' m requis' };
+      const mn = Math.min.apply(null, vals);
+      return mn < need ? { id: 'red', why: 'Piste ' + mn + ' m, moins que les ' + need + ' m requis' } : { id: 'yellow', why: 'Piste modifiée, ' + mn + ' m (' + need + ' m requis)' };
+    }
+
+    if (subj === 'MR' || (RE_RWY.test(x) && closed && !RE_TWY.test(x))) {
+      if (closed) return RE_UNPAVED.test(x) ? { id: 'grey', why: 'Piste non revêtue fermée' } : { id: 'red', why: 'Piste revêtue fermée' };
+    }
+    if (subj === 'MX' || (RE_TWY.test(x) && closed)) return { id: 'yellow', why: 'Voie de circulation fermée ou limitée' };
+
+    /* Approches et aides : seulement ILS, VOR, RNP (hors LNAV/VNAV), pas NDB */
+    if (f === 'P' || f === 'I' || f === 'N') {
+      const ap = approachInfo(x);
+      if (ap.unusable) return { id: 'grey', why: 'Approche NDB ou LNAV/VNAV : non utilisable par ton avion' };
+      if (f === 'P') return { id: hs ? 'orange' : 'yellow', why: hs ? 'Procédure d’approche indisponible' : 'Procédure ou minima modifiés' };
+      if (f === 'I') return { id: hs || closed ? 'orange' : 'yellow', why: hs || closed ? 'ILS / aide à l’atterrissage indisponible' : 'ILS / aide à l’atterrissage modifié' };
+      if (f === 'N') return { id: hs || closed ? 'orange' : 'yellow', why: hs || closed ? 'Radionavigation indisponible' : 'Radionavigation modifiée' };
+    }
+    if (f === 'L') return { id: hs || closed ? 'orange' : 'yellow', why: hs || closed ? 'Balisage lumineux hors service' : 'Balisage modifié' };
+    if (subj === 'FT' || f === 'G') return hs ? { id: 'orange', why: 'Équipement météo ou aide indisponible' } : { id: 'grey', why: '' };
+    if (f === 'C') return { id: 'yellow', why: 'Fréquence ou radiocommunication' };
+    if (f === 'O') return { id: 'grey', why: 'Obstacle' };
+    if (f === 'S') return hs ? { id: 'yellow', why: 'Service ATS limité' } : { id: 'grey', why: '' };
+    if (subj === 'FI') return hs ? { id: 'yellow', why: 'Dégivrage indisponible' } : { id: 'grey', why: '' };
+    if (f === 'R') return { id: 'yellow', why: 'Zone réglementée ou interdite' };
+    if (f === 'W') return { id: 'yellow', why: 'Activité sur ou près de l’aérodrome' };
+    if (f === 'A') return { id: 'yellow', why: 'Altitudes ou espace modifiés' };
+    if (hs) return { id: 'yellow', why: 'Service ou équipement indisponible' };
+    if (RE_FREQCHG.test(x) && /MODIF|LIRE|CHANG/.test(x)) return { id: 'yellow', why: 'Fréquence modifiée' };
+    return { id: 'grey', why: '' };
+  }
+
+  /* Renvoie { cat, why } ; les règles sont examinées dans l'ordre */
+  function categorize(item, ctx) {
+    const x = normText(item.text);
+    const subj = item.q && item.q.code ? item.q.code.slice(1, 3) : '';
+    /* NOTAM d'aérodrome : section « aérodromes », ou NOTAM en route dont le lieu est un aérodrome (pas une FIR) */
+    if (item.area === 'ad' || (item.place && PLACE_RE.test(item.place) && !/ FIR\b/.test(item.place))) {
+      const lv = adLevel(item, x, subj, ctx);
+      return { cat: CAT.aerodrome, level: lv.id, why: lv.why };
+    }
+    if (RE_SUP.test(x)) {
+      if (RE_SUP_ACTIVE.test(x)) return { cat: CAT.sup_on, why: 'Le NOTAM indique « SUP AIP actif »' };
+      if (RE_TRIGGER.test(x)) {
+        return RE_BYNOTAM.test(x)
+          ? { cat: CAT.sup_off, why: 'NOTAM TRIGGER SUP AIP, activable par NOTAM' }
+          : { cat: CAT.sup_maybe, why: 'NOTAM TRIGGER SUP AIP, sans mention d’activation par NOTAM' };
+      }
+    }
+    const cond = item.q && item.q.code ? item.q.code.slice(3, 5) : '';
+    if (subj === 'RT' || RE_ZTEMP.test(x) || (subj.charAt(0) === 'R' && cond === 'CA') || RE_ZACT.test(x)) return { cat: CAT.zones_on, why: 'Zone interdite ou réglementée temporaire' };
+    if (subj === 'WP' || (/^W/.test(item.id) && RE_PARACHUTE.test(x))) return { cat: CAT.parachute, why: 'Parachutage' };
+    if (subj === 'WZ' || RE_AEROMODEL.test(x)) return { cat: CAT.aeromodel, why: 'Aéromodélisme' };
+    if (/^[CNG]/.test(subj) || /MODIFICATION (?:DEFINITIVE )?(?:DE )?FREQ|FREQ(?:UENCES?)? MODIFIEES?|CHANGEMENT DE FREQ/.test(x)
+      || (/^S/.test(subj) && /FREQ|MHZ|VOLMET|ATIS/.test(x))) return { cat: CAT.radio, why: 'Radiocommunication, radionavigation ou fréquence' };
+    if (item.section && /OBSTACLES/i.test(item.section) || /^O/.test(subj)) return { cat: CAT.obstacle, why: 'Obstacle' };
+    return { cat: CAT.other, why: '' };
+  }
+
+  function analyze(text) {
+    const parsed = parse(text);
+    const h = parsed.header;
+    const ctx = { win: h && h.departure && h.to ? { from: h.departure, to: h.to } : null };
+    const results = parsed.items.map(item => {
+      const r = Object.assign({ item }, categorize(item, ctx));
+      if (item.area !== 'ad' && item.q && item.q.lower != null && item.q.lower >= PROFILE.maxFL && r.cat.id !== 'aerodrome') r.dim = 'Au-dessus de FL' + PROFILE.maxFL + ' : hors de ton plafond';
+      return r;
+    });
+    const counts = {};
+    CATEGORIES.forEach(c => { counts[c.id] = 0; });
+    const levels = { red: 0, orange: 0, yellow: 0, grey: 0 };
+    results.forEach(r => { counts[r.cat.id] += 1; if (r.level) levels[r.level] += 1; });
+    return { items: parsed.items, levels, results, counts, header: parsed.header, dup: parsed.dup, total: results.length };
+  }
+
+  /* ---------- Surlignage ---------- */
+  const B = '(?<![A-Za-zÀ-ÿ0-9])', A = '(?![A-Za-zÀ-ÿ0-9])';
+  const HL_DANGER = 'CLSD|CLOSED|FERM(?:É|E)(?:E|ES|S)?|FERMETURE|U\\/S|UNSERVICEABLE|HORS SERVICE|INOP|INTERDIT(?:E|ES|S)?|PROHIBITED|NOT AVBL|NON DISPONIBLE|INDISPONIBLES?|IMPRATICABLE|NON UTILISABLE|NOT AVAILABLE|NON ASSUR(?:É|E)(?:E|ES|S)?|D(?:É|E)CLASS(?:É|E)(?:E|ES|S)?';
+  const HL_WARN = 'ACTIVEE?S?|ACTIVITE|ACTIVITY|ACTIVABLES?|PARACHUTAGES?|PARACHUTE|PJE|DRONES?|AERONEFS SANS EQUIPAGE A BORD|AEROMODELISME|UAS|UAV|GNSS|GPS|BROUILLAGE|PERTURBATIONS?|INTERFERENCES?|JAMMING|TRAVAUX|GRUE|CRANE|OBSTACLE|RESTRICTED|RESTREINTE?S?|DANGER(?:EUSE)?|PLANEURS?|GLIDERS?|MEETING|AIRSHOW|DEMONSTRATION|TIRS?|FIRING|VOLTIGE|AEROBATICS|BALLONS?|MIGRATION|OISEAUX|LIMITE(?:E|ES|S)?|LIMITED';
+  const HL_NAV = '(?:RWY|PISTE|THR|SEUIL)[ ]?\\d{2}[LRC]?(?:\\/\\d{2}[LRC]?)?|(?:TWY|TAXIWAY|VOIE)[ ]?[A-Z]{1,2}\\d?|ILS|LOC|VOR|DME|NDB|RNAV|RNP|LPV|SID|STAR|IAP|APCH|ATIS|AFIS|TWR|APP|FREQ|PAPI|CTR|TMA|ATZ|FIR|SUP AIP|NOTAM TRIGGER|PAR NOTAM|ZRT|ZIT|ZDT';
+  const HL_NUM = 'FL ?\\d{2,3}|\\d{3,5} ?(?:FT|M)(?: ?(?:AMSL|AGL|ASFC|MSL))?|SFC|GND|UNL|\\d{4} ?(?:-|TO|A) ?\\d{4}(?: ?(?:Z|UTC))?|\\d{3}[.,]\\d{1,3} ?(?:MHZ)?|\\d{1,3} ?NM|\\d{1,3} ?HR';
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  function highlight(text, keywords, esc) {
+    const ks = (keywords || []).filter(Boolean).map(escRe);
+    const user = ks.length ? '(?<user>' + ks.join('|') + ')|' : '';
+    const re = new RegExp(B + '(?:' + user + '(?<danger>' + HL_DANGER + ')|(?<num>' + HL_NUM + '))' + A, 'gi');
+    let out = '', last = 0, m;
+    while ((m = re.exec(text))) {
+      if (!m[0]) { re.lastIndex += 1; continue; }
+      const g = m.groups;
+      const cls = g.user ? 'user' : g.danger ? 'danger' : 'num';
+      out += esc(text.slice(last, m.index)) + '<mark class="hl hl-' + cls + '">' + esc(m[0]) + '</mark>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(text.slice(last));
+  }
+
+  /* Numéros de SUP AIP cités dans un NOTAM, au format du site du SIA : « 013/26 » devient « 013/2026 » */
+  function supRefs(item) {
+    const x = normText(item.text), out = [];
+    const re = /SUP[ -]*AIP(?: AIRAC)?\s+(\d{1,3})\s*\/\s*(\d{2,4})/g;
+    let m;
+    while ((m = re.exec(x))) {
+      const n = m[1].padStart(3, '0'), y = m[2].length === 2 ? '20' + m[2] : m[2];
+      if (out.indexOf(n + '/' + y) < 0) out.push(n + '/' + y);
+    }
+    return out;
+  }
+
+  /* ---------- Identité d'un NOTAM : clé (origine-numéro) et empreinte du contenu ---------- */
+  function keyOf(it) { return (it.origin ? it.origin + '-' : '') + it.id; }
+  function cyrb53(str) {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+  }
+  function fingerprint(it) {
+    const n = t => String(t || '').replace(/\s+/g, ' ').trim();
+    return cyrb53([keyOf(it), it.q ? it.q.code + it.q.lower + '/' + it.q.upper : '',
+      it.start ? it.start.toISOString() : '', it.perm ? 'PERM' : it.end ? it.end.toISOString() : '',
+      n(it.text), n(it.schedule), n(it.lowerTxt), n(it.upperTxt)].join('|'));
+  }
+
+  /* ---------- Export texte ---------- */
+  /* Aérodromes dans l'ordre du briefing ; dans chacun, du plus grave au moins grave */
+  function adGroups(results) {
+    const rank = { red: 0, orange: 1, yellow: 2, grey: 3 };
+    const map = new Map();
+    results.forEach((r, n) => {
+      if (r.cat.id !== 'aerodrome') return;
+      const k = r.item.place || r.item.locs[0] || 'Aérodrome';
+      if (!map.has(k)) map.set(k, { place: k, role: r.item.role, items: [] });
+      if (!map.get(k).role && r.item.role) map.get(k).role = r.item.role;
+      map.get(k).items.push({ r, n });
+    });
+    return Array.from(map.values()).map(g => ({
+      place: g.place, role: g.role,
+      items: g.items.sort((a, b) => rank[a.r.level] - rank[b.r.level] || a.n - b.n).map(x => x.r)
+    }));
+  }
+
+  function buildSummary(results, notes) {
+    const lines = [];
+    CATEGORIES.forEach(c => {
+      const list = results.filter(r => r.cat.id === c.id);
+      if (!list.length) return;
+      lines.push('== ' + c.label.toUpperCase() + ' (' + list.length + ') ==');
+      const ordered = c.id === 'aerodrome' ? [].concat.apply([], adGroups(list).map(g => g.items)) : list;
+      ordered.forEach(r => {
+        const it = r.item;
+        lines.push((r.level ? '[' + r.level.toUpperCase() + '] ' : '') + (it.area === 'ad' && it.place ? it.place.split(' ')[0] + ' ' : '') + (it.origin ? it.origin + '-' : '') + it.id + ' ' + (it.locs.join(' ') || (it.q ? it.q.fir : '')) + ' — ' + fmtDate(it.start) + ' → ' + (it.perm ? 'PERM' : fmtDate(it.end)));
+        lines.push('  ' + it.text.replace(/\s+/g, ' '));
+        if (it.schedule) lines.push('  D) ' + it.schedule.replace(/\s+/g, ' '));
+        const nt = notes && notes.get(keyOf(it));
+        if (nt) lines.push('  NOTE : ' + nt.replace(/\s+/g, ' '));
+      });
+      lines.push('');
+    });
+    return lines.join('\n').trim();
+  }
+
+  /* ---------- PDF : reconstruit un texte « mise en page » à partir de pdf.js ---------- */
+  async function pdfToText(pdfjs, data) {
+    const doc = await pdfjs.getDocument({ data: data instanceof Uint8Array ? data : new Uint8Array(data) }).promise;
+    const pages = [];
+    for (let n = 1; n <= doc.numPages; n++) {
+      const page = await doc.getPage(n);
+      const tc = await page.getTextContent();
+      const its = tc.items.filter(i => typeof i.str === 'string' && i.str.length && i.transform)
+        .map(i => ({ s: i.str, x: i.transform[4], y: i.transform[5], w: i.width || 0 }));
+      if (!its.length) { pages.push(''); continue; }
+      const widths = its.filter(i => i.s.length >= 5 && i.w > 0).map(i => i.w / i.s.length).sort((a, b) => a - b);
+      const cw = Math.max(3, Math.min(8, widths.length ? widths[Math.floor(widths.length / 2)] : 4.6));
+      const left = Math.min.apply(null, its.map(i => i.x));
+      its.sort((a, b) => (b.y - a.y) || (a.x - b.x));
+      const rows = [];
+      its.forEach(i => {
+        const r = rows[rows.length - 1];
+        if (r && Math.abs(r.y - i.y) <= 3) r.items.push(i); else rows.push({ y: i.y, items: [i] });
+      });
+      const gaps = [];
+      for (let k = 1; k < rows.length; k++) gaps.push(rows[k - 1].y - rows[k].y);
+      gaps.sort((a, b) => a - b);
+      const lineGap = gaps.length ? Math.max(6, gaps[Math.floor(gaps.length / 2)]) : 12;
+      const out = [];
+      rows.forEach((r, k) => {
+        if (k > 0) {
+          const g = rows[k - 1].y - r.y;
+          if (g > lineGap * 1.55) out.push('');
+        }
+        r.items.sort((a, b) => a.x - b.x);
+        let cur = '', prevEnd = null;
+        r.items.forEach(i => {
+          const col = Math.round((i.x - left) / cw);
+          if (col > cur.length) cur += ' '.repeat(col - cur.length);
+          else if (cur.length && !/\s$/.test(cur) && !/^\s/.test(i.s) && prevEnd != null && i.x - prevEnd > cw * 0.3) cur += ' ';
+          cur += i.s;
+          prevEnd = i.x + i.w;
+        });
+        out.push(cur.replace(/\s+$/, ''));
+      });
+      pages.push(out.join('\n'));
+    }
+    return pages.join('\n');
+  }
+
+  const api = { supRefs, keyOf, fingerprint, PROFILE, adGroups, LEVELS, CATEGORIES, parse, parseHeader, categorize, analyze, highlight, buildSummary, pdfToText, fmtDate };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  return api;
+})();
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var C = NotamCore;
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* stockage indisponible */ } }
+  };
+  var KEY = 'tri-notam-cats-v3';
+  var state = { off: new Set(), done: new Set(), pinned: new Set(), changed: new Set(), known: new Map(), notes: new Map(), hideDone: false, last: null, fileName: '', pages: 0 };
+  var keyOf = C.keyOf, hashOf = function (it) { return it._h || (it._h = C.fingerprint(it)); };
+  (function () {
+    var raw = store.get(KEY);
+    if (!raw) return;
+    try { var arr = JSON.parse(raw); if (Array.isArray(arr)) arr.forEach(function (id) { state.off.add(id); }); } catch (e) { /* ignoré */ }
+  })();
+  function saveCats() { store.set(KEY, JSON.stringify(Array.from(state.off))); }
+
+  function matchSearch(r, q) {
+    if (!q) return true;
+    var it = r.item;
+    return (it.origin + '-' + it.id + ' ' + it.locs.join(' ') + ' ' + it.text + ' ' + it.place + ' ' + it.schedule + ' ' + (state.notes.get(keyOf(it)) || '')).toLowerCase().indexOf(q) >= 0;
+  }
+  /* Résultats avec la catégorie « Non facteurs » pour les NOTAM reconnus dans une liste importée */
+  function eff() {
+    var a = state.last;
+    if (!a) return [];
+    var nf = C.CATEGORIES.filter(function (c) { return c.id === 'nonfact'; })[0];
+    return a.results.map(function (r) { return state.pinned.has(keyOf(r.item)) ? Object.assign({}, r, { cat: nf }) : r; });
+  }
+  function visible() {
+    var q = $('#search').value.trim().toLowerCase();
+    return eff().filter(function (r) { return !state.off.has(r.cat.id) && !(state.hideDone && state.done.has(keyOf(r.item))) && matchSearch(r, q); });
+  }
+  function placeName(it) {
+    var m = /^[A-Z]{2}[A-Z0-9]{2}\s+(.+)$/.exec(it.place || '');
+    return m && !/ FIR\b/.test(it.place) ? m[1] : '';
+  }
+  function strip(r, kw) {
+    var it = r.item, lv = r.level ? C.LEVELS.filter(function (l) { return l.id === r.level; })[0] : null;
+    var key = keyOf(it), done = state.done.has(key);
+    var locs = it.locs.length ? it.locs : [it.q && it.q.fir ? it.q.fir : '—'];
+    var locTxt = locs.length > 3 ? locs.slice(0, 3).join(' ') + ' +' + (locs.length - 3) : locs.join(' ');
+    var pn = placeName(it);
+    var end = it.perm ? 'PERM' : C.fmtDate(it.end) + (it.est ? ' EST' : '');
+    var note = state.notes.get(key) || '';
+    var noteHtml = '<div class="noterow">' + (note ? '<textarea class="notebox" data-note="' + esc(key) + '" rows="2" placeholder="Note…" aria-label="Note sur ce NOTAM">' + esc(note) + '</textarea>' : '<button type="button" class="btn small addnote" data-note-add="' + esc(key) + '">＋ Note</button>') + '</div>';
+    var snip = (it.text || it.raw || '').replace(/\s+/g, ' ').slice(0, 160);
+    var why = [];
+    if (r.why) why.push(r.why);
+    if (r.dim) why.push(r.dim);
+    if (state.changed.has(key)) why.push('Modifié depuis ta liste de non facteurs');
+    return '<article class="strip' + (r.dim ? ' dim' : '') + (lv ? ' ad mk-' + lv.id : '') + (done ? ' done' : '') + (note ? ' has-note' : '') + '" data-key="' + esc(key) + '" tabindex="0" role="button" aria-expanded="' + (done ? 'false' : 'true') + '">' +
+      '<div class="sumrow"><div class="sumin"><div class="sumc">' + (lv ? '<i class="dot mk-' + lv.id + '"></i>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span><span class="notemk">' + (note ? '📝 ' + esc(note.replace(/\s+/g, ' ').slice(0, 50)) : '') + '</span><span class="snip">' + esc(snip) + '</span><span class="okmark">✓ non facteur</span></div></div></div>' +
+      '<div class="fold"><div class="foldin"><div class="cols">' +
+      '<div class="idc">' + (lv ? '<span class="mark"><i class="dot mk-' + lv.id + '"></i>' + esc(lv.label) + '</span>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '</div>' +
+      '<div class="body"><pre class="etext">' + (it.text ? textHtml(it.text, kw) : esc(it.raw || '(texte vide)')) + '</pre>' +
+      (it.schedule ? '<p class="sched"><b>D)</b> ' + esc(it.schedule) + '</p>' : '') +
+      (it.lowerTxt || it.upperTxt ? '<p class="lim">Limites : ' + esc(it.lowerTxt || '—') + ' → ' + esc(it.upperTxt || '—') + '</p>' : '') +
+      (why.length ? '<ul class="why">' + why.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' : '') + noteHtml + '</div>' +
+      '<div class="when"><span class="k">Début</span><span class="v">' + esc(C.fmtDate(it.start)) + '</span><span class="k">Fin</span><span class="v">' + esc(end) + '</span></div>' +
+      '</div></div></div></article>';
+  }
+
+  function adHtml(vis, kw, c) {
+    var list = vis.filter(function (r) { return r.cat.id === 'aerodrome'; });
+    if (!list.length) return '';
+    var legend = '<p class="legend">' + C.LEVELS.map(function (l) { return '<span><i class="dot mk-' + l.id + '"></i>' + esc(l.label + ' : ' + l.hint) + '</span>'; }).join('') + '</p>';
+    return '<section class="group ' + c.tone + '"><h2>' + esc(c.label) + '<span>' + list.length + '</span></h2>' + legend +
+      C.adGroups(list).map(function (g) {
+        var n = { red: 0, orange: 0, yellow: 0, grey: 0 };
+        g.items.forEach(function (r) { n[r.level] += 1; });
+        var chips = C.LEVELS.filter(function (l) { return n[l.id]; }).map(function (l) { return '<span title="' + esc(l.label) + '"><i class="dot mk-' + l.id + '"></i>' + n[l.id] + '</span>'; }).join('');
+        return '<div class="adblock"><h3>' + esc(g.place) + (g.role ? '<small>' + esc(g.role.charAt(0) + g.role.slice(1).toLowerCase()) + '</small>' : '') + '<span class="lvls">' + chips + '</span></h3>' +
+          g.items.map(function (r) { return strip(r, kw); }).join('') + '</div>';
+      }).join('') + '</section>';
+  }
+  function renderLoaded(a) {
+    var h = a && a.header, items = [];
+    if (state.fileName) items.push('<li class="file">' + esc(state.fileName) + '</li>');
+    if (a && a.total) {
+      items.push('<li>' + a.total + ' NOTAM lus' + (a.dup ? ', ' + a.dup + ' doublon' + (a.dup > 1 ? 's' : '') + ' fusionné' + (a.dup > 1 ? 's' : '') : '') + '</li>');
+      if (state.pages) items.push('<li>' + state.pages + ' pages</li>');
+    }
+    if (h) {
+      if (h.title) items.push('<li>' + esc(h.title) + '</li>');
+      if (h.production) items.push('<li>Produit le ' + esc(C.fmtDate(h.production)) + '</li>');
+      if (h.departure) items.push('<li>Départ ' + esc(C.fmtDate(h.departure)) + (h.durationMin ? ' · ' + Math.floor(h.durationMin / 60) + ' h' + (h.durationMin % 60 ? String(h.durationMin % 60).padStart(2, '0') : '') : '') + '</li>');
+      if (h.firs && h.firs.length) items.push('<li>FIR ' + esc(h.firs.join(', ')) + '</li>');
+    }
+    if (state.known.size) items.push('<li>Liste non facteurs : ' + state.known.size + '</li>');
+    $('#loaded').innerHTML = items.join('');
+  }
+  function renderCats() {
+    var counts = {};
+    C.CATEGORIES.forEach(function (c) { counts[c.id] = 0; });
+    eff().forEach(function (r) { counts[r.cat.id] += 1; });
+    var box = $('#cats');
+    if (box.children.length !== C.CATEGORIES.length) {
+      box.innerHTML = C.CATEGORIES.map(function (c) {
+        return '<button type="button" class="cbtn ' + c.tone + '" data-cat="' + c.id + '"><span class="n"></span><span class="l">' + esc(c.label) + '</span></button>';
+      }).join('');
+    }
+    C.CATEGORIES.forEach(function (c, k) {
+      var b = box.children[k];
+      b.setAttribute('aria-pressed', state.off.has(c.id) ? 'false' : 'true');
+      var n = b.firstChild; if (n.textContent !== String(counts[c.id])) n.textContent = counts[c.id];
+    });
+  }
+
+  function updateHideBtn() {
+    var b = $('#bHideDone'), n = state.done.size;
+    b.setAttribute('aria-pressed', state.hideDone ? 'true' : 'false');
+    b.textContent = (state.hideDone ? 'Afficher les NOTAM grisés' : 'Masquer les NOTAM grisés') + (n ? ' (' + n + ')' : '');
+  }
+  /* ---------- Carte ---------- */
+  var KX = 0.688; // cos(46,5°) : projection plate carrée corrigée
+  var FR = [[51.05,2.54],[50.95,2.63],[50.85,2.58],[50.79,2.60],[50.75,2.88],[50.70,3.17],[50.60,3.30],[50.52,3.60],[50.37,3.65],[50.28,4.10],[50.10,4.20],[50.13,4.83],[49.97,4.87],[49.78,4.85],[49.60,5.20],[49.55,5.45],[49.52,5.80],[49.46,5.97],[49.37,6.17],[49.20,6.37],[49.20,7.00],[49.11,7.07],[49.05,7.35],[49.04,7.95],[48.97,8.17],[48.85,8.20],[48.60,7.80],[48.30,7.78],[48.00,7.57],[47.59,7.59],[47.49,7.38],[47.42,7.15],[47.30,7.00],[47.10,6.85],[46.95,6.45],[46.60,6.10],[46.45,6.14],[46.25,6.10],[46.15,6.05],[46.20,6.30],[46.38,6.78],[46.15,6.88],[46.07,6.97],[45.93,7.05],[45.78,6.95],[45.50,7.10],[45.25,6.95],[44.95,6.95],[44.67,7.08],[44.42,6.95],[44.30,7.05],[44.15,7.30],[44.10,7.60],[43.78,7.53],[43.70,7.27],[43.55,6.95],[43.42,6.75],[43.20,6.65],[43.10,6.10],[43.08,5.90],[43.15,5.65],[43.20,5.40],[43.30,5.35],[43.35,5.10],[43.40,4.85],[43.32,4.50],[43.45,4.40],[43.52,4.15],[43.40,3.70],[43.25,3.30],[43.00,3.05],[42.70,3.03],[42.44,3.17],[42.46,2.85],[42.35,2.50],[42.45,2.10],[42.55,1.72],[42.60,1.45],[42.78,1.20],[42.85,0.70],[42.78,0.40],[42.90,0.10],[42.80,-0.30],[43.00,-0.70],[42.95,-1.00],[43.15,-1.35],[43.27,-1.62],[43.37,-1.78],[43.48,-1.56],[43.65,-1.45],[44.00,-1.28],[44.40,-1.22],[44.65,-1.25],[45.00,-1.15],[45.57,-1.08],[45.95,-1.15],[46.15,-1.17],[46.35,-1.50],[46.50,-1.80],[46.80,-2.10],[47.20,-2.25],[47.27,-2.20],[47.30,-2.50],[47.48,-2.80],[47.55,-3.10],[47.74,-3.37],[47.85,-3.90],[47.95,-4.35],[48.03,-4.72],[48.10,-4.50],[48.25,-4.62],[48.38,-4.78],[48.50,-4.70],[48.60,-4.60],[48.72,-4.10],[48.70,-3.95],[48.80,-3.60],[48.82,-3.20],[48.75,-3.00],[48.60,-2.60],[48.68,-2.32],[48.65,-2.02],[48.63,-1.52],[48.84,-1.60],[49.10,-1.57],[49.37,-1.80],[49.72,-1.95],[49.70,-1.60],[49.67,-1.27],[49.40,-1.17],[49.37,-0.85],[49.35,-0.30],[49.28,-0.20],[49.35,0.05],[49.42,0.23],[49.48,0.08],[49.70,0.20],[49.88,0.90],[49.93,1.08],[50.06,1.37],[50.20,1.55],[50.35,1.55],[50.50,1.58],[50.73,1.60],[50.87,1.58],[50.97,1.85]];
+  var CORSE = [[43.00,9.40],[42.70,9.45],[42.30,9.52],[41.90,9.40],[41.60,9.30],[41.38,9.15],[41.50,8.80],[41.70,8.80],[41.90,8.62],[42.15,8.60],[42.35,8.55],[42.55,8.65],[42.65,9.00],[42.75,9.35],[42.95,9.35]];
+  var COASTS = [
+    [[51.35,1.40],[51.13,1.35],[50.95,1.0],[50.78,0.3],[50.76,-0.8],[50.70,-1.5],[50.58,-2.45],[50.35,-3.55],[50.25,-4.2],[50.10,-5.0],[50.0,-5.7]],
+    [[51.05,2.54],[51.25,3.2],[51.40,3.55],[51.8,4.0]],
+    [[43.37,-1.78],[43.35,-2.2],[43.45,-3.0],[43.45,-3.9],[43.55,-5.0],[43.57,-5.8],[43.55,-6.7],[43.60,-7.6],[43.75,-8.3],[43.2,-9.2],[42.9,-9.3]],
+    [[42.44,3.17],[42.1,3.2],[41.7,2.8],[41.4,2.2],[41.0,1.1],[40.7,0.8],[40.0,0.0],[39.4,-0.3],[38.7,0.1]],
+    [[43.78,7.53],[43.9,8.0],[44.3,8.5],[44.4,8.95],[44.3,9.3],[44.1,9.85],[43.8,10.2]]
+  ];
+  var CITIES = [['Paris',48.86,2.35],['Lyon',45.76,4.84],['Marseille',43.30,5.37],['Toulouse',43.60,1.44],['Bordeaux',44.84,-0.58],['Nantes',47.22,-1.55],['Lille',50.63,3.06],['Strasbourg',48.57,7.75],['Nice',43.70,7.27],['Brest',48.39,-4.49],['Rennes',48.11,-1.68],['Montpellier',43.61,3.88],['Clermont-Fd',45.78,3.08],['Dijon',47.32,5.04],['Perpignan',42.70,2.90],['Limoges',45.83,1.26],['Rouen',49.44,1.10],['Metz',49.12,6.18],['Bastia',42.70,9.45],['Ajaccio',41.93,8.74]];
+  var NS = 'http://www.w3.org/2000/svg';
+  var mp = { off: new Set(), hideDone: false, open: true, view: null, shapes: [], texts: [], sel: null, lastA: null, ptrs: new Map(), pinch: null, moved: 0 };
+  function px(lon) { return lon * KX; }
+  function py(lat) { return -lat; }
+  function svgEl(n, at, par) { var e = document.createElementNS(NS, n); for (var k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; }
+  function polyD(pts, close) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + px(p[1]).toFixed(3) + ' ' + py(p[0]).toFixed(3); }).join('') + (close ? 'Z' : ''); }
+  function mapSize() { var v = $('#mapview'); return { w: v.clientWidth || 600, h: v.clientHeight || 400 }; }
+  function applyView() {
+    var s = mapSize(), v = mp.view; if (!v) return;
+    var h = v.w * s.h / s.w, k = s.w / v.w;
+    $('#msvg').style.setProperty('--u', (1 / k) + 'px');
+    $('#msvg').setAttribute('viewBox', (v.cx - v.w / 2) + ' ' + (v.cy - h / 2) + ' ' + v.w + ' ' + h);
+    mp.shapes.forEach(function (o) { if (o.px) o.el.setAttribute('r', o.px / k); });
+    declutter(k);
+    mp.texts.forEach(function (o) { o.el.setAttribute('transform', 'translate(' + o.x + ' ' + o.y + ') scale(' + (1 / k) + ')'); });
+  }
+  function declutter(k) {
+    // étiquettes d'aérodromes : on garde les plus graves, on masque celles qui se chevauchent
+    var boxes = [], list = (mp.items || []).filter(function (o) { return o.t === 'ad'; }).sort(function (a, b) { return a.rank - b.rank || b.rows.length - a.rows.length; });
+    list.forEach(function (o) {
+      var t = o.lab; if (!t) return;
+      var x = px(o.lon) * k, y = py(o.lat) * k, bx = { x0: x - 11, x1: x + 17 + 7.2 * o.code.length, y0: y - 11, y1: y + 11 }, hit = false;
+      for (var i = 0; i < boxes.length; i++) { var q = boxes[i]; if (bx.x0 < q.x1 && bx.x1 > q.x0 && bx.y0 < q.y1 && bx.y1 > q.y0) { hit = true; break; } }
+      t.style.display = hit ? 'none' : '';
+      if (!hit) boxes.push(bx);
+    });
+  }
+  function fitView(b) {
+    var s = mapSize();
+    if (!b) b = { x0: px(-5.5), x1: px(9.8), y0: py(51.3), y1: py(41.2) };
+    var pad = 0.12, w = Math.max((b.x1 - b.x0), 0.6) * (1 + pad * 2), h = Math.max((b.y1 - b.y0), 0.6) * (1 + pad * 2);
+    var vw = Math.max(w, h * s.w / s.h);
+    mp.view = { cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2, w: vw };
+    mp.home = { cx: mp.view.cx, cy: mp.view.cy, w: vw };
+    applyView();
+  }
+  function zoomAt(f, sx, sy) {
+    var s = mapSize(), v = mp.view, h = v.w * s.h / s.w;
+    var nw = Math.min(Math.max(v.w / f, 0.15), 40);
+    var wx = v.cx - v.w / 2 + (sx / s.w) * v.w, wy = v.cy - h / 2 + (sy / s.h) * h;
+    var nh = nw * s.h / s.w;
+    mp.view = { w: nw, cx: wx - (sx / s.w - .5) * nw, cy: wy - (sy / s.h - .5) * nh };
+    applyView();
+  }
+  function buildBase(svg) {
+    svgEl('rect', { x: -60, y: -80, width: 120, height: 120, class: 'msea' }, svg);
+    for (var la = 36; la <= 56; la += 2) svgEl('path', { d: 'M' + px(-14) + ' ' + py(la) + 'L' + px(16) + ' ' + py(la), class: 'mgrid' }, svg);
+    for (var lo = -14; lo <= 16; lo += 2) svgEl('path', { d: 'M' + px(lo) + ' ' + py(36) + 'L' + px(lo) + ' ' + py(56), class: 'mgrid' }, svg);
+    COASTS.forEach(function (c) { svgEl('path', { d: polyD(c, false), class: 'mcoast' }, svg); });
+    svgEl('path', { d: polyD(FR, true), class: 'mland' }, svg);
+    svgEl('path', { d: polyD(CORSE, true), class: 'mland' }, svg);
+    CITIES.forEach(function (c) {
+      var g = svgEl('g', {}, svg);
+      var d = svgEl('circle', { cx: px(c[2]), cy: py(c[1]), r: .03, class: 'mcity' }, g); mp.shapes.push({ el: d, px: 2.2 });
+      var t = svgEl('text', { x: 5, y: 3.5, 'font-size': 10.5, class: 'mctxt' }, g); t.textContent = c[0]; mp.texts.push({ el: t, x: px(c[2]), y: py(c[1]) });
+    });
+  }
+  function worldBox(items) {
+    var b = null;
+    function add(lat, lon, rNm) {
+      var dx = (rNm || 0) / 60 * KX, dy = (rNm || 0) / 60, x = px(lon), y = py(lat);
+      var q = { x0: x - dx, x1: x + dx, y0: y - dy, y1: y + dy };
+      if (!b) b = q; else { b.x0 = Math.min(b.x0, q.x0); b.x1 = Math.max(b.x1, q.x1); b.y0 = Math.min(b.y0, q.y0); b.y1 = Math.max(b.y1, q.y1); }
+    }
+    items.forEach(function (o) {
+      if (o.t === 'poly') o.p.forEach(function (p) { add(p[0], p[1], 0); }); else add(o.lat, o.lon, o.t === 'circle' && !o.apx ? o.r : 0);
+    });
+    return b;
+  }
+  function mapItems(vis) {
+    var out = [], ads = {};
+    vis.forEach(function (r) {
+      var it = r.item, g = it.geo; if (!g) return;
+      var key = keyOf(it), done = state.done.has(key);
+      if (r.cat.id === 'aerodrome') return;
+      if (false) {
+        if (!g.q) return;
+        var code = (/^[A-Z]{4}/.exec(it.place || '') || (it.locs[0] ? [it.locs[0]] : [''])) [0] || it.place;
+        var k = code + '|' + g.q.lat.toFixed(3) + g.q.lon.toFixed(3);
+        var o = ads[k] || (ads[k] = { t: 'ad', lat: g.q.lat, lon: g.q.lon, code: code, name: placeName(it), rows: [], rank: 9 });
+        var rk = ['red', 'orange', 'yellow', 'grey'].indexOf(r.level); if (rk < 0) rk = 3;
+        o.rows.push({ r: r, key: key, done: done });
+        if (!done && rk < o.rank) o.rank = rk;
+        return;
+      }
+      g.shapes.forEach(function (s) {
+        var base = { res: r, key: key, done: done, tone: r.cat.tone };
+        if (s.t === 'poly') out.push(Object.assign({ t: 'poly', p: s.p }, base));
+        else out.push(Object.assign({ t: 'circle', lat: s.lat, lon: s.lon, r: s.r || 5, apx: !s.r }, base));
+      });
+    });
+    Object.keys(ads).forEach(function (k) { var o = ads[k]; if (o.rank === 9) o.rank = 3; o.done = o.rows.every(function (x) { return x.done; }); out.push(o); });
+    return out;
+  }
+  function renderMap(vis) {
+    var card = $('#mapcard'), a = state.last;
+    if (!a || !a.total) { card.hidden = true; return; }
+    card.hidden = false;
+    var svg = $('#msvg'); svg.innerHTML = ''; mp.shapes = []; mp.texts = []; mp.byKey = {};
+    buildBase(svg);
+    var nfN = 0, counts = {}, order = [];
+    vis.forEach(function (r) {
+      if (r.cat.id === 'aerodrome') return;
+      if (state.done.has(keyOf(r.item))) nfN++;
+      if (!counts[r.cat.id]) { counts[r.cat.id] = 0; order.push(r.cat); }
+      counts[r.cat.id] += 1;
+    });
+    mapFilters(order, counts, nfN);
+    vis = vis.filter(function (r) { return !mp.off.has(r.cat.id) && !(mp.hideDone && state.done.has(keyOf(r.item))); });
+    var items = mapItems(vis), layer = svgEl('g', {}, svg);
+    // ordre de dessin : zones approximatives, contours, points, aérodromes
+    var rank = { circle: 1, poly: 2, ad: 4 };
+    items.sort(function (x, y) { var ax = x.t === 'circle' ? (x.apx ? 0 : 3) : rank[x.t], ay = y.t === 'circle' ? (y.apx ? 0 : 3) : rank[y.t]; return ax - ay; });
+    var nExact = 0, nAd = 0;
+    items.forEach(function (o) {
+      var g = svgEl('g', { class: 'mshape ' + (o.t === 'ad' ? 'ad lv-' + ['red', 'orange', 'yellow', 'grey'][o.rank] : o.tone) + (o.apx ? ' apx' : '') + (o.pt ? ' pt' : '') + (o.done ? ' done' : '') }, layer);
+      o.g = g;
+      if (o.t === 'poly') { svgEl('path', { d: polyD(o.p, true), class: 'f' }, g); nExact++; }
+      else if (o.t === 'circle') {
+        var cx = px(o.lon), cy = py(o.lat);
+        var ry = o.r / 60, rx = ry * KX / Math.cos(o.lat * Math.PI / 180);
+        svgEl('ellipse', { cx: cx, cy: cy, rx: rx, ry: ry, class: 'f' }, g);
+        nExact++;
+      } else {
+        nAd++;
+        var c2 = svgEl('circle', { cx: px(o.lon), cy: py(o.lat), r: .05, class: 'f' }, g); mp.shapes.push({ el: c2, px: o.rows.length > 1 ? 12 : 9 });
+        if (o.rows.length > 1) { var n = svgEl('text', { x: 0, y: 4, 'font-size': 11, class: 'madn' }, g); n.textContent = o.rows.length; mp.texts.push({ el: n, x: px(o.lon), y: py(o.lat) }); }
+        var t = svgEl('text', { x: 13, y: 4, 'font-size': 11.5, class: 'madt' }, g); t.textContent = o.code; o.lab = t; mp.texts.push({ el: t, x: px(o.lon), y: py(o.lat) });
+      }
+      o.g.__o = o;
+      o.rows ? o.rows.forEach(function (x) { (mp.byKey[x.key] = mp.byKey[x.key] || []).push(o); }) : (mp.byKey[o.key] = mp.byKey[o.key] || []).push(o);
+    });
+    mp.items = items;
+    $('#mapcount').textContent = nExact + ' NOTAM sur la carte';
+    if (mp.lastA !== a || !mp.view) {
+      mp.lastA = a;
+      var plot = items;
+      fitView(plot.length ? worldBox(plot) : null);
+    } else applyView();
+    mp.sel = null; $('#mapinfo').hidden = true;
+  }
+  function mapFilters(cats, counts, nfN) {
+    var box = $('#mapfilters'), sig = cats.map(function (c) { return c.id; }).join(',') + '|' + nfN + '|' + JSON.stringify(counts);
+    if (box.getAttribute('data-sig') !== sig) {
+      box.setAttribute('data-sig', sig);
+      box.innerHTML = (nfN ? '<button type="button" class="mchip nf" data-mf="__done" aria-pressed="false"><span>Masquer les non facteurs</span><b>' + nfN + '</b></button>' : '') +
+        cats.map(function (c) { return '<button type="button" class="mchip" data-mf="' + c.id + '" style="--c:var(--t-' + c.tone + ')" aria-pressed="true"><i></i><span>' + esc(c.label) + '</span><b>' + counts[c.id] + '</b></button>'; }).join('');
+    }
+    Array.prototype.forEach.call(box.children, function (b) {
+      var id = b.getAttribute('data-mf');
+      b.setAttribute('aria-pressed', id === '__done' ? (mp.hideDone ? 'true' : 'false') : (mp.off.has(id) ? 'false' : 'true'));
+    });
+  }
+  function mapInfo(o, keep) {
+    var box = $('#mapinfo');
+    if (!o) { box.hidden = true; return; }
+    box.hidden = false;
+    var rows = o.t === 'ad' ? o.rows : [{ r: o.res, key: o.key, done: o.done }];
+    var title = o.t === 'ad' ? '<h4>' + esc(o.code) + (o.name ? ' · ' + esc(o.name) : '') + '</h4>' : '';
+    box.innerHTML = title + rows.map(function (x) {
+      var it = x.r.item, lv = x.r.level, snip = (it.text || it.raw || '').replace(/\s+/g, ' ').slice(0, 140);
+      return '<div class="mi-row" data-go="' + esc(x.key) + '">' + (lv ? '<i class="dot mk-' + lv + '"></i>' : '') + '<span class="mi-id">' + esc(x.key) + '</span><span class="mi-tx">' + esc(snip) + '</span><span class="mi-go">Voir ›</span></div>';
+    }).join('') + (o.t !== 'ad' && o.apx ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Position seule : cercle de 5 NM autour du point.</span></div>' : '');
+  }
+  function mapSelect(o) {
+    if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
+    if (mp.sel === o) { mp.sel = null; $('#mapinfo').hidden = true; return; }
+    mp.sel = o; o.g.classList.add('sel'); mapInfo(o);
+  }
+  function mapGo(key) {
+    var s = document.querySelector('.strip[data-key="' + (window.CSS && CSS.escape ? CSS.escape(key) : key) + '"]');
+    if (!s) return;
+    s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
+  }
+  function mapRefresh() { if (!$('#mapcard').hidden) renderMap(visible()); }
+  function initMap() {
+    var v = $('#mapview');
+    $('#mapToggle').addEventListener('click', function () {
+      mp.open = !mp.open; $('#mapcard').classList.toggle('shut', !mp.open);
+      this.textContent = mp.open ? 'Masquer' : 'Afficher'; this.setAttribute('aria-pressed', mp.open ? 'true' : 'false');
+      if (mp.open) setTimeout(function () { applyView(); }, 480);
+    });
+    $('#mZin').addEventListener('click', function () { var s = mapSize(); zoomAt(1.6, s.w / 2, s.h / 2); });
+    $('#mZout').addEventListener('click', function () { var s = mapSize(); zoomAt(1 / 1.6, s.w / 2, s.h / 2); });
+    $('#mHome').addEventListener('click', function () { if (mp.home) { mp.view = Object.assign({}, mp.home); applyView(); } });
+    v.addEventListener('wheel', function (e) { e.preventDefault(); var r = v.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+    v.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('.mapzoom')) return;
+      v.setPointerCapture(e.pointerId); mp.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); mp.moved = 0; mp.down = e.target;
+      v.classList.add('drag');
+      if (mp.ptrs.size === 2) { var p = Array.from(mp.ptrs.values()); mp.pinch = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
+    });
+    v.addEventListener('pointermove', function (e) {
+      var p0 = mp.ptrs.get(e.pointerId); if (!p0) return;
+      var s = mapSize(), r = v.getBoundingClientRect();
+      if (mp.ptrs.size === 1) {
+        var dx = e.clientX - p0.x, dy = e.clientY - p0.y; mp.moved += Math.abs(dx) + Math.abs(dy);
+        var k = mp.view.w / s.w; mp.view.cx -= dx * k; mp.view.cy -= dy * k; applyView();
+      } else if (mp.ptrs.size === 2) {
+        mp.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        var p = Array.from(mp.ptrs.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+        if (mp.pinch) zoomAt(d / mp.pinch, (p[0].x + p[1].x) / 2 - r.left, (p[0].y + p[1].y) / 2 - r.top);
+        mp.pinch = d; mp.moved += 10;
+      }
+      mp.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    });
+    function up(e) {
+      var had = mp.ptrs.has(e.pointerId); mp.ptrs.delete(e.pointerId); mp.pinch = null;
+      if (!mp.ptrs.size) v.classList.remove('drag');
+      if (had && e.type === 'pointerup' && mp.moved < 6 && !mp.ptrs.size) {
+        var g = mp.down && mp.down.closest ? mp.down.closest('.mshape') : null;
+        if (g && g.__o) mapSelect(g.__o); else if (mp.sel) { mp.sel.g.classList.remove('sel'); mp.sel = null; $('#mapinfo').hidden = true; }
+      }
+    }
+    v.addEventListener('pointerup', up); v.addEventListener('pointercancel', up);
+    $('#mapfilters').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-mf]'); if (!b) return;
+      var id = b.getAttribute('data-mf');
+      if (id === '__done') mp.hideDone = !mp.hideDone; else if (mp.off.has(id)) mp.off.delete(id); else mp.off.add(id);
+      b.setAttribute('aria-pressed', id === '__done' ? (mp.hideDone ? 'true' : 'false') : (mp.off.has(id) ? 'false' : 'true'));
+      mapRefresh();
+    });
+    $('#mapinfo').addEventListener('click', function (e) { var r = e.target.closest('[data-go]'); if (r) mapGo(r.getAttribute('data-go')); });
+    if (window.ResizeObserver) new ResizeObserver(function () { if (mp.view && !$('#mapcard').hidden) applyView(); }).observe(v);
+  }
+
+  /* ---------- Dossier SUP AIP : fichiers gardés dans l'appareil (IndexedDB), liens cliquables dans les NOTAM ---------- */
+  var sup = { keys: new Set(), remote: new Set(), probed: new Set() };
+  function supUrl(key) { return 'supaip/SUP-AIP-' + key.replace('/', '-') + '.pdf'; }
+  function supProbe() {
+    if (!state.last || !state.last.results) return;
+    if (location.protocol === 'file:') {
+      // ouverture directe du fichier : le navigateur interdit de vérifier l'existence des PDF, on lie toutes les références
+      var any = false;
+      state.last.results.forEach(function (r) { C.supRefs(r.item).forEach(function (k) { if (!sup.remote.has(k)) { sup.remote.add(k); sup.keys.add(k); any = true; } }); });
+      if (any) render();
+      return;
+    }
+    if (!/^https?:$/.test(location.protocol)) return;
+    var todo = [];
+    state.last.results.forEach(function (r) { C.supRefs(r.item).forEach(function (k) { if (!sup.probed.has(k)) { sup.probed.add(k); todo.push(k); } }); });
+    if (!todo.length) return;
+    Promise.all(todo.map(function (k) {
+      return fetch(supUrl(k), { method: 'HEAD' }).then(function (r) {
+        if (r.ok && /pdf/i.test(r.headers.get('content-type') || '')) { sup.remote.add(k); sup.keys.add(k); return true; }
+        return false;
+      }).catch(function () { return false; });
+    })).then(function (res) { if (res.some(Boolean)) render(); });
+  }
+  function supOpen(key) { if (sup.remote.has(key)) window.open(supUrl(key), '_blank'); }
+  var SUP_RE = /SUP[ -]*AIP(?: AIRAC)?\s+(\d{1,3})\s*\/\s*(\d{2,4})/g;
+  function textHtml(text, kw) {
+    if (!sup.keys.size) return C.highlight(text, kw, esc);
+    var out = '', last = 0, m;
+    SUP_RE.lastIndex = 0;
+    while ((m = SUP_RE.exec(text))) {
+      var key = m[1].padStart(3, '0') + '/' + (m[2].length === 2 ? '20' + m[2] : m[2]);
+      if (!sup.keys.has(key)) continue;
+      out += C.highlight(text.slice(last, m.index), kw, esc) + '<a href="#" class="supl" data-sup="' + key + '" title="Ouvrir le SUP AIP ' + key + '">' + esc(m[0]) + '<span aria-hidden="true"> ↗</span></a>';
+      last = m.index + m[0].length;
+    }
+    return out + C.highlight(text.slice(last), kw, esc);
+  }
+
+  function render() {
+    var a = state.last;
+    renderLoaded(a);
+    updateHideBtn();
+    renderCats();
+    var res = $('#results');
+    if (!a || !a.total) {
+      res.innerHTML = '<div class="empty"><strong>Rien à trier pour l’instant.</strong>Importe le PDF du briefing SOFIA (PIB imprimé) : les NOTAM seront rangés dans les catégories ci-dessus.</div>';
+      $('#status').textContent = '';
+      $('#mapcard').hidden = true;
+      return;
+    }
+    supProbe();
+    var vis = visible(), kw = $('#search').value.trim() ? [$('#search').value.trim()] : [];
+    var html = '';
+    C.CATEGORIES.forEach(function (c) {
+      if (c.id === 'aerodrome') { html += adHtml(vis, kw, c); return; }
+      var list = vis.filter(function (r) { return r.cat.id === c.id; });
+      if (!list.length) return;
+      html += '<section class="group ' + c.tone + '"><h2>' + esc(c.label) + '<span>' + list.length + '</span></h2>' + list.map(function (r) { return strip(r, kw); }).join('') + '</section>';
+    });
+    res.innerHTML = html || '<div class="empty"><strong>Aucun NOTAM à afficher.</strong>Réactive une catégorie ci-dessus' + ($('#search').value.trim() ? ' ou vide la recherche' : '') + '.</div>';
+    updateStatus();
+    renderMap(vis);
+  }
+  function updateStatus() {
+    var st = $('#status');
+    if (st.dataset.flash) return;
+    if (!state.last || !state.last.total) { st.textContent = ''; return; }
+    var n = state.done.size;
+    st.textContent = visible().length + ' NOTAM affiché' + (visible().length > 1 ? 's' : '') + ' sur ' + state.last.total + ' · ' + n + ' non facteur' + (n > 1 ? 's' : '') + '.';
+  }
+  function flash(msg) {
+    var st = $('#status');
+    st.textContent = msg; st.dataset.flash = '1';
+    setTimeout(function () { delete st.dataset.flash; updateStatus(); }, 3500);
+  }
+  function listMsg(text, kind) {
+    var m = $('#listMsg');
+    m.hidden = !text; m.textContent = text || ''; m.className = 'msg' + (kind ? ' ' + kind : '');
+  }
+
+  /* ---------- Non facteurs : marquage, export, import ---------- */
+  function entry(it) {
+    var k = keyOf(it), n = state.notes.get(k);
+    var e = { key: k, hash: hashOf(it), done: state.done.has(k), place: (it.place || '').split(' ')[0] || (it.locs[0] || ''), summary: (it.text || '').replace(/\s+/g, ' ').slice(0, 100), end: it.perm || !it.end ? null : it.end.toISOString() };
+    if (n) e.note = n;
+    return e;
+  }
+  /* Rapproche la liste connue du briefing chargé : identique = Non facteurs, même numéro mais contenu différent = signalé */
+  function applyKnown() {
+    var p = 0, c = 0, ad = 0, n = 0;
+    state.pinned = new Set(); state.changed = new Set();
+    state.last.results.forEach(function (r) {
+      var k = keyOf(r.item), e = state.known.get(k);
+      if (!e) return;
+      if (e.note && !state.notes.has(k)) { state.notes.set(k, e.note); n++; }
+      if (e.done === false) return;
+      if (e.hash === hashOf(r.item)) {
+        state.done.add(k);
+        if (r.cat.id === 'aerodrome') ad++; else { state.pinned.add(k); p++; }
+      } else { state.changed.add(k); c++; }
+    });
+    return { p: p, ad: ad, c: c, n: n };
+  }
+  function resume(r) {
+    var tot = r.p + r.ad, parts = [], s = '';
+    if (tot) {
+      s = tot + ' NOTAM reconnu' + (tot > 1 ? 's' : '') + ' dans ta liste';
+      if (r.p) parts.push(r.p + ' en route classé' + (r.p > 1 ? 's' : '') + ' dans « Non facteurs »');
+      if (r.ad) parts.push(r.ad + ' d’aérodrome grisé' + (r.ad > 1 ? 's' : '') + ' dans ' + (r.ad > 1 ? 'leurs' : 'son') + ' aérodrome' + (r.ad > 1 ? 's' : ''));
+      if (parts.length) s += ' : ' + parts.join(', ');
+    }
+    if (r.n) s += (s ? ' · ' : '') + r.n + ' note' + (r.n > 1 ? 's' : '') + ' restaurée' + (r.n > 1 ? 's' : '');
+    if (r.c) s += (s ? ' · ' : '') + r.c + ' modifié' + (r.c > 1 ? 's' : '') + ' depuis (signalé' + (r.c > 1 ? 's' : '') + ')';
+    return (s || 'Aucun NOTAM de ta liste dans ce briefing') + '.';
+  }
+  /* Nouveau briefing : les NOTAM déjà cochés passent dans la liste connue, puis on rapproche */
+  function adopt(a) {
+    if (state.last) {
+      state.last.results.forEach(function (r) { if (state.done.has(keyOf(r.item)) || state.notes.has(keyOf(r.item))) state.known.set(keyOf(r.item), entry(r.item)); });
+    }
+    state.last = a; state.done = new Set();
+    return applyKnown();
+  }
+  function toggleStrip(s) {
+    var k = s.getAttribute('data-key'), d = !state.done.has(k);
+    if (d) { state.done.add(k); }
+    else { state.done.delete(k); state.pinned.delete(k); state.known.delete(k); }
+    s.classList.toggle('done', d);
+    s.setAttribute('aria-expanded', d ? 'false' : 'true');
+    renderCats(); updateStatus(); updateHideBtn();
+    if (state.hideDone) setTimeout(render, 380); else mapRefresh();
+  }
+  function stamp() {
+    var d = new Date(), m = ['janv', 'fevr', 'mars', 'avr', 'mai', 'juin', 'juil', 'aout', 'sept', 'oct', 'nov', 'dec'];
+    return String(d.getDate()).padStart(2, '0') + m[d.getMonth()] + d.getFullYear();
+  }
+  function fallbackSave(name, text) {
+    var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    var a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    listMsg('Fichier ' + name + ' préparé.', '');
+  }
+  async function saveFile(name, text) {
+    var dl = null;
+    try { if (window.claude && window.claude.use) dl = await window.claude.use('downloads'); } catch (e) { dl = null; }
+    if (!dl) { fallbackSave(name, text); return; }
+    try { await dl.save({ filename: name, data: text }); listMsg('Fichier ' + name + ' enregistré.', ''); }
+    catch (e) {
+      if (e && e.code === 'declined') listMsg('Export annulé.', '');
+      else listMsg('L’enregistrement a échoué (' + (e && e.code ? e.code : 'erreur') + ').', 'err');
+    }
+  }
+  function exportList() {
+    var items = [], seen = {}, now = Date.now();
+    if (state.last) state.last.results.forEach(function (r) {
+      var k = keyOf(r.item);
+      if (state.done.has(k) || state.notes.has(k)) { items.push(entry(r.item)); seen[k] = 1; }
+    });
+    /* garde aussi les entrées importées qui ne figurent pas dans ce briefing et ne sont pas échues */
+    state.known.forEach(function (e, k) { if (!seen[k] && (!e.end || new Date(e.end).getTime() > now)) items.push(e); });
+    if (!items.length) { listMsg('Rien à exporter : clique d’abord sur des NOTAM pour les marquer comme pris en compte, ou ajoute une note.', 'err'); return; }
+    var payload = { app: 'tri-notam', kind: 'non-facteurs', version: 2, exportedAt: new Date().toISOString(), items: items };
+    saveFile('NOTAMS_NF_' + stamp() + '.json', JSON.stringify(payload, null, 1));
+  }
+  async function importList(file) {
+    if (!file) return;
+    try {
+      var data = JSON.parse(await file.text());
+      if (!data || data.app !== 'tri-notam' || !Array.isArray(data.items)) throw new Error('format');
+      var n = 0;
+      data.items.forEach(function (e) { if (e && typeof e.key === 'string' && typeof e.hash === 'string') { state.known.set(e.key, e); n++; } });
+      if (!n) throw new Error('vide');
+      var r = state.last ? applyKnown() : null;
+      if (state.last) { render(); }
+      else renderLoaded(null);
+      listMsg('Liste importée (' + n + ' entrée' + (n > 1 ? 's' : '') + '). ' + (r ? resume(r) : 'Importe maintenant le briefing PDF pour l’appliquer.'), '');
+    } catch (e) {
+      listMsg('Ce fichier n’est pas une liste de non facteurs exportée par cette page.', 'err');
+    }
+  }
+
+  /* ---------- Import du PDF ---------- */
+  var pdfjsRef = null;
+  function loadScript(src) {
+    return new Promise(function (ok, ko) {
+      var s = document.createElement('script');
+      s.src = src; s.onload = ok; s.onerror = function () { ko(new Error('chargement refusé : ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function loadPdfjs() {
+    if (pdfjsRef) return Promise.resolve(pdfjsRef);
+    var base = new URL('./lib/', document.baseURI).href;
+    return import(base + 'pdf.min.mjs').then(function (m) {
+      m.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.mjs';
+      pdfjsRef = m; return m;
+    }).catch(function () {
+      var cdn = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+      return loadScript(cdn + 'pdf.min.js').then(function () { return loadScript(cdn + 'pdf.worker.min.js'); }).then(function () {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = cdn + 'pdf.worker.min.js';
+        pdfjsRef = window.pdfjsLib; return pdfjsRef;
+      });
+    });
+  }
+  function msg(text, kind) {
+    var m = $('#importMsg');
+    m.hidden = !text; m.textContent = text || ''; m.className = 'msg' + (kind ? ' ' + kind : '');
+  }
+  async function importFile(file) {
+    if (!file) return;
+    msg('Lecture de ' + file.name + '…', 'busy');
+    try {
+      var text, pages = 0;
+      if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+        var lib;
+        try { lib = await loadPdfjs(); } catch (e) { throw new Error('lecteur'); }
+        text = await C.pdfToText(lib, new Uint8Array(await file.arrayBuffer()));
+        pages = (text.match(/SOFIA-Briefing/gi) || []).length;
+      } else {
+        throw new Error('format');
+      }
+      var a = C.analyze(text);
+      if (!a.total) throw new Error('vide');
+      var r = adopt(a); state.fileName = file.name; state.pages = pages;
+      msg('', '');
+      render();
+      var rs = $('#results'); rs.classList.add('enter'); setTimeout(function () { rs.classList.remove('enter'); }, 900);
+      if (state.known.size) listMsg(resume(r), '');
+    } catch (e) {
+      var why = e && e.message === 'lecteur'
+        ? 'Le lecteur de PDF n’a pas pu se charger dans cette page. Recharge la page et réessaie.'
+        : e && e.message === 'format' ? 'Importe le briefing au format PDF.'
+        : e && e.message === 'vide'
+          ? 'Ce fichier ne contient aucun NOTAM reconnu. Vérifie qu’il s’agit bien du briefing imprimé de SOFIA-Briefing (PIB).'
+          : 'Ce fichier n’a pas pu être lu (' + (e && e.message ? e.message : 'erreur inconnue') + ').';
+      msg(why, 'err');
+    }
+  }
+
+  /* ---------- Événements ---------- */
+  var timer = null;
+  $('#search').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(render, 140); });
+  $('#file').addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; importFile(f); });
+  $('#fileBtn').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } });
+  var drop = $('#drop');
+  ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; importFile(f); });
+  window.addEventListener('dragover', function (e) { e.preventDefault(); });
+  window.addEventListener('drop', function (e) { if (!drop.contains(e.target)) e.preventDefault(); });
+
+  $('#cats').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cat]');
+    if (!b) return;
+    var id = b.getAttribute('data-cat');
+    if (state.off.has(id)) state.off.delete(id); else state.off.add(id);
+    b.setAttribute('aria-pressed', state.off.has(id) ? 'false' : 'true');
+    saveCats();
+    requestAnimationFrame(function () { requestAnimationFrame(render); });
+  });
+  $('#bHideDone').addEventListener('click', function () { state.hideDone = !state.hideDone; render(); });
+  $('#bAll').addEventListener('click', function () { state.off.clear(); saveCats(); render(); });
+  $('#bNone').addEventListener('click', function () { C.CATEGORIES.forEach(function (c) { state.off.add(c.id); }); saveCats(); render(); });
+  $('#results').addEventListener('click', function (e) {
+    var s = e.target.closest('.strip');
+    if (!s || e.target.closest('a, button, input, textarea, .noterow')) return;
+    var sel = window.getSelection ? String(window.getSelection()) : '';
+    if (sel) return;
+    toggleStrip(s);
+  });
+  $('#results').addEventListener('keydown', function (e) {
+    var s = e.target.closest ? e.target.closest('.strip') : null;
+    if (s && e.target === s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleStrip(s); }
+  });
+  $('#results').addEventListener('click', function (e) {
+    var b = e.target.closest('.addnote');
+    if (!b) return;
+    var row = b.parentNode;
+    row.innerHTML = '<textarea class="notebox" data-note="' + esc(b.getAttribute('data-note-add')) + '" rows="2" placeholder="Note…" aria-label="Note sur ce NOTAM"></textarea>';
+    row.firstChild.focus();
+  });
+  $('#results').addEventListener('input', function (e) {
+    var t = e.target.closest ? e.target.closest('.notebox') : null;
+    if (!t) return;
+    var k = t.getAttribute('data-note'), v = t.value, has = !!v.trim();
+    if (has) state.notes.set(k, v); else state.notes.delete(k);
+    var s = t.closest('.strip');
+    if (s) { s.classList.toggle('has-note', has); var m = s.querySelector('.notemk'); if (m) m.textContent = has ? '📝 ' + v.replace(/\s+/g, ' ').slice(0, 50) : ''; }
+  });
+  $('#results').addEventListener('focusout', function (e) {
+    var t = e.target.closest ? e.target.closest('.notebox') : null;
+    if (!t || t.value.trim()) return;
+    var k = t.getAttribute('data-note');
+    t.parentNode.innerHTML = '<button type="button" class="btn small addnote" data-note-add="' + esc(k) + '">＋ Note</button>';
+  });
+  $('#results').addEventListener('click', function (e) { var l = e.target.closest('.supl'); if (!l) return; e.preventDefault(); supOpen(l.getAttribute('data-sup')); });
+  $('#bExport').addEventListener('click', exportList);
+  $('#listFile').addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; importList(f); });
+  ['#listBtn', '#listBtnTop'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#listFile').click(); } }); });
+  $('#bCopy').addEventListener('click', function () {
+    if (!state.last || !state.last.total) { flash('Rien à copier : importe d’abord un briefing.'); return; }
+    var txt = C.buildSummary(visible(), state.notes), fb = $('#copyfb');
+    if (!txt) { flash('Rien à copier : aucune catégorie affichée.'); return; }
+    var fallback = function () {
+      fb.hidden = false; fb.value = txt; fb.focus(); fb.select();
+      flash('Copie automatique refusée : le texte est sélectionné, utilise Ctrl+C.');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function () { fb.hidden = true; flash('Liste copiée (' + txt.split('\n').length + ' lignes).'); }, fallback);
+    } else fallback();
+  });
+
+  initMap();
+  render();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
+</script>
+</body></html>
