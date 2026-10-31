@@ -1358,12 +1358,19 @@ const NotamCore = (() => {
     document.head.appendChild(sc);
   }
 
+  /* NOTAM d'aérodrome à montrer sur la carte : SUP AIP ou zone (R, D, P, TRA, TSA, ZRT...) ; pas « VDF hors service » */
+  function zoneRelated(it) {
+    var t = (it.text || '').toUpperCase();
+    if (C.supRefs(it).length) return true;
+    return /\bLF[\s-]*(R|D|P|TRA|TSA|CBA|ZIT)[\s-]*\d/.test(t) || /\b(ZRT|ZDT|TSA|TRA|ZIT)\b/.test(t) || /\bZONES?\s+(R|D|P)\b/.test(t);
+  }
   function mapItems(vis) {
     var out = [], ads = {};
     vis.forEach(function (r) {
       var it = r.item, g = it.geo; if (!g) return;
       var key = keyOf(it), done = state.done.has(key);
-      if (r.cat.id === 'aerodrome') return;
+      var isAd = r.cat.id === 'aerodrome';
+      if (isAd && !zoneRelated(it)) return;
       if (false) {
         if (!g.q) return;
         var code = (/^[A-Z]{4}/.exec(it.place || '') || (it.locs[0] ? [it.locs[0]] : [''])) [0] || it.place;
@@ -1380,6 +1387,7 @@ const NotamCore = (() => {
         var sl = szFor(it);
         if (sl.length) { shapes = []; sl.forEach(function (z) { z.p.forEach(function (p) { shapes.push({ t: 'poly', p: p }); }); }); zn = sl.map(function (z) { return z.n; }).filter(Boolean).join(' · '); }
       }
+      if (isAd && !shapes.length && g.q && g.q.lat != null) shapes = [{ t: 'circle', lat: g.q.lat, lon: g.q.lon, r: 0 }];
       shapes.forEach(function (s) {
         var base = { res: r, key: key, done: done, tone: r.cat.tone, zn: zn };
         if (s.t === 'poly') out.push(Object.assign({ t: 'poly', p: s.p }, base));
@@ -1397,7 +1405,7 @@ const NotamCore = (() => {
     buildBase(svg);
     var nfN = 0, counts = {}, order = [];
     vis.forEach(function (r) {
-      if (r.cat.id === 'aerodrome') return;
+      if (r.cat.id === 'aerodrome' && !zoneRelated(r.item)) return;
       if (state.done.has(keyOf(r.item))) nfN++;
       if (!counts[r.cat.id]) { counts[r.cat.id] = 0; order.push(r.cat); }
       counts[r.cat.id] += 1;
