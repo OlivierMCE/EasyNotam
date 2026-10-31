@@ -906,6 +906,7 @@ const NotamCore = (() => {
     }
     if (RE_SUP.test(x)) {
       if (RE_SUP_ACTIVE.test(x)) return { cat: CAT.sup_on, why: 'Le NOTAM indique « SUP AIP actif »' };
+      if (!RE_TRIGGER.test(x) && /\bACTIV(?:E|ES|EE|EES|F|FS)\b/.test(x) && !/\b(?:NON|PAS|NE SERA PAS) ACTIV|DESACTIV|INACTIV/.test(x)) return { cat: CAT.sup_on, why: 'Zone d’un SUP AIP indiquée active' };
       if (RE_TRIGGER.test(x)) {
         return RE_BYNOTAM.test(x)
           ? { cat: CAT.sup_off, why: 'NOTAM TRIGGER SUP AIP, activable par NOTAM' }
