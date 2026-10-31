@@ -499,7 +499,6 @@ const NotamCore = (() => {
   function geoOf(it) {
     const q = it.q && it.q.pos ? it.q.pos : null;
     const out = { q: q, shapes: [], exact: false };
-    if (it.area === 'ad') return out;
     const t = (it.fields.E || '').replace(/\s*\n\s*/g, '');
     const hits = [];
     let m;
@@ -521,7 +520,7 @@ const NotamCore = (() => {
       } else {
         r.forEach(function (h) {
           const before = t.slice(Math.max(0, h.at - 160), h.at);
-          const rm = /(?:RAYON|RADIUS)\s*(?:DE\s*|OF\s*)?(\d+(?:[.,]\d+)?)\s*(NM|KM|M)\b/i.exec(before) || /(\d+(?:[.,]\d+)?)\s*(NM|KM)\b[^.]{0,40}(?:CENTRE|CENTER)/i.exec(before);
+          const rm = /(?:RAYON|RADIUS)\s*(?:DE\s*|OF\s*)?(\d+(?:[.,]\d+)?)\s*(NM|KM|M)\b/i.exec(before) || /(\d+(?:[.,]\d+)?)\s*(NM|KM|M)\s+DE\s+RAYON/i.exec(before) || /(\d+(?:[.,]\d+)?)\s*(NM|KM)\b[^.]{0,40}(?:CENTRE|CENTER)/i.exec(before);
           let rad = 0;
           if (rm) { rad = parseFloat(rm[1].replace(',', '.')); const u = rm[2].toUpperCase(); if (u === 'KM') rad /= 1.852; else if (u === 'M') rad /= 1852; }
           out.shapes.push({ t: 'circle', lat: h.lat, lon: h.lon, r: rad });

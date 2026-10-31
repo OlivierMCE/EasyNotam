@@ -11,8 +11,8 @@ UA = {'User-Agent': 'Mozilla/5.0 (compatible; TriNotam-maj/1.0)'}
 
 NUM = r"(\d+)\s*°\s*(\d+)\s*['’′]\s*(\d+(?:[.,]\d+)?)\s*['’\"″”′]{0,2}\s*([NS])\s*[,\-–]?\s*(\d+)\s*°\s*(\d+)\s*['’′]\s*(\d+(?:[.,]\d+)?)\s*['’\"″”′]{0,2}\s*([EWO])"
 RE_TOKEN = re.compile(
-    r'(?P<circ>cercle de (?P<cr>[\d.,]+)\s*(?P<cu>NM|km|m)\s+de rayon centré sur\s*(?:le point\s*)?(?P<cc>' + NUM + r'))'
-    r'|(?P<arc>arc\s+(?P<dir>anti-horaire|horaire)\s+de\s+(?P<ar>[\d.,]+)\s*(?P<au>NM|km|m)\s+de rayon centré sur\s*(?:le point\s*)?(?P<ac>' + NUM + r'))'
+    r'(?P<circ>cercle de (?P<cr>[\d.,]+)\s*(?P<cu>NM|km|m)\s+de rayon centré sur\s*(?:le point\s*)?(?:[A-Z]{4}\s*ARP\s*)?(?:PSN\s*:?\s*)?(?P<cc>' + NUM + r'))'
+    r'|(?P<arc>arc\s+(?P<dir>anti-horaire|horaire)\s+de\s+(?P<ar>[\d.,]+)\s*(?P<au>NM|km|m)\s+de rayon centré sur\s*(?:le point\s*)?(?:[A-Z]{4}\s*ARP\s*)?(?:PSN\s*:?\s*)?(?P<ac>' + NUM + r'))'
     r'|(?P<v>' + NUM + r')', re.I)
 RE_V = re.compile(NUM)
 
