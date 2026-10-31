@@ -1049,8 +1049,8 @@ const NotamCore = (() => {
   }
 
   /* ---------- PDF : reconstruit un texte « mise en page » à partir de pdf.js ---------- */
-  async function pdfToText(pdfjs, data) {
-    const doc = await pdfjs.getDocument({ data: data instanceof Uint8Array ? data : new Uint8Array(data) }).promise;
+  async function pdfToText(pdfjs, data, opts) {
+    const doc = await pdfjs.getDocument(Object.assign({ data: data instanceof Uint8Array ? data : new Uint8Array(data) }, opts || {})).promise;
     const pages = [];
     for (let n = 1; n <= doc.numPages; n++) {
       const page = await doc.getPage(n);
@@ -1721,19 +1721,45 @@ const NotamCore = (() => {
       document.head.appendChild(s);
     });
   }
-  function loadPdfjs() {
-    if (pdfjsRef) return Promise.resolve(pdfjsRef);
+  var pdfEngines = {};
+  function withTimeout(promise, ms, label) {
+    return new Promise(function (ok, ko) {
+      var t = setTimeout(function () { ko(new Error(label + ' : trop long')); }, ms);
+      promise.then(function (v) { clearTimeout(t); ok(v); }, function (e) { clearTimeout(t); ko(e); });
+    });
+  }
+  /* Plusieurs lecteurs de PDF, essayés l'un après l'autre : le moderne (fichiers de la page), puis une version plus ancienne (CDN) pour les vieux iPad / Safari */
+  function engineLocal() {
+    if (pdfEngines.local) return Promise.resolve(pdfEngines.local);
     var base = new URL('./lib/', document.baseURI).href;
     return import(base + 'pdf.min.mjs').then(function (m) {
       m.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.mjs';
-      pdfjsRef = m; return m;
-    }).catch(function () {
-      var cdn = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
-      return loadScript(cdn + 'pdf.min.js').then(function () { return loadScript(cdn + 'pdf.worker.min.js'); }).then(function () {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = cdn + 'pdf.worker.min.js';
-        pdfjsRef = window.pdfjsLib; return pdfjsRef;
-      });
+      return (pdfEngines.local = m);
     });
+  }
+  function engineCdn() {
+    if (pdfEngines.cdn) return Promise.resolve(pdfEngines.cdn);
+    var cdn = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+    return (window.pdfjsLib ? Promise.resolve() : loadScript(cdn + 'pdf.min.js')).then(function () {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = cdn + 'pdf.worker.min.js';
+      return (pdfEngines.cdn = window.pdfjsLib);
+    });
+  }
+  async function readPdf(buf) {
+    var tries = [
+      ['lecteur 1', engineLocal, {}],
+      ['lecteur 2', engineCdn, {}],
+      ['lecteur 3', engineCdn, { disableWorker: true }]
+    ], errs = [];
+    for (var i = 0; i < tries.length; i++) {
+      try {
+        var lib = await withTimeout(tries[i][1](), 20000, tries[i][0]);
+        var text = await withTimeout(C.pdfToText(lib, buf.slice(), tries[i][2]), 60000, tries[i][0]);
+        if (text && text.replace(/\s/g, '').length > 20) return text;
+        errs.push(tries[i][0] + ' : texte vide');
+      } catch (e) { errs.push(tries[i][0] + ' : ' + (e && e.message ? e.message : e)); }
+    }
+    var err = new Error('lecteur'); err.details = errs.join(' / '); throw err;
   }
   function msg(text, kind) {
     var m = $('#importMsg');
@@ -1744,14 +1770,10 @@ const NotamCore = (() => {
     msg('Lecture de ' + file.name + '…', 'busy');
     try {
       var text, pages = 0;
-      if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
-        var lib;
-        try { lib = await loadPdfjs(); } catch (e) { throw new Error('lecteur'); }
-        text = await C.pdfToText(lib, new Uint8Array(await file.arrayBuffer()));
-        pages = (text.match(/SOFIA-Briefing/gi) || []).length;
-      } else {
-        throw new Error('format');
-      }
+      var buf = new Uint8Array(await file.arrayBuffer());
+      if (String.fromCharCode.apply(null, buf.subarray(0, 1024)).indexOf('%PDF') < 0) throw new Error('format');
+      text = await readPdf(buf);
+      pages = (text.match(/SOFIA-Briefing/gi) || []).length;
       var a = C.analyze(text);
       if (!a.total) throw new Error('vide');
       var r = adopt(a); state.fileName = file.name; state.pages = pages;
@@ -1761,7 +1783,7 @@ const NotamCore = (() => {
       if (state.known.size) listMsg(resume(r), '');
     } catch (e) {
       var why = e && e.message === 'lecteur'
-        ? 'Le lecteur de PDF n’a pas pu se charger dans cette page. Recharge la page et réessaie.'
+        ? 'Le lecteur de PDF n’a pas pu démarrer sur cet appareil. Recharge la page et réessaie. (' + (e.details || '') + ')'
         : e && e.message === 'format' ? 'Importe le briefing au format PDF.'
         : e && e.message === 'vide'
           ? 'Ce fichier ne contient aucun NOTAM reconnu. Vérifie qu’il s’agit bien du briefing imprimé de SOFIA-Briefing (PIB).'
