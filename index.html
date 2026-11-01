@@ -219,6 +219,9 @@ mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius
 .strip.has-note:not(.done) .addnote { display: none; }
 
 /* Notes : un post-it jaune discret sous le texte du NOTAM */
+.maplink { display: none; align-items: center; gap: 4px; margin-top: 6px; padding: 3px 9px; font: inherit; font-size: 12.5px; color: var(--muted); background: transparent; border: 1px solid rgba(128,128,128,.35); border-radius: 999px; cursor: pointer; width: fit-content; }
+.strip.onmap .maplink { display: inline-flex; }
+.maplink:hover { color: var(--accent); border-color: var(--accent); }
 .noterow { margin-top: 2px; }
 .addnote { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .addnote:hover { background: var(--accent-soft); filter: brightness(.95); }
@@ -371,11 +374,14 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
       <div class="btnrow">
         <label class="btn primary" for="file" id="fileBtn" tabindex="0" role="button">Choisir un PDF</label>
         <label class="btn" for="listFile" tabindex="0" role="button" id="listBtnTop">Importer une liste de non facteurs</label>
+        <button class="btn" type="button" id="bExport">Exporter les non facteurs</button>
         <input id="file" type="file" accept=".pdf,application/pdf">
+        <input id="listFile" class="vh" type="file" accept=".json,application/json">
       </div>
     </div>
     <ul class="loaded" id="loaded"></ul>
     <p class="msg" id="importMsg" hidden role="status"></p>
+    <p class="msg" id="listMsg" hidden role="status"></p>
   </section>
 
   <section class="catbar" aria-label="Catégories">
@@ -422,17 +428,6 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
 
   <div id="results"></div>
 
-  <section class="nfbar" aria-label="NOTAM non facteurs">
-    <div>
-      <strong>NOTAM non facteurs</strong>
-    </div>
-    <div class="btnrow">
-      <button class="btn primary" type="button" id="bExport">Exporter les NOTAM non facteurs</button>
-      <label class="btn" for="listFile" tabindex="0" role="button" id="listBtn">Importer une liste</label>
-      <input id="listFile" class="vh" type="file" accept=".json,application/json">
-    </div>
-    <p class="msg" id="listMsg" hidden role="status"></p>
-  </section>
 
   <p class="disclaimer">Aide à la lecture uniquement. Le briefing officiel fait foi : vérifie toujours en entier les NOTAM de départ, d’arrivée et de dégagement. Le rangement repose sur le texte des NOTAM : en cas de doute, ouvre « Autre ».</p>
 </div>
@@ -1156,7 +1151,7 @@ const NotamCore = (() => {
     return '<article class="strip' + (r.dim ? ' dim' : '') + (lv ? ' ad mk-' + lv.id : '') + (done ? ' done' : '') + (note ? ' has-note' : '') + '" data-key="' + esc(key) + '" tabindex="0" role="button" aria-expanded="' + (done ? 'false' : 'true') + '">' +
       '<div class="sumrow"><div class="sumin"><div class="sumc">' + (lv ? '<i class="dot mk-' + lv.id + '"></i>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span><span class="notemk">' + (note ? '📝 ' + esc(note.replace(/\s+/g, ' ').slice(0, 50)) : '') + '</span><span class="snip">' + esc(snip) + '</span><span class="okmark">✓ non facteur</span></div></div></div>' +
       '<div class="fold"><div class="foldin"><div class="cols">' +
-      '<div class="idc">' + (lv ? '<span class="mark"><i class="dot mk-' + lv.id + '"></i>' + esc(lv.label) + '</span>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '</div>' +
+      '<div class="idc">' + (lv ? '<span class="mark"><i class="dot mk-' + lv.id + '"></i>' + esc(lv.label) + '</span>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '<button type="button" class="maplink" data-map="' + esc(key) + '" aria-label="Voir sur la carte">↑ Carte</button></div>' +
       '<div class="body"><pre class="etext">' + (it.text ? textHtml(it.text, kw) : esc(it.raw || '(texte vide)')) + '</pre>' +
       (it.schedule ? '<p class="sched"><b>D)</b> ' + esc(it.schedule) + '</p>' : '') +
       (it.lowerTxt || it.upperTxt ? '<p class="lim">Limites : ' + esc(it.lowerTxt || '—') + ' → ' + esc(it.upperTxt || '—') + '</p>' : '') +
@@ -1416,8 +1411,9 @@ const NotamCore = (() => {
     // ordre de dessin : zones approximatives, contours, points, aérodromes
     var rank = { circle: 1, poly: 2, ad: 4 };
     items.sort(function (x, y) { var ax = x.t === 'circle' ? (x.apx ? 0 : 3) : rank[x.t], ay = y.t === 'circle' ? (y.apx ? 0 : 3) : rank[y.t]; return ax - ay; });
-    var nExact = 0, nAd = 0;
+    var nExact = 0, nAd = 0, nKeys = {};
     items.forEach(function (o) {
+      if (o.key) nKeys[o.key] = 1;
       var g = svgEl('g', { class: 'mshape ' + (o.t === 'ad' ? 'ad lv-' + ['red', 'orange', 'yellow', 'grey'][o.rank] : o.tone) + (o.apx ? ' apx' : '') + (o.pt ? ' pt' : '') + (o.done ? ' done' : '') }, layer);
       o.g = g;
       if (o.t === 'poly') { svgEl('path', { d: polyD(o.p, true), class: 'f' }, g); nExact++; }
@@ -1436,7 +1432,8 @@ const NotamCore = (() => {
       o.rows ? o.rows.forEach(function (x) { (mp.byKey[x.key] = mp.byKey[x.key] || []).push(o); }) : (mp.byKey[o.key] = mp.byKey[o.key] || []).push(o);
     });
     mp.items = items;
-    $('#mapcount').textContent = nExact + ' NOTAM sur la carte';
+    markOnMap();
+    $('#mapcount').textContent = Object.keys(nKeys).length + ' NOTAM sur la carte';
     if (mp.lastA !== a || !mp.view) {
       mp.lastA = a;
       var plot = items;
@@ -1477,6 +1474,17 @@ const NotamCore = (() => {
     if (!s) return;
     s.scrollIntoView({ behavior: 'smooth', block: 'center' });
     s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
+  }
+  function markOnMap() {
+    document.querySelectorAll('.strip').forEach(function (s) { s.classList.toggle('onmap', !!(mp.byKey && mp.byKey[s.getAttribute('data-key')])); });
+  }
+  function showOnMap(key) {
+    var list = mp.byKey && mp.byKey[key]; if (!list || !list.length) return;
+    if (!mp.open) $('#mapToggle').click();
+    $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var o = list[0];
+    if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
+    mp.sel = o; o.g.classList.add('sel'); mapInfo(o);
   }
   function mapRefresh() { if (!$('#mapcard').hidden) renderMap(visible()); }
   function initMap() {
@@ -1740,9 +1748,13 @@ const NotamCore = (() => {
   function engineCdn() {
     if (pdfEngines.cdn) return Promise.resolve(pdfEngines.cdn);
     var cdn = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
-    return (window.pdfjsLib ? Promise.resolve() : loadScript(cdn + 'pdf.min.js')).then(function () {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = cdn + 'pdf.worker.min.js';
-      return (pdfEngines.cdn = window.pdfjsLib);
+    /* le lecteur moderne a déjà posé window.pdfjsLib (autre version) : on recharge alors l'ancien par-dessus */
+    var cur = window.pdfjsLib && window.pdfjsLib.version === '3.11.174';
+    return (cur ? Promise.resolve() : loadScript(cdn + 'pdf.min.js')).then(function () {
+      var lib = window.pdfjsLib;
+      if (!lib || lib.version !== '3.11.174') throw new Error('version inattendue ' + (lib && lib.version));
+      lib.GlobalWorkerOptions.workerSrc = cdn + 'pdf.worker.min.js';
+      return (pdfEngines.cdn = lib);
     });
   }
   async function readPdf(buf) {
@@ -1828,6 +1840,8 @@ const NotamCore = (() => {
     if (s && e.target === s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleStrip(s); }
   });
   $('#results').addEventListener('click', function (e) {
+    var ml = e.target.closest('.maplink');
+    if (ml) { showOnMap(ml.getAttribute('data-map')); return; }
     var b = e.target.closest('.addnote');
     if (!b) return;
     var row = b.parentNode;
@@ -1851,7 +1865,7 @@ const NotamCore = (() => {
   $('#results').addEventListener('click', function (e) { var l = e.target.closest('.supl'); if (!l) return; e.preventDefault(); supOpen(l.getAttribute('data-sup')); });
   $('#bExport').addEventListener('click', exportList);
   $('#listFile').addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; importList(f); });
-  ['#listBtn', '#listBtnTop'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#listFile').click(); } }); });
+  ['#listBtnTop'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#listFile').click(); } }); });
   $('#bCopy').addEventListener('click', function () {
     if (!state.last || !state.last.total) { flash('Rien à copier : importe d’abord un briefing.'); return; }
     var txt = C.buildSummary(visible(), state.notes), fb = $('#copyfb');
