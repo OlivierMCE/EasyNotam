@@ -4,14 +4,14 @@
 <meta name="theme-color" content="#12202E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tri NOTAM">
+<meta name="apple-mobile-web-app-title" content="EasyNotam">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>:root{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 </head><body>
-<title>Tri NOTAM</title>
+<title>EasyNotam</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Mise en page : titre large, cartes blanches arrondies sur fond gris clair, pastilles et réglages à la façon d'iOS */
@@ -219,9 +219,8 @@ mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius
 .strip.has-note:not(.done) .addnote { display: none; }
 
 /* Notes : un post-it jaune discret sous le texte du NOTAM */
-.maplink { display: none; align-items: center; gap: 4px; margin-top: 6px; padding: 3px 9px; font: inherit; font-size: 12.5px; color: var(--muted); background: transparent; border: 1px solid rgba(128,128,128,.35); border-radius: 999px; cursor: pointer; width: fit-content; }
-.strip.onmap .maplink { display: inline-flex; }
-.maplink:hover { color: var(--accent); border-color: var(--accent); }
+.tomap { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: var(--surface); border: 0; border-radius: 999px; box-shadow: 0 4px 18px rgba(0,0,0,.18); cursor: pointer; opacity: 0; transform: translate(-50%, 12px); pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); }
+.tomap.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
 .noterow { margin-top: 2px; }
 .addnote { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .addnote:hover { background: var(--accent-soft); filter: brightness(.95); }
@@ -363,7 +362,7 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
 
 <div class="shell">
   <header class="top">
-    <h1>Tri NOTAM</h1>
+    <h1>EasyNotam</h1>
   </header>
 
   <section class="drop" id="drop" aria-label="Importer un briefing">
@@ -427,6 +426,7 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
   </section>
 
   <div id="results"></div>
+  <button type="button" class="tomap" id="toMap" aria-label="Revenir à la carte">↑ Carte</button>
 
 
   <p class="disclaimer">Aide à la lecture uniquement. Le briefing officiel fait foi : vérifie toujours en entier les NOTAM de départ, d’arrivée et de dégagement. Le rangement repose sur le texte des NOTAM : en cas de doute, ouvre « Autre ».</p>
@@ -1148,10 +1148,10 @@ const NotamCore = (() => {
     if (r.why) why.push(r.why);
     if (r.dim) why.push(r.dim);
     if (state.changed.has(key)) why.push('Modifié depuis ta liste de non facteurs');
-    return '<article class="strip' + (r.dim ? ' dim' : '') + (lv ? ' ad mk-' + lv.id : '') + (done ? ' done' : '') + (note ? ' has-note' : '') + '" data-key="' + esc(key) + '" tabindex="0" role="button" aria-expanded="' + (done ? 'false' : 'true') + '">' +
-      '<div class="sumrow"><div class="sumin"><div class="sumc">' + (lv ? '<i class="dot mk-' + lv.id + '"></i>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span><span class="notemk">' + (note ? '📝 ' + esc(note.replace(/\s+/g, ' ').slice(0, 50)) : '') + '</span><span class="snip">' + esc(snip) + '</span><span class="okmark">✓ non facteur</span></div></div></div>' +
+    return '<article class="strip' + (r.dim ? ' dim' : '') + (lv ? ' ad' : '') + (done ? ' done' : '') + (note ? ' has-note' : '') + '" data-key="' + esc(key) + '" tabindex="0" role="button" aria-expanded="' + (done ? 'false' : 'true') + '">' +
+      '<div class="sumrow"><div class="sumin"><div class="sumc">' + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span><span class="notemk">' + (note ? '📝 ' + esc(note.replace(/\s+/g, ' ').slice(0, 50)) : '') + '</span><span class="snip">' + esc(snip) + '</span><span class="okmark">✓ non facteur</span></div></div></div>' +
       '<div class="fold"><div class="foldin"><div class="cols">' +
-      '<div class="idc">' + (lv ? '<span class="mark"><i class="dot mk-' + lv.id + '"></i>' + esc(lv.label) + '</span>' : '') + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '<button type="button" class="maplink" data-map="' + esc(key) + '" aria-label="Voir sur la carte">↑ Carte</button></div>' +
+      '<div class="idc">' + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '</div>' +
       '<div class="body"><pre class="etext">' + (it.text ? textHtml(it.text, kw) : esc(it.raw || '(texte vide)')) + '</pre>' +
       (it.schedule ? '<p class="sched"><b>D)</b> ' + esc(it.schedule) + '</p>' : '') +
       (it.lowerTxt || it.upperTxt ? '<p class="lim">Limites : ' + esc(it.lowerTxt || '—') + ' → ' + esc(it.upperTxt || '—') + '</p>' : '') +
@@ -1163,13 +1163,9 @@ const NotamCore = (() => {
   function adHtml(vis, kw, c) {
     var list = vis.filter(function (r) { return r.cat.id === 'aerodrome'; });
     if (!list.length) return '';
-    var legend = '<p class="legend">' + C.LEVELS.map(function (l) { return '<span><i class="dot mk-' + l.id + '"></i>' + esc(l.label + ' : ' + l.hint) + '</span>'; }).join('') + '</p>';
-    return '<section class="group ' + c.tone + '"><h2>' + esc(c.label) + '<span>' + list.length + '</span></h2>' + legend +
+    return '<section class="group ' + c.tone + '"><h2>' + esc(c.label) + '<span>' + list.length + '</span></h2>' +
       C.adGroups(list).map(function (g) {
-        var n = { red: 0, orange: 0, yellow: 0, grey: 0 };
-        g.items.forEach(function (r) { n[r.level] += 1; });
-        var chips = C.LEVELS.filter(function (l) { return n[l.id]; }).map(function (l) { return '<span title="' + esc(l.label) + '"><i class="dot mk-' + l.id + '"></i>' + n[l.id] + '</span>'; }).join('');
-        return '<div class="adblock"><h3>' + esc(g.place) + (g.role ? '<small>' + esc(g.role.charAt(0) + g.role.slice(1).toLowerCase()) + '</small>' : '') + '<span class="lvls">' + chips + '</span></h3>' +
+        return '<div class="adblock"><h3>' + esc(g.place) + (g.role ? '<small>' + esc(g.role.charAt(0) + g.role.slice(1).toLowerCase()) + '</small>' : '') + '</h3>' +
           g.items.map(function (r) { return strip(r, kw); }).join('') + '</div>';
       }).join('') + '</section>';
   }
@@ -1432,7 +1428,7 @@ const NotamCore = (() => {
       o.rows ? o.rows.forEach(function (x) { (mp.byKey[x.key] = mp.byKey[x.key] || []).push(o); }) : (mp.byKey[o.key] = mp.byKey[o.key] || []).push(o);
     });
     mp.items = items;
-    markOnMap();
+    updToMap();
     $('#mapcount').textContent = Object.keys(nKeys).length + ' NOTAM sur la carte';
     if (mp.lastA !== a || !mp.view) {
       mp.lastA = a;
@@ -1461,7 +1457,7 @@ const NotamCore = (() => {
     var title = o.t === 'ad' ? '<h4>' + esc(o.code) + (o.name ? ' · ' + esc(o.name) : '') + '</h4>' : '';
     box.innerHTML = title + rows.map(function (x) {
       var it = x.r.item, lv = x.r.level, snip = (it.text || it.raw || '').replace(/\s+/g, ' ').slice(0, 140);
-      return '<div class="mi-row" data-go="' + esc(x.key) + '">' + (lv ? '<i class="dot mk-' + lv + '"></i>' : '') + '<span class="mi-id">' + esc(x.key) + '</span><span class="mi-tx">' + esc(snip) + '</span><span class="mi-go">Voir ›</span></div>';
+      return '<div class="mi-row" data-go="' + esc(x.key) + '">' + '<span class="mi-id">' + esc(x.key) + '</span><span class="mi-tx">' + esc(snip) + '</span><span class="mi-go">Voir ›</span></div>';
     }).join('') + (o.t !== 'ad' && o.zn ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Contour de l’AIP : ' + esc(o.zn) + '</span></div>' : '') + (o.t !== 'ad' && o.apx ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Position seule : cercle de 5 NM autour du point.</span></div>' : '');
   }
   function mapSelect(o) {
@@ -1475,16 +1471,10 @@ const NotamCore = (() => {
     s.scrollIntoView({ behavior: 'smooth', block: 'center' });
     s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
   }
-  function markOnMap() {
-    document.querySelectorAll('.strip').forEach(function (s) { s.classList.toggle('onmap', !!(mp.byKey && mp.byKey[s.getAttribute('data-key')])); });
-  }
-  function showOnMap(key) {
-    var list = mp.byKey && mp.byKey[key]; if (!list || !list.length) return;
-    if (!mp.open) $('#mapToggle').click();
-    $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    var o = list[0];
-    if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
-    mp.sel = o; o.g.classList.add('sel'); mapInfo(o);
+  function updToMap() {
+    var c = $('#mapcard'), b = $('#toMap'); if (!c || !b) return;
+    var r = c.getBoundingClientRect();
+    b.classList.toggle('show', !c.hidden && r.bottom < 40);
   }
   function mapRefresh() { if (!$('#mapcard').hidden) renderMap(visible()); }
   function initMap() {
@@ -1840,8 +1830,6 @@ const NotamCore = (() => {
     if (s && e.target === s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleStrip(s); }
   });
   $('#results').addEventListener('click', function (e) {
-    var ml = e.target.closest('.maplink');
-    if (ml) { showOnMap(ml.getAttribute('data-map')); return; }
     var b = e.target.closest('.addnote');
     if (!b) return;
     var row = b.parentNode;
@@ -1864,6 +1852,12 @@ const NotamCore = (() => {
   });
   $('#results').addEventListener('click', function (e) { var l = e.target.closest('.supl'); if (!l) return; e.preventDefault(); supOpen(l.getAttribute('data-sup')); });
   $('#bExport').addEventListener('click', exportList);
+  $('#toMap').addEventListener('click', function () {
+    if (!mp.open) $('#mapToggle').click();
+    $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  var tmTick = false;
+  window.addEventListener('scroll', function () { if (tmTick) return; tmTick = true; requestAnimationFrame(function () { tmTick = false; updToMap(); }); }, { passive: true });
   $('#listFile').addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; importList(f); });
   ['#listBtnTop'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#listFile').click(); } }); });
   $('#bCopy').addEventListener('click', function () {
