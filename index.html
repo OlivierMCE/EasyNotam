@@ -219,6 +219,7 @@ mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius
 .strip.has-note:not(.done) .addnote { display: none; }
 
 /* Notes : un post-it jaune discret sous le texte du NOTAM */
+.ver { margin: -6px 0 0; font-size: 12px; color: var(--muted); text-align: center; opacity: .8; }
 .tomap { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: var(--surface); border: 0; border-radius: 999px; box-shadow: 0 4px 18px rgba(0,0,0,.18); cursor: pointer; opacity: 0; transform: translate(-50%, 12px); pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); }
 .tomap.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
 .maplink { display: none; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 11px; font: inherit; font-size: 12.5px; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 999px; cursor: pointer; width: fit-content; }
@@ -288,12 +289,28 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
 .mapcard[hidden] { display: none; }
 .peekbtns { display: none; gap: 6px; }
 .mapcard.peek .peekbtns { display: inline-flex; }
-.mapcard.peek { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 60; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.28), 0 0 0 1px var(--line); animation: rise .3s var(--ease); }
+.mapcard.peek { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); height: 46vh; z-index: 60; margin: 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.28), 0 0 0 1px var(--line); animation: sheetUp .42s var(--ease) both; }
+.mapcard.peek.out { animation: sheetDown .3s var(--ease) both; }
+.mapcard.peek .mapfold { flex: 1 1 auto; min-height: 0; }
+.mapcard.peek .mapfoldin { display: flex; flex-direction: column; height: 100%; }
+.mapcard.peek .mapview { flex: 1 1 auto; height: auto; min-height: 0; }
+.mapcard.peek .mapinfo { max-height: 84px; overflow: auto; margin-bottom: 8px; padding: 8px 12px; }
 .mapcard.peek .mapfilters, .mapcard.peek .maplegend, .mapcard.peek #mapToggle { display: none; }
 .mapcard.peek .maphead { padding: 10px 12px 6px; }
 .mapcard.peek .maphead h2 { font-size: 16px; }
-.mapcard.peek .mapview { height: clamp(220px, 36vh, 340px); }
-@media (min-width: 720px) { .mapcard.peek { left: auto; width: 520px; right: 18px; } }
+body { transition: padding .42s var(--ease); }
+body.peeking { padding-bottom: calc(46vh + 16px); }
+@keyframes sheetUp { from { transform: translateY(105%); } to { transform: none; } }
+@keyframes sheetDown { from { transform: none; } to { transform: translateY(105%); } }
+@keyframes sheetIn { from { transform: translateX(108%); } to { transform: none; } }
+@keyframes sheetOut { from { transform: none; } to { transform: translateX(108%); } }
+@media (min-width: 1100px) {
+  .mapcard.peek { left: auto; right: 14px; top: 14px; bottom: 14px; width: 460px; height: auto; animation-name: sheetIn; }
+  .mapcard.peek.out { animation-name: sheetOut; }
+  .mapcard.peek .mapinfo { max-height: 120px; }
+  body.peeking { padding-bottom: 0; padding-right: 490px; }
+}
+@media (prefers-reduced-motion: reduce) { .mapcard.peek, body { animation: none !important; transition: none !important; } }
 
 .maphead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px 10px; }
 .maphead h2 { margin: 0; font-size: 19px; font-weight: 650; letter-spacing: -.02em; flex: 1 1 auto; }
@@ -443,6 +460,7 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
 
 
   <p class="disclaimer">Aide à la lecture uniquement. Le briefing officiel fait foi : vérifie toujours en entier les NOTAM de départ, d’arrivée et de dégagement. Le rangement repose sur le texte des NOTAM : en cas de doute, ouvre « Autre ».</p>
+  <p class="ver" id="ver">EasyNotam · version 50 · 1 nov. 2026<span id="verMotion"></span></p>
 </div>
 
 <script>
@@ -908,6 +926,10 @@ const NotamCore = (() => {
     const x = normText(item.text);
     const subj = item.q && item.q.code ? item.q.code.slice(1, 3) : '';
     /* NOTAM d'aérodrome : section « aérodromes », ou NOTAM en route dont le lieu est un aérodrome (pas une FIR) */
+    /* zone R/D qui n'est plus « activable par NOTAM » mais active en permanence (H24) : à traiter comme zone active */
+    if (/\bLF[\s-]*[RDP]\s*\d/.test(x) && /(?:ANNOUNCED BY NOTAM|ANNONCEE?S? PAR NOTAM|ACTIVABLE PAR NOTAM|ACTIVITY ANNOUNCED)/.test(x) && /LIRE\s*:?\s*H24/.test(x)) {
+      return { cat: CAT.zones_on, why: 'Zone désormais active en permanence (H24), plus activable par NOTAM' };
+    }
     const isAd = item.area === 'ad' || (item.place && PLACE_RE.test(item.place) && !/ FIR\b/.test(item.place));
     /* un NOTAM TRIGGER ou « SUP AIP actif » reste un SUP AIP, même rangé sous un aérodrome */
     if (isAd && RE_SUP.test(x)) {
@@ -917,6 +939,10 @@ const NotamCore = (() => {
           ? { cat: CAT.sup_off, why: 'NOTAM TRIGGER SUP AIP, activable par NOTAM' }
           : { cat: CAT.sup_maybe, why: 'NOTAM TRIGGER SUP AIP, sans mention d’activation par NOTAM' };
       }
+    }
+    /* création ou activation d'une zone (ZRT, ZIT, zone réglementée « activée ») : « Zones actives », même sous un aérodrome */
+    if (isAd && (RE_ZTEMP.test(x) || (subj.charAt(0) === 'R' && item.q && item.q.code && item.q.code.slice(3, 5) === 'CA'))) {
+      return { cat: CAT.zones_on, why: 'Zone interdite ou réglementée temporaire' };
     }
     if (isAd) {
       const lv = adLevel(item, x, subj, ctx);
@@ -1376,7 +1402,9 @@ const NotamCore = (() => {
   function zoneRelated(it) {
     var t = (it.text || '').toUpperCase();
     if (C.supRefs(it).length) return true;
-    return /\bLF[\s-]*(R|D|P|TRA|TSA|CBA|ZIT)[\s-]*\d/.test(t) || /\b(ZRT|ZDT|TSA|TRA|ZIT)\b/.test(t) || /\bZONES?\s+(R|D|P)\b/.test(t);
+    var qc = it.q && it.q.code ? it.q.code : '';
+    return /\bLF[\s-]*(R|D|P|TRA|TSA|CBA|ZIT)[\s-]*\d/.test(t) || /\b(ZRT|ZDT|TSA|TRA|ZIT)\b/.test(t) || /\bZONES?\s+(R|D|P)\b/.test(t)
+      || /\bZONES?\s+(REGLEMENTEES?|INTERDITES?|DANGEREUSES?)\b/.test(t) || /^Q[RW][RDPT]CA$/.test(qc);
   }
   function mapItems(vis) {
     var out = [], ads = {};
@@ -1502,20 +1530,29 @@ const NotamCore = (() => {
     var c = $('#mapcard'); if (c.classList.contains('peek')) return;
     var h = c.offsetHeight + 18, gap = document.createElement('div');
     gap.id = 'peekGap'; gap.style.height = h + 'px'; c.parentNode.insertBefore(gap, c);
-    mp.wasShut = c.classList.contains('shut'); c.classList.remove('shut'); c.classList.add('peek');
+    mp.wasShut = c.classList.contains('shut'); c.classList.remove('shut'); c.classList.add('peek'); document.body.classList.add('peeking');
     $('#toMap').classList.remove('show');
   }
   function peekClose() {
-    var c = $('#mapcard'), g = $('#peekGap');
-    c.classList.remove('peek'); if (g) g.remove();
-    if (mp.wasShut) c.classList.add('shut');
-    mp.wasShut = false; updToMap();
+    var c = $('#mapcard');
+    if (!c.classList.contains('peek') || c.classList.contains('out')) return;
+    c.classList.add('out'); document.body.classList.remove('peeking');
+    setTimeout(function () {
+      var g = $('#peekGap'); c.classList.remove('peek', 'out'); if (g) g.remove();
+      if (mp.wasShut) c.classList.add('shut');
+      mp.wasShut = false; updToMap();
+    }, 320);
   }
   function showOnMap(key) {
     var list = mp.byKey && mp.byKey[key]; if (!list || !list.length) return;
     var c = $('#mapcard'), r = c.getBoundingClientRect();
     var visible = r.top < innerHeight * 0.6 && r.bottom > innerHeight * 0.4 && !c.classList.contains('shut');
     if (!visible && !c.classList.contains('peek')) peekOpen();
+    var st = document.querySelector('.strip[data-key="' + (window.CSS && CSS.escape ? CSS.escape(key) : key) + '"]');
+    if (st && window.innerWidth < 1100) {
+      var sr = st.getBoundingClientRect();
+      if (sr.top > 90 || sr.top < 0) setTimeout(function () { window.scrollBy({ top: sr.top - 80, behavior: 'smooth' }); }, 60);
+    }
     (mp.hl || []).forEach(function (o) { o.g.classList.remove('sel'); });
     if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
     mp.hl = list; list.forEach(function (o) { o.g.classList.add('sel'); });
@@ -1917,11 +1954,12 @@ const NotamCore = (() => {
   });
   $('#results').addEventListener('click', function (e) { var l = e.target.closest('.supl'); if (!l) return; e.preventDefault(); supOpen(l.getAttribute('data-sup')); });
   $('#bExport').addEventListener('click', exportList);
+  try { if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) $('#verMotion').textContent = ' · animations réduites par cet appareil'; } catch (e) { /* ignoré */ }
   $('#peekClose').addEventListener('click', peekClose);
   $('#peekFull').addEventListener('click', function () {
     peekClose();
     if (!mp.open) $('#mapToggle').click();
-    setTimeout(function () { $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30);
+    setTimeout(function () { $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 360);
   });
   $('#toMap').addEventListener('click', function () {
     if (!mp.open) $('#mapToggle').click();
