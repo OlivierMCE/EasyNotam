@@ -221,6 +221,9 @@ mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius
 /* Notes : un post-it jaune discret sous le texte du NOTAM */
 .tomap { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: var(--surface); border: 0; border-radius: 999px; box-shadow: 0 4px 18px rgba(0,0,0,.18); cursor: pointer; opacity: 0; transform: translate(-50%, 12px); pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); }
 .tomap.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
+.maplink { display: none; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 11px; font: inherit; font-size: 12.5px; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 999px; cursor: pointer; width: fit-content; }
+.strip.onmap .maplink { display: inline-flex; }
+.maplink:hover { filter: brightness(.95); }
 .noterow { margin-top: 2px; }
 .addnote { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .addnote:hover { background: var(--accent-soft); filter: brightness(.95); }
@@ -283,6 +286,15 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
 /* Carte */
 .mapcard { margin: 0 0 18px; padding: 0; border-radius: 24px; overflow: hidden; background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), var(--shadow); }
 .mapcard[hidden] { display: none; }
+.peekbtns { display: none; gap: 6px; }
+.mapcard.peek .peekbtns { display: inline-flex; }
+.mapcard.peek { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 60; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.28), 0 0 0 1px var(--line); animation: rise .3s var(--ease); }
+.mapcard.peek .mapfilters, .mapcard.peek .maplegend, .mapcard.peek #mapToggle { display: none; }
+.mapcard.peek .maphead { padding: 10px 12px 6px; }
+.mapcard.peek .maphead h2 { font-size: 16px; }
+.mapcard.peek .mapview { height: clamp(220px, 36vh, 340px); }
+@media (min-width: 720px) { .mapcard.peek { left: auto; width: 520px; right: 18px; } }
+
 .maphead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px 10px; }
 .maphead h2 { margin: 0; font-size: 19px; font-weight: 650; letter-spacing: -.02em; flex: 1 1 auto; }
 .mapfold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s var(--ease); }
@@ -409,6 +421,7 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
       <h2>Carte</h2>
       <span class="status" id="mapcount" style="margin:0"></span>
       <button class="btn small" type="button" id="mapToggle" aria-pressed="true">Masquer</button>
+      <span class="peekbtns"><button class="btn small" type="button" id="peekFull">Carte entière</button><button class="btn small" type="button" id="peekClose" aria-label="Fermer la carte flottante">✕</button></span>
     </div>
     <div class="mapfold"><div class="mapfoldin">
       <div class="mapfilters" id="mapfilters" role="group" aria-label="Filtrer la carte"></div>
@@ -1161,7 +1174,7 @@ const NotamCore = (() => {
     return '<article class="strip' + (r.dim ? ' dim' : '') + (lv ? ' ad' : '') + (done ? ' done' : '') + (note ? ' has-note' : '') + '" data-key="' + esc(key) + '" tabindex="0" role="button" aria-expanded="' + (done ? 'false' : 'true') + '">' +
       '<div class="sumrow"><div class="sumin"><div class="sumc">' + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span><span class="notemk">' + (note ? '📝 ' + esc(note.replace(/\s+/g, ' ').slice(0, 50)) : '') + '</span><span class="snip">' + esc(snip) + '</span><span class="okmark">✓ non facteur</span></div></div></div>' +
       '<div class="fold"><div class="foldin"><div class="cols">' +
-      '<div class="idc">' + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '</div>' +
+      '<div class="idc">' + '<span class="nid">' + esc(key) + '</span><span class="icao">' + esc(locTxt) + '</span>' + (pn ? '<span class="plc">' + esc(pn) + '</span>' : '') + (it.section ? '<span class="plc">' + esc(it.section) + '</span>' : '') + '<button type="button" class="maplink" data-map="' + esc(key) + '">Voir sur la carte</button></div>' +
       '<div class="body"><pre class="etext">' + (it.text ? textHtml(it.text, kw) : esc(it.raw || '(texte vide)')) + '</pre>' +
       (it.schedule ? '<p class="sched"><b>D)</b> ' + esc(it.schedule) + '</p>' : '') +
       (it.lowerTxt || it.upperTxt ? '<p class="lim">Limites : ' + esc(it.lowerTxt || '—') + ' → ' + esc(it.upperTxt || '—') + '</p>' : '') +
@@ -1439,6 +1452,7 @@ const NotamCore = (() => {
     });
     mp.items = items;
     updToMap();
+    markOnMap();
     $('#mapcount').textContent = Object.keys(nKeys).length + ' NOTAM sur la carte';
     if (mp.lastA !== a || !mp.view) {
       mp.lastA = a;
@@ -1481,10 +1495,49 @@ const NotamCore = (() => {
     s.scrollIntoView({ behavior: 'smooth', block: 'center' });
     s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
   }
+  function markOnMap() {
+    document.querySelectorAll('.strip').forEach(function (s) { s.classList.toggle('onmap', !!(mp.byKey && mp.byKey[s.getAttribute('data-key')])); });
+  }
+  function peekOpen() {
+    var c = $('#mapcard'); if (c.classList.contains('peek')) return;
+    var h = c.offsetHeight + 18, gap = document.createElement('div');
+    gap.id = 'peekGap'; gap.style.height = h + 'px'; c.parentNode.insertBefore(gap, c);
+    mp.wasShut = c.classList.contains('shut'); c.classList.remove('shut'); c.classList.add('peek');
+    $('#toMap').classList.remove('show');
+  }
+  function peekClose() {
+    var c = $('#mapcard'), g = $('#peekGap');
+    c.classList.remove('peek'); if (g) g.remove();
+    if (mp.wasShut) c.classList.add('shut');
+    mp.wasShut = false; updToMap();
+  }
+  function showOnMap(key) {
+    var list = mp.byKey && mp.byKey[key]; if (!list || !list.length) return;
+    var c = $('#mapcard'), r = c.getBoundingClientRect();
+    var visible = r.top < innerHeight * 0.6 && r.bottom > innerHeight * 0.4 && !c.classList.contains('shut');
+    if (!visible && !c.classList.contains('peek')) peekOpen();
+    (mp.hl || []).forEach(function (o) { o.g.classList.remove('sel'); });
+    if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
+    mp.hl = list; list.forEach(function (o) { o.g.classList.add('sel'); });
+    mp.sel = list[0]; mapInfo(list[0]);
+    var x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    function add(x, y, rx, ry) { x0 = Math.min(x0, x - rx); x1 = Math.max(x1, x + rx); y0 = Math.min(y0, y - ry); y1 = Math.max(y1, y + ry); }
+    list.forEach(function (o) {
+      if (o.t === 'poly') o.p.forEach(function (q) { add(px(q[1]), py(q[0]), 0, 0); });
+      else if (o.t === 'circle') { var ry = o.r / 60; add(px(o.lon), py(o.lat), ry * KX / Math.cos(o.lat * Math.PI / 180), ry); }
+    });
+    if (x1 < x0) return;
+    var go = function () {
+      var s = mapSize(), pad = 0.35, w = Math.max(x1 - x0, 0.5) * (1 + pad * 2), h = Math.max(y1 - y0, 0.5) * (1 + pad * 2);
+      mp.view = { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: Math.max(w, h * s.w / s.h) };
+      applyView();
+    };
+    requestAnimationFrame(function () { requestAnimationFrame(go); });
+  }
   function updToMap() {
     var c = $('#mapcard'), b = $('#toMap'); if (!c || !b) return;
     var r = c.getBoundingClientRect();
-    b.classList.toggle('show', !c.hidden && r.bottom < 40);
+    b.classList.toggle('show', !c.hidden && !c.classList.contains('peek') && r.bottom < 40);
   }
   function mapRefresh() { if (!$('#mapcard').hidden) renderMap(visible()); }
   function initMap() {
@@ -1840,6 +1893,8 @@ const NotamCore = (() => {
     if (s && e.target === s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleStrip(s); }
   });
   $('#results').addEventListener('click', function (e) {
+    var ml = e.target.closest('.maplink');
+    if (ml) { showOnMap(ml.getAttribute('data-map')); return; }
     var b = e.target.closest('.addnote');
     if (!b) return;
     var row = b.parentNode;
@@ -1862,6 +1917,12 @@ const NotamCore = (() => {
   });
   $('#results').addEventListener('click', function (e) { var l = e.target.closest('.supl'); if (!l) return; e.preventDefault(); supOpen(l.getAttribute('data-sup')); });
   $('#bExport').addEventListener('click', exportList);
+  $('#peekClose').addEventListener('click', peekClose);
+  $('#peekFull').addEventListener('click', function () {
+    peekClose();
+    if (!mp.open) $('#mapToggle').click();
+    setTimeout(function () { $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30);
+  });
   $('#toMap').addEventListener('click', function () {
     if (!mp.open) $('#mapToggle').click();
     $('#mapcard').scrollIntoView({ behavior: 'smooth', block: 'start' });
