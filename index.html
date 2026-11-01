@@ -895,7 +895,17 @@ const NotamCore = (() => {
     const x = normText(item.text);
     const subj = item.q && item.q.code ? item.q.code.slice(1, 3) : '';
     /* NOTAM d'aérodrome : section « aérodromes », ou NOTAM en route dont le lieu est un aérodrome (pas une FIR) */
-    if (item.area === 'ad' || (item.place && PLACE_RE.test(item.place) && !/ FIR\b/.test(item.place))) {
+    const isAd = item.area === 'ad' || (item.place && PLACE_RE.test(item.place) && !/ FIR\b/.test(item.place));
+    /* un NOTAM TRIGGER ou « SUP AIP actif » reste un SUP AIP, même rangé sous un aérodrome */
+    if (isAd && RE_SUP.test(x)) {
+      if (RE_SUP_ACTIVE.test(x)) return { cat: CAT.sup_on, why: 'Le NOTAM indique « SUP AIP actif »' };
+      if (RE_TRIGGER.test(x)) {
+        return RE_BYNOTAM.test(x)
+          ? { cat: CAT.sup_off, why: 'NOTAM TRIGGER SUP AIP, activable par NOTAM' }
+          : { cat: CAT.sup_maybe, why: 'NOTAM TRIGGER SUP AIP, sans mention d’activation par NOTAM' };
+      }
+    }
+    if (isAd) {
       const lv = adLevel(item, x, subj, ctx);
       return { cat: CAT.aerodrome, level: lv.id, why: lv.why };
     }
