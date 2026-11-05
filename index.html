@@ -219,10 +219,7 @@ mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius
 .strip.has-note:not(.done) .addnote { display: none; }
 
 /* Notes : un post-it jaune discret sous le texte du NOTAM */
-.legal { display: grid; gap: 8px; padding: 18px 20px; border-radius: 18px; background: var(--fill); font-size: 12.5px; line-height: 1.5; color: var(--muted); }
-.legal h2 { margin: 0; font-size: 13.5px; font-weight: 650; color: var(--ink); letter-spacing: -.01em; }
-.legal p { margin: 0; text-wrap: pretty; max-width: 90ch; }
-.legal b { color: var(--ink); font-weight: 600; }
+.legal { margin: 0; font-size: 11px; line-height: 1.45; color: var(--muted); opacity: .75; text-align: center; max-width: 70ch; margin-inline: auto; text-wrap: pretty; }
 .ver { margin: -6px 0 0; font-size: 12px; color: var(--muted); text-align: center; opacity: .8; }
 .maplink { display: none; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 11px; font: inherit; font-size: 12.5px; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 999px; cursor: pointer; width: fit-content; }
 .strip.onmap .maplink { display: inline-flex; }
@@ -301,6 +298,10 @@ input[type="search"]:focus { outline: none; box-shadow: inset 0 0 0 1px var(--ac
 .mapcard.peek .maphead { padding: 10px 12px 6px; }
 .mapcard.peek .maphead h2 { font-size: 16px; }
 body { transition: padding .42s var(--ease); }
+.toMap { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 50; transform: translate(-50%, 12px); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s, transform .25s, visibility 0s .25s; padding: 9px 16px; border: 0; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; color: #fff; background: var(--accent, #0a84ff); box-shadow: 0 6px 20px rgba(0,0,0,.25); cursor: pointer; }
+.toMap.on { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0); transition: opacity .25s, transform .25s; }
+body.peeking .toMap { display: none; }
+@media (prefers-reduced-motion: reduce) { .toMap { transition: none !important; } }
 body.peeking { padding-bottom: calc(46vh + 16px); }
 @keyframes sheetUp { from { transform: translateY(105%); } to { transform: none; } }
 @keyframes sheetDown { from { transform: none; } to { transform: translateY(105%); } }
@@ -352,6 +353,18 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 .mgrid { stroke: var(--line); stroke-width: calc(var(--u) * 1); fill: none; }
 .mcity { fill: var(--muted); }
 .mctxt { fill: var(--muted); font-family: var(--font); font-weight: 500; paint-order: stroke; stroke: var(--surface); stroke-width: calc(var(--u) * 3); stroke-linejoin: round; pointer-events: none; }
+.basebar { position: absolute; right: 56px; top: 10px; z-index: 5; width: min(300px, calc(100% - 70px)); box-sizing: border-box; display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--glass-card); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: inset 0 0 0 1px var(--glass-edge), var(--shadow); font-size: 13px; cursor: default; }
+#bBase { display: grid; place-items: center; }
+#bBase[aria-pressed=true] { color: var(--accent); }
+.basebar[hidden] { display: none; }
+.baserow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0; }
+.baserow input[type=range] { flex: 1 1 140px; min-width: 100px; }
+.basename { flex: 1 1 120px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.basemsg { margin: 0; font-size: 12px; color: var(--muted); }
+.basemsg:empty { display: none; }
+.mtiles { pointer-events: none; }
+.mapcard.peek .basebar, .mapcard.peek #bBase { display: none; }
+.mapzoom button svg { display: block; }
 .mshape { --c: var(--t-grey); cursor: pointer; transition: opacity .3s; }
 .mshape .f { fill: var(--c); fill-opacity: .2; stroke: var(--c); stroke-width: calc(var(--u) * 2); stroke-linejoin: round; transition: fill-opacity .2s; }
 .mshape:hover .f { fill-opacity: .38; }
@@ -448,7 +461,14 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
       <div class="mapfilters" id="mapfilters" role="group" aria-label="Filtrer la carte"></div>
       <div class="mapview" id="mapview">
         <svg id="msvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de France avec les NOTAM"></svg>
-        <div class="mapzoom"><button type="button" id="mZin" aria-label="Zoomer">+</button><button type="button" id="mZout" aria-label="Dézoomer">−</button><button type="button" id="mHome" aria-label="Recentrer" style="font-size:15px">⌖</button></div>
+        <div class="mapzoom"><button type="button" id="mZin" aria-label="Zoomer">+</button><button type="button" id="mZout" aria-label="Dézoomer">−</button><button type="button" id="mHome" aria-label="Recentrer" style="font-size:15px">⌖</button><button type="button" id="bBase" aria-label="Fond de carte" aria-pressed="false" aria-expanded="false" title="Fond de carte"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/></svg></button></div>
+        <div class="basebar" id="basebar" hidden>
+        <label class="baserow"><input type="checkbox" id="baseOn" disabled> <span>Afficher le fond de carte</span></label>
+        <div class="baserow"><span id="baseName" class="basename">Aucun fichier</span><button class="btn small" type="button" id="baseChoose">Choisir un fichier .mbtiles</button><button class="btn small" type="button" id="baseRemove" hidden>Retirer</button></div>
+        <label class="baserow" id="baseOpRow" hidden><span>Opacité</span><input type="range" id="baseOp" min="20" max="100" value="100" aria-label="Opacité du fond de carte"></label>
+        <p class="basemsg" id="baseMsg" role="status"></p>
+        <input type="file" id="baseFile" hidden>
+      </div>
       </div>
       <div class="mapinfo" id="mapinfo" hidden></div>
       <div class="maplegend">
@@ -462,18 +482,11 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
   <div id="results"></div>
 
 
-  <section class="legal" aria-label="Mentions légales">
-    <h2>Mentions légales</h2>
-    <p><b>Outil d’aide à la lecture, non officiel.</b> EasyNotam est un outil personnel et indépendant de tri et de visualisation des NOTAM et des SUP AIP. Il n’est ni édité, ni validé, ni approuvé par le SIA, la DGAC, la DSNA ou tout autre organisme officiel. Il ne constitue ni un briefing officiel, ni un outil de préparation de vol, ni une source d’information aéronautique faisant foi.</p>
-    <p><b>Sources officielles.</b> Seuls le briefing officiel (SOFIA-Briefing), les NOTAM, les SUP AIP et l’AIP France en vigueur, ainsi que les informations des organismes de la circulation aérienne, font foi. L’utilisateur doit lire en entier les NOTAM de départ, d’arrivée, de dégagement et de route, et vérifier toute information avant le vol.</p>
-    <p><b>Limites de l’outil.</b> La lecture des PDF, le classement par catégories (y compris « non facteur »), les noms d’aérodromes, les contours de zones et leur affichage sur la carte reposent sur des traitements automatiques du texte. Ils peuvent être incomplets, erronés, obsolètes ou mal interprétés ; la carte est approximative et ne peut servir à la navigation. L’absence d’un NOTAM, d’une zone ou d’une alerte dans l’outil ne prouve en aucun cas qu’il n’existe pas. Le logiciel peut contenir des bugs et être indisponible sans préavis.</p>
-    <p><b>Responsabilité.</b> L’outil est fourni « en l’état », sans garantie d’aucune sorte, expresse ou implicite, notamment d’exactitude, d’exhaustivité, d’actualité ou d’adéquation à un usage particulier. L’utilisation est faite sous la seule responsabilité de l’utilisateur. Le commandant de bord reste seul responsable de la préparation et de la conduite du vol. Dans les limites autorisées par la loi, l’auteur décline toute responsabilité pour tout dommage direct ou indirect (matériel, corporel, financier, sanction administrative ou autre) résultant de l’utilisation de l’outil, de son indisponibilité ou d’une erreur ou omission, y compris un bug logiciel, quelles qu’en soient les conséquences sur un vol réel.</p>
-    <p><b>Données.</b> Les PDF importés sont lus et traités sur votre appareil ; leur contenu n’est pas envoyé à l’auteur. Vos notes et vos choix « non facteur » restent enregistrés sur votre appareil. Les documents officiels reproduits ou analysés (NOTAM, SUP AIP, AIP) appartiennent à leurs propriétaires et sont cités à titre d’aide à la lecture.</p>
-    <p>En utilisant EasyNotam, vous reconnaissez avoir pris connaissance de ces mentions et les acceptez.</p>
-  </section>
-  <p class="ver" id="ver">EasyNotam · version 56 · 5 nov. 2026<span id="verMotion"></span></p>
+  <p class="legal">Mentions légales : outil d’aide à la lecture, non officiel. Seul le briefing du site officiel (SOFIA-Briefing, SIA) fait foi. L’auteur décline toute responsabilité en cas d’erreur, d’omission ou de bug, notamment sur un vol réel ; le commandant de bord reste seul responsable de la préparation de son vol.</p>
+  <p class="ver" id="ver">EasyNotam · version 61 · 5 nov. 2026<span id="verMotion"></span></p>
 </div>
 
+<button type="button" class="toMap" id="toMap" aria-hidden="true" tabindex="-1">↑ Carte</button>
 <script>
 'use strict';
 /* Noyau NOTAM : lecture du briefing imprimé de SOFIA-Briefing (PIB), rangement par catégorie, surlignage. Aucune dépendance DOM. */
@@ -1268,7 +1281,6 @@ const NotamCore = (() => {
     b.textContent = (state.hideDone ? 'Afficher les NOTAM grisés' : 'Masquer les NOTAM grisés') + (n ? ' (' + n + ')' : '');
   }
   /* ---------- Carte ---------- */
-  var KX = 0.688; // cos(46,5°) : projection plate carrée corrigée
   var FR = [[51.05,2.54],[50.95,2.63],[50.85,2.58],[50.79,2.60],[50.75,2.88],[50.70,3.17],[50.60,3.30],[50.52,3.60],[50.37,3.65],[50.28,4.10],[50.10,4.20],[50.13,4.83],[49.97,4.87],[49.78,4.85],[49.60,5.20],[49.55,5.45],[49.52,5.80],[49.46,5.97],[49.37,6.17],[49.20,6.37],[49.20,7.00],[49.11,7.07],[49.05,7.35],[49.04,7.95],[48.97,8.17],[48.85,8.20],[48.60,7.80],[48.30,7.78],[48.00,7.57],[47.59,7.59],[47.49,7.38],[47.42,7.15],[47.30,7.00],[47.10,6.85],[46.95,6.45],[46.60,6.10],[46.45,6.14],[46.25,6.10],[46.15,6.05],[46.20,6.30],[46.38,6.78],[46.15,6.88],[46.07,6.97],[45.93,7.05],[45.78,6.95],[45.50,7.10],[45.25,6.95],[44.95,6.95],[44.67,7.08],[44.42,6.95],[44.30,7.05],[44.15,7.30],[44.10,7.60],[43.78,7.53],[43.70,7.27],[43.55,6.95],[43.42,6.75],[43.20,6.65],[43.10,6.10],[43.08,5.90],[43.15,5.65],[43.20,5.40],[43.30,5.35],[43.35,5.10],[43.40,4.85],[43.32,4.50],[43.45,4.40],[43.52,4.15],[43.40,3.70],[43.25,3.30],[43.00,3.05],[42.70,3.03],[42.44,3.17],[42.46,2.85],[42.35,2.50],[42.45,2.10],[42.55,1.72],[42.60,1.45],[42.78,1.20],[42.85,0.70],[42.78,0.40],[42.90,0.10],[42.80,-0.30],[43.00,-0.70],[42.95,-1.00],[43.15,-1.35],[43.27,-1.62],[43.37,-1.78],[43.48,-1.56],[43.65,-1.45],[44.00,-1.28],[44.40,-1.22],[44.65,-1.25],[45.00,-1.15],[45.57,-1.08],[45.95,-1.15],[46.15,-1.17],[46.35,-1.50],[46.50,-1.80],[46.80,-2.10],[47.20,-2.25],[47.27,-2.20],[47.30,-2.50],[47.48,-2.80],[47.55,-3.10],[47.74,-3.37],[47.85,-3.90],[47.95,-4.35],[48.03,-4.72],[48.10,-4.50],[48.25,-4.62],[48.38,-4.78],[48.50,-4.70],[48.60,-4.60],[48.72,-4.10],[48.70,-3.95],[48.80,-3.60],[48.82,-3.20],[48.75,-3.00],[48.60,-2.60],[48.68,-2.32],[48.65,-2.02],[48.63,-1.52],[48.84,-1.60],[49.10,-1.57],[49.37,-1.80],[49.72,-1.95],[49.70,-1.60],[49.67,-1.27],[49.40,-1.17],[49.37,-0.85],[49.35,-0.30],[49.28,-0.20],[49.35,0.05],[49.42,0.23],[49.48,0.08],[49.70,0.20],[49.88,0.90],[49.93,1.08],[50.06,1.37],[50.20,1.55],[50.35,1.55],[50.50,1.58],[50.73,1.60],[50.87,1.58],[50.97,1.85]];
   var CORSE = [[43.00,9.40],[42.70,9.45],[42.30,9.52],[41.90,9.40],[41.60,9.30],[41.38,9.15],[41.50,8.80],[41.70,8.80],[41.90,8.62],[42.15,8.60],[42.35,8.55],[42.55,8.65],[42.65,9.00],[42.75,9.35],[42.95,9.35]];
   var COASTS = [
@@ -1281,8 +1293,11 @@ const NotamCore = (() => {
   var CITIES = [['Paris',48.86,2.35],['Lyon',45.76,4.84],['Marseille',43.30,5.37],['Toulouse',43.60,1.44],['Bordeaux',44.84,-0.58],['Nantes',47.22,-1.55],['Lille',50.63,3.06],['Strasbourg',48.57,7.75],['Nice',43.70,7.27],['Brest',48.39,-4.49],['Rennes',48.11,-1.68],['Montpellier',43.61,3.88],['Clermont-Fd',45.78,3.08],['Dijon',47.32,5.04],['Perpignan',42.70,2.90],['Limoges',45.83,1.26],['Rouen',49.44,1.10],['Metz',49.12,6.18],['Bastia',42.70,9.45],['Ajaccio',41.93,8.74]];
   var NS = 'http://www.w3.org/2000/svg';
   var mp = { off: new Set(), hideDone: false, open: true, view: null, shapes: [], texts: [], sel: null, lastA: null, ptrs: new Map(), pinch: null, moved: 0 };
-  function px(lon) { return lon * KX; }
-  function py(lat) { return -lat; }
+  /* Projection Web Mercator : x = longitude (°), y = -ordonnée Mercator (°). Une tuile (z, x, y) occupe exactement le carré [x·360/2^z − 180 ; …] : le fond de carte s'aligne sans déformation. */
+  function mer(lat) { lat = Math.max(-85, Math.min(85, lat)); return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 180 / Math.PI; }
+  function px(lon) { return lon; }
+  function py(lat) { return -mer(lat); }
+  function sec(lat) { return 1 / Math.cos(lat * Math.PI / 180); }
   function svgEl(n, at, par) { var e = document.createElementNS(NS, n); for (var k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; }
   function polyD(pts, close) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + px(p[1]).toFixed(3) + ' ' + py(p[0]).toFixed(3); }).join('') + (close ? 'Z' : ''); }
   function mapSize() { var v = $('#mapview'); return { w: v.clientWidth || 600, h: v.clientHeight || 400 }; }
@@ -1292,6 +1307,7 @@ const NotamCore = (() => {
     $('#msvg').style.setProperty('--u', (1 / k) + 'px');
     $('#msvg').setAttribute('viewBox', (v.cx - v.w / 2) + ' ' + (v.cy - h / 2) + ' ' + v.w + ' ' + h);
     mp.shapes.forEach(function (o) { if (o.px) o.el.setAttribute('r', o.px / k); });
+    bmUpdate();
     declutter(k);
     mp.texts.forEach(function (o) { o.el.setAttribute('transform', 'translate(' + o.x + ' ' + o.y + ') scale(' + (1 / k) + ')'); });
   }
@@ -1317,7 +1333,7 @@ const NotamCore = (() => {
   }
   function zoomAt(f, sx, sy) {
     var s = mapSize(), v = mp.view, h = v.w * s.h / s.w;
-    var nw = Math.min(Math.max(v.w / f, 0.15), 40);
+    var nw = Math.min(Math.max(v.w / f, 0.04), 40);
     var wx = v.cx - v.w / 2 + (sx / s.w) * v.w, wy = v.cy - h / 2 + (sy / s.h) * h;
     var nh = nw * s.h / s.w;
     mp.view = { w: nw, cx: wx - (sx / s.w - .5) * nw, cy: wy - (sy / s.h - .5) * nh };
@@ -1339,7 +1355,7 @@ const NotamCore = (() => {
   function worldBox(items) {
     var b = null;
     function add(lat, lon, rNm) {
-      var dx = (rNm || 0) / 60 * KX, dy = (rNm || 0) / 60, x = px(lon), y = py(lat);
+      var dy = (rNm || 0) / 60 * sec(lat), dx = dy, x = px(lon), y = py(lat);
       var q = { x0: x - dx, x1: x + dx, y0: y - dy, y1: y + dy };
       if (!b) b = q; else { b.x0 = Math.min(b.x0, q.x0); b.x1 = Math.max(b.x1, q.x1); b.y0 = Math.min(b.y0, q.y0); b.y1 = Math.max(b.y1, q.y1); }
     }
@@ -1464,7 +1480,7 @@ const NotamCore = (() => {
     if (!a || !a.total) { card.hidden = true; return; }
     card.hidden = false;
     var svg = $('#msvg'); svg.innerHTML = ''; mp.shapes = []; mp.texts = []; mp.byKey = {};
-    buildBase(svg);
+    buildBase(svg); bmInit(svg);
     var nfN = 0, counts = {}, order = [];
     vis.forEach(function (r) {
       if (r.cat.id === 'aerodrome' && !zoneRelated(r.item)) return;
@@ -1493,7 +1509,7 @@ const NotamCore = (() => {
         nExact++;
       } else if (o.t === 'circle') {
         var cx = px(o.lon), cy = py(o.lat);
-        var ry = o.r / 60, rx = ry * KX / Math.cos(o.lat * Math.PI / 180);
+        var ry = o.r / 60 * sec(o.lat), rx = ry;
         svgEl('ellipse', { cx: cx, cy: cy, rx: rx, ry: ry, class: 'f' }, g);
         nExact++;
       } else {
@@ -1586,7 +1602,7 @@ const NotamCore = (() => {
     function add(x, y, rx, ry) { x0 = Math.min(x0, x - rx); x1 = Math.max(x1, x + rx); y0 = Math.min(y0, y - ry); y1 = Math.max(y1, y + ry); }
     list.forEach(function (o) {
       if (o.t === 'poly') o.p.forEach(function (q) { add(px(q[1]), py(q[0]), 0, 0); });
-      else if (o.t === 'circle') { var ry = o.r / 60; add(px(o.lon), py(o.lat), ry * KX / Math.cos(o.lat * Math.PI / 180), ry); }
+      else if (o.t === 'circle') { var ry = o.r / 60 * sec(o.lat); add(px(o.lon), py(o.lat), ry, ry); }
     });
     if (x1 < x0) return;
     var go = function () {
@@ -1597,6 +1613,288 @@ const NotamCore = (() => {
     requestAnimationFrame(function () { requestAnimationFrame(go); });
   }
   function mapRefresh() { if (!$('#mapcard').hidden) renderMap(visible()); }
+  /* ---------- Fond de carte : lecteur MBTiles (SQLite lu par morceaux, sans tout charger en mémoire) ---------- */
+  function MBReader(blob) { this.b = blob; this.chunks = new Map(); this.ps = 4096; this.U = 4096; this.per = 16; }
+  MBReader.prototype.page = async function (n) {
+    var per = this.per, ci = Math.floor((n - 1) / per), ch = this.chunks.get(ci);
+    if (ch) { this.chunks.delete(ci); this.chunks.set(ci, ch); }
+    else {
+      ch = new Uint8Array(await this.b.slice(ci * per * this.ps, (ci + 1) * per * this.ps).arrayBuffer());
+      this.chunks.set(ci, ch);
+      if (this.chunks.size > 320) this.chunks.delete(this.chunks.keys().next().value);
+    }
+    var o = ((n - 1) % per) * this.ps;
+    return ch.subarray(o, o + this.ps);
+  };
+  function mbU32(b, o) { return ((b[o] * 16777216) + (b[o + 1] << 16) + (b[o + 2] << 8) + b[o + 3]); }
+  function mbVar(b, p) { var v = 0, i; for (i = 0; i < 8; i++) { var c = b[p + i]; v = v * 128 + (c & 127); if (!(c & 128)) return [v, p + i + 1]; } v = v * 256 + b[p + 8]; return [v, p + 9]; }
+  MBReader.prototype.init = async function () {
+    var h = new Uint8Array(await this.b.slice(0, 100).arrayBuffer());
+    if (String.fromCharCode.apply(null, h.subarray(0, 15)) !== 'SQLite format 3') throw new Error('Ce fichier n’est pas un MBTiles (SQLite).');
+    var ps = (h[16] << 8) | h[17]; if (ps === 1) ps = 65536;
+    this.ps = ps; this.U = ps - h[20]; this.per = Math.max(1, Math.floor(65536 / ps));
+    var master = [];
+    await this.scan(1, function (r) { master.push(r); });
+    var by = function (t, n) { return master.filter(function (r) { return r[0] === t && (!n || r[1] === n); }); };
+    function cols(sql) {
+      var m = /\(([\s\S]*)\)/.exec(sql || ''); if (!m) return [];
+      var parts = [], d = 0, cur = '';
+      m[1].split('').forEach(function (ch) { if (ch === '(') d++; if (ch === ')') d--; if (ch === ',' && !d) { parts.push(cur); cur = ''; } else cur += ch; });
+      parts.push(cur);
+      return parts.map(function (s) { return s.trim(); });
+    }
+    function colNames(sql) { return cols(sql).filter(function (s) { return !/^(PRIMARY|UNIQUE|FOREIGN|CHECK|CONSTRAINT)\b/i.test(s); }).map(function (s) { return s.split(/\s+/)[0].replace(/["'`\[\]]/g, '').toLowerCase(); }); }
+    function indexCols(tbl) {
+      var res = [];
+      master.forEach(function (r) {
+        if (r[0] !== 'index' || r[2] !== tbl.name) return;
+        var list = null;
+        if (r[4]) { var m = /\(([^)]*)\)/.exec(r[4]); if (m) list = m[1].split(',').map(function (s) { return s.trim().split(/\s+/)[0].replace(/["'`\[\]]/g, '').toLowerCase(); }); }
+        else {
+          var pk = /(?:PRIMARY\s+KEY|UNIQUE)\s*\(([^)]*)\)/i.exec(tbl.sql || '');
+          if (pk) list = pk[1].split(',').map(function (s) { return s.trim().replace(/["'`\[\]]/g, '').toLowerCase(); });
+          else { var cc = cols(tbl.sql).filter(function (s) { return /PRIMARY\s+KEY|UNIQUE/i.test(s); })[0]; if (cc) list = [cc.split(/\s+/)[0].replace(/["'`\[\]]/g, '').toLowerCase()]; }
+        }
+        if (list) res.push({ root: r[3], cols: list });
+      });
+      return res;
+    }
+    function tinfo(n) { var r = by('table', n)[0]; return r ? { name: n, root: r[3], sql: r[4], cn: colNames(r[4]) } : null; }
+    var tiles = tinfo('tiles');
+    if (tiles) {
+      var ix = indexCols(tiles).filter(function (x) { return x.cols[0] === 'zoom_level' && x.cols[1] === 'tile_column' && x.cols[2] === 'tile_row'; })[0];
+      if (!ix) throw new Error('Ce MBTiles n’a pas d’index sur les tuiles (lecture impossible).');
+      this.mode = 'tiles'; this.idx = ix.root; this.tbl = tiles.root; this.dcol = Math.max(0, tiles.cn.indexOf('tile_data'));
+    } else {
+      var map = tinfo('map'), img = tinfo('images');
+      if (!map || !img) throw new Error('Structure MBTiles non reconnue.');
+      var mi = indexCols(map).filter(function (x) { return x.cols[0] === 'zoom_level' && x.cols[1] === 'tile_column' && x.cols[2] === 'tile_row'; })[0];
+      var ii = indexCols(img).filter(function (x) { return x.cols[0] === 'tile_id'; })[0];
+      if (!mi || !ii) throw new Error('Ce MBTiles n’a pas les index nécessaires.');
+      this.mode = 'mapimg'; this.idx = mi.root; this.tbl = map.root; this.idcol = Math.max(0, map.cn.indexOf('tile_id'));
+      this.idx2 = ii.root; this.tbl2 = img.root; this.dcol = Math.max(0, img.cn.indexOf('tile_data'));
+    }
+    var meta = by('table', 'metadata')[0]; this.meta = {};
+    if (meta) { var me = this.meta; await this.scan(meta[3], function (r) { me[r[0]] = r[1]; }); }
+    return this;
+  };
+  MBReader.prototype.payload = async function (pg, pos, P, isIdx) {
+    var U = this.U, X = isIdx ? Math.floor((U - 12) * 64 / 255) - 23 : U - 35, M = Math.floor((U - 12) * 32 / 255) - 23;
+    if (P <= X) return pg.subarray(pos, pos + P);
+    var K = M + ((P - M) % (U - 4)), L = K <= X ? K : M, out = new Uint8Array(P);
+    out.set(pg.subarray(pos, pos + L), 0);
+    var ov = mbU32(pg, pos + L), off = L;
+    while (ov && off < P) { var op = await this.page(ov), n = Math.min(U - 4, P - off); out.set(op.subarray(4, 4 + n), off); off += n; ov = mbU32(op, 0); }
+    return out;
+  };
+  var MB_TD = typeof TextDecoder !== 'undefined' ? new TextDecoder() : null;
+  function mbDecode(b) {
+    var r = mbVar(b, 0), hs = r[0], p = r[1], types = [];
+    while (p < hs) { r = mbVar(b, p); types.push(r[0]); p = r[1]; }
+    var pos = hs, out = [];
+    types.forEach(function (t) {
+      var v = null, n = 0, i;
+      if (t === 0) v = null;
+      else if (t >= 1 && t <= 6) { n = [0, 1, 2, 3, 4, 6, 8][t]; v = 0; for (i = 0; i < n; i++) v = v * 256 + b[pos + i]; if (b[pos] & 128) v -= Math.pow(2, 8 * n); }
+      else if (t === 7) { n = 8; v = new DataView(b.buffer, b.byteOffset + pos, 8).getFloat64(0); }
+      else if (t === 8) v = 0; else if (t === 9) v = 1;
+      else if (t >= 12 && t % 2 === 0) { n = (t - 12) / 2; v = b.subarray(pos, pos + n); }
+      else if (t >= 13) { n = (t - 13) / 2; v = MB_TD ? MB_TD.decode(b.subarray(pos, pos + n)) : String.fromCharCode.apply(null, b.subarray(pos, pos + n)); }
+      pos += n; out.push(v);
+    });
+    return out;
+  }
+  MBReader.prototype.scan = async function (n, cb) {
+    var pg = await this.page(n), base = n === 1 ? 100 : 0, t = pg[base], nc = (pg[base + 3] << 8) | pg[base + 4], i, o;
+    if (t === 0x0d) {
+      for (i = 0; i < nc; i++) { o = (pg[base + 8 + 2 * i] << 8) | pg[base + 9 + 2 * i]; var r = mbVar(pg, o), r2 = mbVar(pg, r[1]); cb(mbDecode(await this.payload(pg, r2[1], r[0], false))); }
+    } else if (t === 0x05) {
+      var kids = [];
+      for (i = 0; i < nc; i++) { o = (pg[base + 12 + 2 * i] << 8) | pg[base + 13 + 2 * i]; kids.push(mbU32(pg, o)); }
+      kids.push(mbU32(pg, base + 8));
+      for (i = 0; i < kids.length; i++) await this.scan(kids[i], cb);
+    }
+  };
+  function mbCmp(a, b) { for (var i = 0; i < a.length; i++) { if (a[i] < b[i]) return -1; if (a[i] > b[i]) return 1; } return 0; }
+  MBReader.prototype.idxFind = async function (root, key) {
+    var n = root;
+    for (var guard = 0; guard < 12; guard++) {
+      var pg = await this.page(n), t = pg[0], nc = (pg[3] << 8) | pg[4], hdr = t === 0x02 ? 12 : 8, lo = 0, hi = nc - 1, child = -1, mid, o, rec, c;
+      while (lo <= hi) {
+        mid = (lo + hi) >> 1; o = (pg[hdr + 2 * mid] << 8) | pg[hdr + 2 * mid + 1];
+        var left = 0, r;
+        if (t === 0x02) { left = mbU32(pg, o); o += 4; }
+        r = mbVar(pg, o); rec = mbDecode(await this.payload(pg, r[1], r[0], true));
+        c = mbCmp(key, rec);
+        if (c === 0) return rec[rec.length - 1];
+        if (c < 0) { hi = mid - 1; child = left; } else lo = mid + 1;
+      }
+      if (t === 0x0a) return null;
+      if (t !== 0x02) return null;
+      n = child >= 0 ? child : mbU32(pg, 8);
+    }
+    return null;
+  };
+  MBReader.prototype.rowFind = async function (root, rowid) {
+    var n = root;
+    for (var guard = 0; guard < 12; guard++) {
+      var pg = await this.page(n), t = pg[0], nc = (pg[3] << 8) | pg[4], hdr = t === 0x05 ? 12 : 8, lo = 0, hi = nc - 1, child = -1, mid, o, r;
+      while (lo <= hi) {
+        mid = (lo + hi) >> 1; o = (pg[hdr + 2 * mid] << 8) | pg[hdr + 2 * mid + 1];
+        if (t === 0x0d) {
+          r = mbVar(pg, o); var r2 = mbVar(pg, r[1]);
+          if (r2[0] === rowid) return mbDecode(await this.payload(pg, r2[1], r[0], false));
+          if (rowid < r2[0]) hi = mid - 1; else lo = mid + 1;
+        } else {
+          var left = mbU32(pg, o); r = mbVar(pg, o + 4);
+          if (rowid <= r[0]) { hi = mid - 1; child = left; } else lo = mid + 1;
+        }
+      }
+      if (t === 0x0d) return null;
+      if (t !== 0x05) return null;
+      n = child >= 0 ? child : mbU32(pg, 8);
+    }
+    return null;
+  };
+  MBReader.prototype.tile = async function (z, x, y) {
+    var row = (Math.pow(2, z) - 1) - y, id = await this.idxFind(this.idx, [z, x, row]);
+    if (id == null) return null;
+    var rec = await this.rowFind(this.tbl, id); if (!rec) return null;
+    if (this.mode === 'tiles') return rec[this.dcol] || null;
+    var tid = rec[this.idcol]; if (tid == null) return null;
+    var id2 = await this.idxFind(this.idx2, [tid]); if (id2 == null) return null;
+    var rec2 = await this.rowFind(this.tbl2, id2); return rec2 ? rec2[this.dcol] || null : null;
+  };
+
+  /* ---------- Fond de carte : affichage des tuiles sous les zones ---------- */
+  var BM = { mb: null, on: false, op: 1, minz: 0, maxz: 17, g: null, layers: {}, cache: new Map(), tok: 0, timer: 0, name: '', busy: false };
+  function bmInit(svg) { BM.g = svgEl('g', { class: 'mtiles' }, svg); BM.layers = {}; }
+  function bmUpdate() { if (!BM.mb) return; clearTimeout(BM.timer); BM.timer = setTimeout(bmRun, 60); }
+  function bmMime(b) { return b[0] === 0x89 ? 'image/png' : b[0] === 0xff ? 'image/jpeg' : (b[0] === 0x52 && b[1] === 0x49) ? 'image/webp' : (b[0] === 0x1f && b[1] === 0x8b) ? 'pbf' : 'image/png'; }
+  async function bmUrl(z, x, y) {
+    var key = z + '/' + x + '/' + y;
+    if (BM.cache.has(key)) return BM.cache.get(key);
+    var b = null; try { b = await BM.mb.tile(z, x, y); } catch (e) { b = null; }
+    var url = null;
+    if (b) { var mt = bmMime(b); if (mt === 'pbf') { BM.vector = true; } else url = URL.createObjectURL(new Blob([b], { type: mt })); }
+    BM.cache.set(key, url);
+    if (BM.cache.size > 500) { var k0 = BM.cache.keys().next().value, u0 = BM.cache.get(k0); BM.cache.delete(k0); if (u0) { var gone = u0; setTimeout(function () { URL.revokeObjectURL(gone); }, 4000); } }
+    return url;
+  }
+  async function bmRun() {
+    if (!BM.g || !BM.mb || !mp.view) return;
+    if (!BM.on) { BM.g.style.display = 'none'; return; }
+    BM.g.style.display = ''; BM.g.style.opacity = String(BM.op);
+    var s = mapSize(), v = mp.view, h = v.w * s.h / s.w, k = s.w / v.w;
+    var z = Math.max(BM.minz, Math.min(BM.maxz, Math.round(Math.log(k * 360 / 256) / Math.LN2)));
+    var tok = ++BM.tok, n = Math.pow(2, z), ts = 360 / n, x0 = v.cx - v.w / 2, y0 = v.cy - h / 2;
+    var tx0 = Math.max(0, Math.floor((x0 + 180) / ts)), tx1 = Math.min(n - 1, Math.floor((x0 + v.w + 180) / ts));
+    var ty0 = Math.max(0, Math.floor((y0 + 180) / ts)), ty1 = Math.min(n - 1, Math.floor((y0 + h + 180) / ts));
+    if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) > 48) return;
+    [z - 1, z].forEach(function (zz) {
+      if (zz < BM.minz || BM.layers[zz]) return;
+      var g = svgEl('g', {}, null), L = { g: g, t: {} }; BM.layers[zz] = L;
+      var before = null; Object.keys(BM.layers).forEach(function (q) { if (+q > zz && (!before || +q < before.z)) before = { z: +q, g: BM.layers[q].g }; });
+      BM.g.insertBefore(g, before ? before.g : null);
+    });
+    Object.keys(BM.layers).forEach(function (q) { if (+q !== z && +q !== z - 1) { BM.g.removeChild(BM.layers[q].g); delete BM.layers[q]; } });
+    var queue = [], cx = (x0 + v.w / 2 + 180) / ts, cy = (y0 + h / 2 + 180) / ts;
+    [z - 1, z].forEach(function (zz) {
+      if (zz < BM.minz) return;
+      var f = Math.pow(2, zz - z), a0 = Math.floor(tx0 * f), a1 = Math.floor(tx1 * f), b0 = Math.floor(ty0 * f), b1 = Math.floor(ty1 * f);
+      for (var yy = b0; yy <= b1; yy++) for (var xx = a0; xx <= a1; xx++) if (!BM.layers[zz].t[xx + '/' + yy]) queue.push({ z: zz, x: xx, y: yy, d: Math.abs(xx + .5 - cx * f) + Math.abs(yy + .5 - cy * f) });
+    });
+    queue.sort(function (a, b) { return (a.z - b.z) || (a.d - b.d); });
+    var next = 0;
+    async function worker() {
+      while (next < queue.length && tok === BM.tok) {
+        var q = queue[next++], L = BM.layers[q.z]; if (!L || L.t[q.x + '/' + q.y]) continue;
+        L.t[q.x + '/' + q.y] = 1;
+        var url = await bmUrl(q.z, q.x, q.y);
+        if (!url || !BM.layers[q.z] || BM.layers[q.z] !== L) continue;
+        var w = 360 / Math.pow(2, q.z), e = w / 400;
+        svgEl('image', { href: url, x: q.x * w - 180 - e, y: q.y * w - 180 - e, width: w + 2 * e, height: w + 2 * e, preserveAspectRatio: 'none' }, L.g);
+      }
+    }
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    if (BM.vector) bmMsg('Ces tuiles sont vectorielles : elles ne sont pas prises en charge (il faut des tuiles image PNG, JPEG ou WebP).', true);
+  }
+  function bmMsg(t, bad) { var m = $('#baseMsg'); if (m) { m.textContent = t || ''; m.style.color = bad ? 'var(--t-red, #c00)' : ''; } }
+  function bmIdb(fn) {
+    return new Promise(function (res, rej) {
+      try {
+        var r = indexedDB.open('easynotam', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('f'); };
+        r.onerror = function () { rej(r.error); };
+        r.onsuccess = function () { var db = r.result, tx = db.transaction('f', 'readwrite'), st = tx.objectStore('f'), q = fn(st); tx.oncomplete = function () { res(q && q.result); db.close(); }; tx.onerror = function () { rej(tx.error); }; tx.onabort = function () { rej(tx.error); }; };
+      } catch (e) { rej(e); }
+    });
+  }
+  function bmSave() { try { localStorage.setItem('easynotam.base', JSON.stringify({ on: BM.on, op: BM.op })); } catch (e) { /* ignoré */ } }
+  function bmSync() {
+    var has = !!BM.mb;
+    $('#baseOn').disabled = !has; $('#baseOn').checked = has && BM.on;
+    $('#baseRemove').hidden = !has; $('#baseOpRow').hidden = !has;
+    $('#baseName').textContent = has ? BM.name : 'Aucun fichier';
+    $('#baseChoose').textContent = has ? 'Changer' : 'Choisir un fichier .mbtiles';
+    $('#baseOp').value = Math.round(BM.op * 100);
+    var b = $('#bBase'); b.setAttribute('aria-pressed', has && BM.on ? 'true' : 'false');
+  }
+  async function bmOpen(blob, name, persist) {
+    bmMsg('Lecture du fichier…');
+    try {
+      var rd = await new MBReader(blob).init(), mn = parseInt(rd.meta.minzoom, 10), mx = parseInt(rd.meta.maxzoom, 10);
+      BM.mb = rd; BM.name = name || rd.meta.name || 'Fond de carte'; BM.minz = isNaN(mn) ? 0 : mn; BM.maxz = isNaN(mx) ? 17 : mx; BM.cache.clear(); BM.vector = false;
+      if (/pbf|mvt/i.test(rd.meta.format || '')) { BM.mb = null; throw new Error('Ces tuiles sont vectorielles : elles ne sont pas prises en charge (il faut des tuiles image PNG, JPEG ou WebP).'); }
+      if (persist) { BM.on = true; bmSave(); }
+      bmSync(); bmMsg('');
+      if (BM.g) { Object.keys(BM.layers).forEach(function (q) { BM.g.removeChild(BM.layers[q].g); }); BM.layers = {}; }
+      bmUpdate();
+      if (persist) {
+        bmMsg('Enregistrement dans l’application…');
+        bmIdb(function (st) { return st.put(blob, 'file'); }).then(function () { try { localStorage.setItem('easynotam.basename', BM.name); } catch (e) { /* ignoré */ } bmMsg('Fond de carte enregistré sur cet appareil.'); }, function () { bmMsg('Fichier non conservé : à choisir de nouveau la prochaine fois.'); });
+      }
+      return true;
+    } catch (e) { bmSync(); bmMsg(e && e.message ? e.message : 'Fichier illisible.', true); return false; }
+  }
+  function bmUiInit() {
+    var st = null; try { st = JSON.parse(localStorage.getItem('easynotam.base') || 'null'); } catch (e) { /* ignoré */ }
+    if (st) { BM.on = !!st.on; BM.op = Math.max(.2, Math.min(1, +st.op || 1)); }
+    $('#bBase').addEventListener('click', function () { var p = $('#basebar'); p.hidden = !p.hidden; this.setAttribute('aria-expanded', p.hidden ? 'false' : 'true'); });
+    $('#baseChoose').addEventListener('click', function () { $('#baseFile').click(); });
+    $('#baseFile').addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; if (f) bmOpen(f, f.name.replace(/\.mbtiles$/i, ''), true); });
+    $('#baseOn').addEventListener('change', function () { BM.on = this.checked; bmSave(); bmSync(); bmUpdate(); });
+    $('#baseOp').addEventListener('input', function () { BM.op = this.value / 100; if (BM.g) BM.g.style.opacity = String(BM.op); bmSave(); });
+    $('#baseRemove').addEventListener('click', function () {
+      BM.mb = null; BM.on = false; BM.cache.clear(); bmSave();
+      if (BM.g) { Object.keys(BM.layers).forEach(function (q) { BM.g.removeChild(BM.layers[q].g); }); BM.layers = {}; BM.g.style.display = 'none'; }
+      try { bmIdb(function (s) { return s.delete('file'); }); localStorage.removeItem('easynotam.basename'); } catch (e) { /* ignoré */ }
+      bmSync(); bmMsg('Fond de carte retiré.');
+    });
+    bmSync();
+    function folder() { bmRemote('fond.mbtiles', !st); }
+    bmIdb(function (s) { return s.get('file'); }).then(function (blob) {
+      if (blob) { var nm = ''; try { nm = localStorage.getItem('easynotam.basename') || ''; } catch (e) { /* ignoré */ } bmOpen(blob, nm, false); }
+      else folder();
+    }, folder);
+  }
+  /* fichier « fond.mbtiles » placé à côté de l'application : lu par morceaux (requêtes Range), sans le télécharger en entier */
+  function bmRemote(url, autoOn) {
+    if (!window.fetch || location.protocol === 'file:') return;
+    var size = 0;
+    function part(a, b) {
+      return fetch(url, { headers: { Range: 'bytes=' + a + '-' + (b - 1) }, cache: 'no-store' }).then(function (r) {
+        if (r.status !== 206) throw new Error('range');
+        if (!size) { var m = /\/(\d+)\s*$/.exec(r.headers.get('Content-Range') || ''); if (m) size = +m[1]; }
+        return r.arrayBuffer();
+      });
+    }
+    var rb = { slice: function (a, b) { return { arrayBuffer: function () { return part(a, b); } }; } };
+    part(0, 100).then(function (ab) {
+      if (String.fromCharCode.apply(null, new Uint8Array(ab).subarray(0, 15)) !== 'SQLite format 3') return;
+      return bmOpen(rb, 'fond.mbtiles', false).then(function (ok) { if (ok && autoOn) { BM.on = true; bmSave(); bmSync(); bmUpdate(); } });
+    }).catch(function () { /* pas de fichier à côté de l'application */ });
+  }
   function initMap() {
     var v = $('#mapview');
     $('#mapToggle').addEventListener('click', function () {
@@ -1607,9 +1905,9 @@ const NotamCore = (() => {
     $('#mZin').addEventListener('click', function () { var s = mapSize(); zoomAt(1.6, s.w / 2, s.h / 2); });
     $('#mZout').addEventListener('click', function () { var s = mapSize(); zoomAt(1 / 1.6, s.w / 2, s.h / 2); });
     $('#mHome').addEventListener('click', function () { if (mp.home) { mp.view = Object.assign({}, mp.home); applyView(); } });
-    v.addEventListener('wheel', function (e) { e.preventDefault(); var r = v.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+    v.addEventListener('wheel', function (e) { if (e.target.closest && e.target.closest('.basebar')) return; e.preventDefault(); var r = v.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
     v.addEventListener('pointerdown', function (e) {
-      if (e.target.closest('.mapzoom')) return;
+      if (e.target.closest('.mapzoom, .basebar')) return;
       v.setPointerCapture(e.pointerId); mp.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); mp.moved = 0; mp.down = e.target;
       v.classList.add('drag');
       if (mp.ptrs.size === 2) { var p = Array.from(mp.ptrs.values()); mp.pinch = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
@@ -2002,7 +2300,19 @@ const NotamCore = (() => {
     } else fallback();
   });
 
-  initMap();
+  /* bouton « ↑ Carte » : visible seulement quand la carte est sortie de l'écran par le haut */
+  (function () {
+    var b = $('#toMap'), mc = $('#mapcard'), tick = 0;
+    function upd() {
+      tick = 0;
+      var r = mc.getBoundingClientRect(), on = !mc.hidden && !mc.classList.contains('peek') && r.bottom < 0;
+      b.classList.toggle('on', on); b.setAttribute('aria-hidden', on ? 'false' : 'true'); b.tabIndex = on ? 0 : -1;
+    }
+    window.addEventListener('scroll', function () { if (!tick) tick = requestAnimationFrame(upd); }, { passive: true });
+    window.addEventListener('resize', upd);
+    b.addEventListener('click', function () { mc.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  })();
+  initMap(); bmUiInit();
   znInit();
   render();
 })();
