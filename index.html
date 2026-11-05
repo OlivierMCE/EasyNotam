@@ -219,6 +219,10 @@ mark.hl { color: inherit; background: transparent; padding: 0 2px; border-radius
 .strip.has-note:not(.done) .addnote { display: none; }
 
 /* Notes : un post-it jaune discret sous le texte du NOTAM */
+.legal { display: grid; gap: 8px; padding: 18px 20px; border-radius: 18px; background: var(--fill); font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.legal h2 { margin: 0; font-size: 13.5px; font-weight: 650; color: var(--ink); letter-spacing: -.01em; }
+.legal p { margin: 0; text-wrap: pretty; max-width: 90ch; }
+.legal b { color: var(--ink); font-weight: 600; }
 .ver { margin: -6px 0 0; font-size: 12px; color: var(--muted); text-align: center; opacity: .8; }
 .maplink { display: none; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 11px; font: inherit; font-size: 12.5px; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 999px; cursor: pointer; width: fit-content; }
 .strip.onmap .maplink { display: inline-flex; }
@@ -351,8 +355,10 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 .mshape { --c: var(--t-grey); cursor: pointer; transition: opacity .3s; }
 .mshape .f { fill: var(--c); fill-opacity: .2; stroke: var(--c); stroke-width: calc(var(--u) * 2); stroke-linejoin: round; transition: fill-opacity .2s; }
 .mshape:hover .f { fill-opacity: .38; }
-.mshape.apx .f { fill-opacity: .12; stroke-width: calc(var(--u) * 1.6); stroke-dasharray: calc(var(--u) * 5) calc(var(--u) * 4); }
-.mshape.apx:hover .f { fill-opacity: .28; }
+.mshape.apx .f { fill: var(--surface); fill-opacity: .85; stroke-width: calc(var(--u) * 2.2); }
+.mshape.apx .d { fill: var(--c); }
+.mshape.apx .hit { fill: transparent; stroke: none; }
+.mshape.apx:hover .f { fill-opacity: 1; stroke-width: calc(var(--u) * 3); }
 .mshape.pt .f { fill-opacity: .9; stroke: var(--surface); stroke-width: calc(var(--u) * 2); }
 .mshape.sel .f { stroke-width: calc(var(--u) * 3.5); fill-opacity: .45; }
 .mshape.done { opacity: .28; }
@@ -448,7 +454,7 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
       <div class="maplegend">
         <span><svg viewBox="0 0 22 14"><path d="M3 11L8 3L19 5L16 12Z" fill="var(--t-amber)" fill-opacity=".25" stroke="var(--t-amber)" stroke-width="2"/></svg>Contour exact du NOTAM</span>
         <span><svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="8" ry="5.5" fill="var(--t-violet)" fill-opacity=".25" stroke="var(--t-violet)" stroke-width="2"/></svg>Cercle (centre et rayon du NOTAM)</span>
-        <span><svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="5" ry="5" fill="var(--t-grey)" fill-opacity=".12" stroke="var(--t-grey)" stroke-width="1.4" stroke-dasharray="3 2"/></svg>Position seule : cercle de 5 NM</span>
+        <span><svg viewBox="0 0 22 14"><circle cx="11" cy="7" r="5.5" fill="var(--surface)" stroke="var(--t-grey)" stroke-width="1.8"/><circle cx="11" cy="7" r="2" fill="var(--t-grey)"/></svg>Position seule (sans contour)</span>
       </div>
     </div></div>
   </section>
@@ -456,8 +462,16 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
   <div id="results"></div>
 
 
-  <p class="disclaimer">Aide à la lecture uniquement. Le briefing officiel fait foi : vérifie toujours en entier les NOTAM de départ, d’arrivée et de dégagement. Le rangement repose sur le texte des NOTAM : en cas de doute, ouvre « Autre ».</p>
-  <p class="ver" id="ver">EasyNotam · version 51 · 3 nov. 2026<span id="verMotion"></span></p>
+  <section class="legal" aria-label="Mentions légales">
+    <h2>Mentions légales</h2>
+    <p><b>Outil d’aide à la lecture, non officiel.</b> EasyNotam est un outil personnel et indépendant de tri et de visualisation des NOTAM et des SUP AIP. Il n’est ni édité, ni validé, ni approuvé par le SIA, la DGAC, la DSNA ou tout autre organisme officiel. Il ne constitue ni un briefing officiel, ni un outil de préparation de vol, ni une source d’information aéronautique faisant foi.</p>
+    <p><b>Sources officielles.</b> Seuls le briefing officiel (SOFIA-Briefing), les NOTAM, les SUP AIP et l’AIP France en vigueur, ainsi que les informations des organismes de la circulation aérienne, font foi. L’utilisateur doit lire en entier les NOTAM de départ, d’arrivée, de dégagement et de route, et vérifier toute information avant le vol.</p>
+    <p><b>Limites de l’outil.</b> La lecture des PDF, le classement par catégories (y compris « non facteur »), les noms d’aérodromes, les contours de zones et leur affichage sur la carte reposent sur des traitements automatiques du texte. Ils peuvent être incomplets, erronés, obsolètes ou mal interprétés ; la carte est approximative et ne peut servir à la navigation. L’absence d’un NOTAM, d’une zone ou d’une alerte dans l’outil ne prouve en aucun cas qu’il n’existe pas. Le logiciel peut contenir des bugs et être indisponible sans préavis.</p>
+    <p><b>Responsabilité.</b> L’outil est fourni « en l’état », sans garantie d’aucune sorte, expresse ou implicite, notamment d’exactitude, d’exhaustivité, d’actualité ou d’adéquation à un usage particulier. L’utilisation est faite sous la seule responsabilité de l’utilisateur. Le commandant de bord reste seul responsable de la préparation et de la conduite du vol. Dans les limites autorisées par la loi, l’auteur décline toute responsabilité pour tout dommage direct ou indirect (matériel, corporel, financier, sanction administrative ou autre) résultant de l’utilisation de l’outil, de son indisponibilité ou d’une erreur ou omission, y compris un bug logiciel, quelles qu’en soient les conséquences sur un vol réel.</p>
+    <p><b>Données.</b> Les PDF importés sont lus et traités sur votre appareil ; leur contenu n’est pas envoyé à l’auteur. Vos notes et vos choix « non facteur » restent enregistrés sur votre appareil. Les documents officiels reproduits ou analysés (NOTAM, SUP AIP, AIP) appartiennent à leurs propriétaires et sont cités à titre d’aide à la lecture.</p>
+    <p>En utilisant EasyNotam, vous reconnaissez avoir pris connaissance de ces mentions et les acceptez.</p>
+  </section>
+  <p class="ver" id="ver">EasyNotam · version 56 · 5 nov. 2026<span id="verMotion"></span></p>
 </div>
 
 <script>
@@ -1353,13 +1367,22 @@ const NotamCore = (() => {
     if (!ZN.ready) return [];
     var text = (it.text || '').toUpperCase().replace(/\s+/g, ' '), found = {}, out = [];
     function add(k) { if (ZN.by[k] && !found[k]) { found[k] = 1; out.push(ZN.by[k]); } }
-    var re = /LF[\s-]*(R|D|P|TRA|TSA|CBA|ZIT)[\s-]*(\d{1,3}(?:\.\d)?)(?![\d])/g, m;
-    while ((m = re.exec(text))) {
-      var head = m[1] + m[2], tail = text.slice(re.lastIndex), lm = /^((?:\s*(?:[\/,&-]|ET|AND|OU)?\s*[A-Z]\d?(?![A-Z0-9]))+)/.exec(tail), letters = lm ? lm[1].match(/[A-Z]\d?/g).filter(function (x) { return x !== 'ET' && x !== 'OU'; }) : [];
+    function resolve(head, tail) {
+      var lm = /^((?:\s*(?:[\/,&-]|ET|AND|OU)?\s*[A-Z]\d?(?![A-Z0-9]))+)/.exec(tail), letters = lm ? lm[1].match(/[A-Z]\d?/g).filter(function (x) { return x !== 'ET' && x !== 'OU'; }) : [];
       letters = letters.filter(function (x) { return ZN.by[head + x]; });
       if (letters.length) letters.forEach(function (x) { add(head + x); });
       else if (ZN.by[head]) add(head);
       else Object.keys(ZN.by).forEach(function (k) { if (k.indexOf(head) === 0 && /^[A-Z]\d?$/.test(k.slice(head.length))) add(k); });
+    }
+    var re = /(?:LF[\s-]*|\bZONES?\s+)(R|D|P|TRA|TSA|CBA|ZIT)[\s-]*(\d{1,4}(?:\.\d)?)(?![\d])/g, m;
+    while ((m = re.exec(text))) {
+      resolve(m[1] + m[2], text.slice(re.lastIndex));
+      // zones citées à la suite : « LF-R65-R66 ET D67 »
+      var more = /^(?:\s*[A-Z]\d?(?![A-Z0-9]))*((?:\s*(?:[-\/,&]|ET|AND|OU)\s*(?:R|D|P)\s*\d{1,4}(?:\s*[A-Z]\d?(?![A-Z0-9]))*)+)/.exec(text.slice(re.lastIndex));
+      if (more) {
+        var rr = /(R|D|P)\s*(\d{1,4})((?:\s*[A-Z]\d?(?![A-Z0-9]))*)/g, q;
+        while ((q = rr.exec(more[1]))) resolve(q[1] + q[2], q[3] || '');
+      }
     }
     var tn = ' ' + znNorm(text) + ' ';
     ZN.bases.forEach(function (o) { if (tn.indexOf(' ' + o.b + ' ') >= 0) o.keys.forEach(add); });
@@ -1461,7 +1484,14 @@ const NotamCore = (() => {
       var g = svgEl('g', { class: 'mshape ' + (o.t === 'ad' ? 'ad lv-' + ['red', 'orange', 'yellow', 'grey'][o.rank] : o.tone) + (o.apx ? ' apx' : '') + (o.pt ? ' pt' : '') + (o.done ? ' done' : '') }, layer);
       o.g = g;
       if (o.t === 'poly') { svgEl('path', { d: polyD(o.p, true), class: 'f' }, g); nExact++; }
-      else if (o.t === 'circle') {
+      else if (o.t === 'circle' && o.apx) {
+        // position seule : repère de taille fixe à l'écran (reste lisible dézoomé, ne grossit pas en zoomant)
+        var ax = px(o.lon), ay = py(o.lat);
+        var hit = svgEl('circle', { cx: ax, cy: ay, r: .05, class: 'hit' }, g); mp.shapes.push({ el: hit, px: 15 });
+        var ring = svgEl('circle', { cx: ax, cy: ay, r: .05, class: 'f' }, g); mp.shapes.push({ el: ring, px: 7 });
+        var dot = svgEl('circle', { cx: ax, cy: ay, r: .05, class: 'd' }, g); mp.shapes.push({ el: dot, px: 2.6 });
+        nExact++;
+      } else if (o.t === 'circle') {
         var cx = px(o.lon), cy = py(o.lat);
         var ry = o.r / 60, rx = ry * KX / Math.cos(o.lat * Math.PI / 180);
         svgEl('ellipse', { cx: cx, cy: cy, rx: rx, ry: ry, class: 'f' }, g);
@@ -1506,7 +1536,7 @@ const NotamCore = (() => {
     box.innerHTML = title + rows.map(function (x) {
       var it = x.r.item, lv = x.r.level, snip = (it.text || it.raw || '').replace(/\s+/g, ' ').slice(0, 140);
       return '<div class="mi-row" data-go="' + esc(x.key) + '">' + '<span class="mi-id">' + esc(x.key) + '</span><span class="mi-tx">' + esc(snip) + '</span><span class="mi-go">Voir ›</span></div>';
-    }).join('') + (o.t !== 'ad' && o.zn ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Contour de l’AIP : ' + esc(o.zn) + '</span></div>' : '') + (o.t !== 'ad' && o.apx ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Position seule : cercle de 5 NM autour du point.</span></div>' : '');
+    }).join('') + (o.t !== 'ad' && o.zn ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Contour de l’AIP : ' + esc(o.zn) + '</span></div>' : '') + (o.t !== 'ad' && o.apx ? '<div class="mi-row" style="cursor:default"><span class="mi-tx" style="white-space:normal;font-family:var(--font)">Position seule : repère au centre de la zone, sans contour.</span></div>' : '');
   }
   function mapSelect(o) {
     if (mp.sel && mp.sel.g) mp.sel.g.classList.remove('sel');
@@ -1748,7 +1778,13 @@ const NotamCore = (() => {
     s.classList.toggle('done', d);
     s.setAttribute('aria-expanded', d ? 'false' : 'true');
     renderCats(); updateStatus(); updateHideBtn();
-    if (state.hideDone) setTimeout(render, 380); else mapRefresh();
+    if (state.hideDone) setTimeout(function () {
+      var y = window.pageYOffset, h = document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = 'auto';
+      render();
+      window.scrollTo(0, y);
+      requestAnimationFrame(function () { window.scrollTo(0, y); document.documentElement.style.scrollBehavior = h; });
+    }, 380); else mapRefresh();
   }
   function stamp() {
     var d = new Date(), m = ['janv', 'fevr', 'mars', 'avr', 'mai', 'juin', 'juil', 'aout', 'sept', 'oct', 'nov', 'dec'];
