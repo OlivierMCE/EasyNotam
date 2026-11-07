@@ -484,7 +484,7 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 
 
   <p class="legal">Mentions légales : outil d’aide à la lecture, non officiel. Seul le briefing du site officiel (SOFIA-Briefing, SIA) fait foi. L’auteur décline toute responsabilité en cas d’erreur, d’omission ou de bug, notamment sur un vol réel ; le commandant de bord reste seul responsable de la préparation de son vol.</p>
-  <p class="ver" id="ver">EasyNotam · version 66 · 7 nov. 2026<span id="verMotion"></span></p>
+  <p class="ver" id="ver">EasyNotam · version 67 · 7 nov. 2026<span id="verMotion"></span></p>
 </div>
 
 <button type="button" class="toMap" id="toMap" aria-hidden="true" tabindex="-1">↑ Carte</button>
@@ -2119,7 +2119,21 @@ const NotamCore = (() => {
       render();
       window.scrollTo(0, y);
       requestAnimationFrame(function () { window.scrollTo(0, y); document.documentElement.style.scrollBehavior = h; });
-    }, 480); else toggleStrip.t = setTimeout(mapRefresh, 520);
+    }, 480); else if (!mapLight(k, d)) toggleStrip.t = setTimeout(mapRefresh, 520);
+  }
+  /* mise à jour légère de la carte : on change seulement l'aspect des repères concernés, sans rien reconstruire */
+  function mapLight(k, d) {
+    if ($('#mapcard').hidden || !mp.byKey || !mp.byKey[k]) return false;
+    var chip = $('#mapfilters .mchip.nf'), n = 0;
+    Object.keys(mp.byKey).forEach(function (x) { if (state.done.has(x)) n++; });
+    if (!!chip !== (n > 0)) return false;
+    mp.byKey[k].forEach(function (o) {
+      if (o.rows) { o.rows.forEach(function (x) { if (x.key === k) x.done = d; }); o.done = o.rows.every(function (x) { return x.done; }); }
+      else o.done = d;
+      if (o.g) o.g.classList.toggle('done', !!o.done);
+    });
+    if (chip) chip.querySelector('b').textContent = n;
+    return true;
   }
   function stamp() {
     var d = new Date(), m = ['janv', 'fevr', 'mars', 'avr', 'mai', 'juin', 'juil', 'aout', 'sept', 'oct', 'nov', 'dec'];
