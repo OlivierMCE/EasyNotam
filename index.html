@@ -166,7 +166,7 @@ input[type="search"]::placeholder { color: var(--muted); opacity: .8; }
 .group > h2 span { margin-left: auto; padding: 1px 10px; border-radius: 980px; background: var(--fill); color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .group + .group { margin-top: 18px; }
 
-.strip { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); margin-bottom: 12px; cursor: pointer; overflow: hidden; transition: background .3s, opacity .3s, box-shadow .2s; }
+.strip { contain: layout style; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); margin-bottom: 12px; cursor: pointer; overflow: hidden; transition: background .3s, opacity .3s, box-shadow .2s; }
 .strip:hover { box-shadow: var(--shadow-hover); }
 .cols { display: grid; grid-template-columns: 190px minmax(0, 1fr) 150px; grid-template-areas: "idc body when"; gap: 0 4px; }
 .cols > div { padding: 18px 18px; min-width: 0; }
@@ -320,16 +320,17 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 .mapfold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s var(--ease); }
 .mapcard.shut .mapfold { grid-template-rows: 0fr; }
 .mapfoldin { overflow: hidden; min-height: 0; }
-.mapfilters { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; }
-.mchip { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 980px; padding: 6px 12px; font: 500 13px/1.2 var(--font); color: var(--ink); background: var(--pill); cursor: pointer; transition: transform .4s var(--spring), opacity .3s var(--ease), background-color .2s; }
-.mchip:active { transform: scale(.93); transition: transform .12s var(--ease); }
-.mchip i { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--t-grey)); flex: none; }
-.mchip b { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
-.mchip[aria-pressed="false"] { opacity: .45; }
-.mchip[aria-pressed="false"] span { text-decoration: line-through; }
-.mchip.nf { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.mchip.nf[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
-.mchip.nf[aria-pressed="true"] b { color: inherit; opacity: .8; }
+.mapfilters { display: flex; flex-wrap: nowrap; gap: 6px; padding: 0 16px 12px; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 22px), transparent 100%); }
+.mapfilters::-webkit-scrollbar { display: none; }
+.mchip { flex: none; scroll-snap-align: start; display: inline-flex; align-items: center; gap: 7px; height: 30px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 980px; padding: 0 11px 0 10px; font: 550 12.5px/1 var(--font); letter-spacing: -.005em; white-space: nowrap; color: var(--ink); background: var(--c-bg, transparent); background: color-mix(in srgb, var(--c, var(--t-grey)) 13%, transparent); border-color: color-mix(in srgb, var(--c, var(--t-grey)) 38%, transparent); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .35s var(--spring), background-color .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease); }
+.mchip:active { transform: scale(.95); transition: transform .12s var(--ease); }
+.mchip i { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--t-grey)); box-shadow: 0 0 0 1px transparent; flex: none; transition: background-color .25s var(--ease), box-shadow .25s var(--ease); }
+.mchip b { min-width: 14px; padding: 2px 6px; border-radius: 980px; font: 600 11px/1 var(--font); text-align: center; color: var(--muted); background: var(--pill); font-variant-numeric: tabular-nums; }
+.mchip[aria-pressed="false"] { background: transparent; border-color: var(--line); color: var(--muted); }
+.mchip[aria-pressed="false"] i { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c, var(--t-grey)); }
+.mchip.nf { background: transparent; border-style: dashed; border-color: var(--line-strong); color: var(--muted); }
+.mchip.nf[aria-pressed="true"] { background: var(--accent); border-style: solid; border-color: var(--accent); color: var(--on-accent); }
+.mchip.nf[aria-pressed="true"] b { color: inherit; background: rgba(255,255,255,.22); }
 .mapview { position: relative; height: clamp(320px, 62vh, 640px); margin: 0 10px 10px; border-radius: 18px; overflow: hidden; background: var(--fill); box-shadow: inset 0 0 0 1px var(--line); touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .mapview.drag { cursor: grabbing; }
 .mapview svg { display: block; width: 100%; height: 100%; }
@@ -348,15 +349,15 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 .mapinfo .mi-go { flex: none; color: var(--accent); font-weight: 600; font-size: 12.5px; }
 .mapinfo h4 { margin: 0 0 4px; font-size: 14.5px; font-weight: 650; }
 .msea { fill: var(--fill); }
-.mland { fill: var(--surface); stroke: var(--line-strong); stroke-width: calc(var(--u) * 1); stroke-linejoin: round; }
-.mcoast { fill: none; stroke: var(--line-strong); stroke-width: calc(var(--u) * 1); stroke-dasharray: calc(var(--u) * 2) calc(var(--u) * 3); }
-.mgrid { stroke: var(--line); stroke-width: calc(var(--u) * 1); fill: none; }
+.mland { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.mcoast { fill: none; stroke: var(--line-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; stroke-dasharray: 2px 3px; }
+.mgrid { stroke: var(--line); stroke-width: 1px; vector-effect: non-scaling-stroke; fill: none; }
 .mcity { fill: var(--muted); }
 .mctxt { fill: var(--muted); font-family: var(--font); font-weight: 500; paint-order: stroke; stroke: var(--surface); stroke-width: calc(var(--u) * 3); stroke-linejoin: round; pointer-events: none; }
-.basebar { position: absolute; right: 56px; top: 10px; z-index: 5; width: min(300px, calc(100% - 70px)); box-sizing: border-box; display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--glass-card); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: inset 0 0 0 1px var(--glass-edge), var(--shadow); font-size: 13px; cursor: default; }
+.basebar { position: absolute; right: 56px; top: 10px; z-index: 5; width: min(300px, calc(100% - 70px)); box-sizing: border-box; display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--glass-card); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: inset 0 0 0 1px var(--glass-edge), var(--shadow); font-size: 13px; cursor: default; transform-origin: top right; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-6px) scale(.94); transition: opacity .22s var(--ease), transform .38s var(--spring), visibility 0s linear .38s; }
+.basebar.open { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: opacity .2s var(--ease), transform .42s var(--spring), visibility 0s; }
 #bBase { display: grid; place-items: center; }
 #bBase[aria-pressed=true] { color: var(--accent); }
-.basebar[hidden] { display: none; }
 .baserow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0; }
 .baserow input[type=range] { flex: 1 1 140px; min-width: 100px; }
 .basename { flex: 1 1 120px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -366,19 +367,19 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 .mapcard.peek .basebar, .mapcard.peek #bBase { display: none; }
 .mapzoom button svg { display: block; }
 .mshape { --c: var(--t-grey); cursor: pointer; transition: opacity .3s; }
-.mshape .f { fill: var(--c); fill-opacity: .2; stroke: var(--c); stroke-width: calc(var(--u) * 2); stroke-linejoin: round; transition: fill-opacity .2s; }
+.mshape .f { fill: var(--c); fill-opacity: .2; stroke: var(--c); vector-effect: non-scaling-stroke; stroke-width: 2px; stroke-linejoin: round; transition: fill-opacity .2s; }
 .mshape:hover .f { fill-opacity: .38; }
-.mshape.apx .f { fill: var(--surface); fill-opacity: .85; stroke-width: calc(var(--u) * 2.2); }
+.mshape.apx .f { fill: var(--surface); fill-opacity: .85; vector-effect: non-scaling-stroke; stroke-width: 2.2px; }
 .mshape.apx .d { fill: var(--c); }
 .mshape.apx .hit { fill: transparent; stroke: none; }
-.mshape.apx:hover .f { fill-opacity: 1; stroke-width: calc(var(--u) * 3); }
-.mshape.pt .f { fill-opacity: .9; stroke: var(--surface); stroke-width: calc(var(--u) * 2); }
-.mshape.sel .f { stroke-width: calc(var(--u) * 3.5); fill-opacity: .45; }
+.mshape.apx:hover .f { fill-opacity: 1; vector-effect: non-scaling-stroke; stroke-width: 3px; }
+.mshape.pt .f { fill-opacity: .9; stroke: var(--surface); vector-effect: non-scaling-stroke; stroke-width: 2px; }
+.mshape.sel .f { vector-effect: non-scaling-stroke; stroke-width: 3.5px; fill-opacity: .45; }
 .mshape.done { opacity: .28; }
 .mshape.red { --c: var(--t-red); } .mshape.amber { --c: var(--t-amber); } .mshape.slate { --c: var(--t-slate); } .mshape.ink { --c: var(--t-ink); }
 .mshape.violet { --c: var(--t-violet); } .mshape.brown { --c: var(--t-brown); } .mshape.blue { --c: var(--t-blue); } .mshape.green { --c: var(--t-green); } .mshape.grey { --c: var(--t-grey); }
 .mshape.lv-red { --c: var(--m-red); } .mshape.lv-orange { --c: var(--m-orange); } .mshape.lv-yellow { --c: var(--m-yellow); } .mshape.lv-grey { --c: var(--m-grey); }
-.mshape.ad .f { fill-opacity: 1; stroke: #fff; stroke-width: calc(var(--u) * 2.5); }
+.mshape.ad .f { fill-opacity: 1; stroke: #fff; vector-effect: non-scaling-stroke; stroke-width: 2.5px; }
 .mshape.ad.sel .f { stroke: var(--ink); }
 .madt { fill: var(--ink); font-family: var(--font); font-weight: 650; paint-order: stroke; stroke: var(--surface); stroke-width: calc(var(--u) * 3.5); stroke-linejoin: round; pointer-events: none; }
 .madn { fill: #fff; font-family: var(--font); font-weight: 700; text-anchor: middle; pointer-events: none; }
@@ -462,7 +463,7 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
       <div class="mapview" id="mapview">
         <svg id="msvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte de France avec les NOTAM"></svg>
         <div class="mapzoom"><button type="button" id="mZin" aria-label="Zoomer">+</button><button type="button" id="mZout" aria-label="Dézoomer">−</button><button type="button" id="mHome" aria-label="Recentrer" style="font-size:15px">⌖</button><button type="button" id="bBase" aria-label="Fond de carte" aria-pressed="false" aria-expanded="false" title="Fond de carte"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/></svg></button></div>
-        <div class="basebar" id="basebar" hidden>
+        <div class="basebar" id="basebar">
         <label class="baserow"><input type="checkbox" id="baseOn" disabled> <span>Afficher le fond de carte</span></label>
         <div class="baserow"><span id="baseName" class="basename">Aucun fichier</span><button class="btn small" type="button" id="baseChoose">Choisir un fichier .mbtiles</button><button class="btn small" type="button" id="baseRemove" hidden>Retirer</button></div>
         <label class="baserow" id="baseOpRow" hidden><span>Opacité</span><input type="range" id="baseOp" min="20" max="100" value="100" aria-label="Opacité du fond de carte"></label>
@@ -483,7 +484,7 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 
 
   <p class="legal">Mentions légales : outil d’aide à la lecture, non officiel. Seul le briefing du site officiel (SOFIA-Briefing, SIA) fait foi. L’auteur décline toute responsabilité en cas d’erreur, d’omission ou de bug, notamment sur un vol réel ; le commandant de bord reste seul responsable de la préparation de son vol.</p>
-  <p class="ver" id="ver">EasyNotam · version 64 · 7 nov. 2026<span id="verMotion"></span></p>
+  <p class="ver" id="ver">EasyNotam · version 66 · 7 nov. 2026<span id="verMotion"></span></p>
 </div>
 
 <button type="button" class="toMap" id="toMap" aria-hidden="true" tabindex="-1">↑ Carte</button>
@@ -1330,13 +1331,16 @@ const NotamCore = (() => {
   function applyView() {
     var s = mapSize(), v = mp.view; if (!v) return;
     var h = v.w * s.h / s.w, k = s.w / v.w;
-    $('#msvg').style.setProperty('--u', (1 / k) + 'px');
+    if (mp.lastK !== k) { mp.lastK = k; $('#msvg').style.setProperty('--u', (1 / k) + 'px'); }
     $('#msvg').setAttribute('viewBox', (v.cx - v.w / 2) + ' ' + (v.cy - h / 2) + ' ' + v.w + ' ' + h);
+    if (mp.lastR !== k) { mp.lastR = k;
     mp.shapes.forEach(function (o) { if (o.px) o.el.setAttribute('r', o.px / k); });
-    bmUpdate();
     declutter(k);
     mp.texts.forEach(function (o) { o.el.setAttribute('transform', 'translate(' + o.x + ' ' + o.y + ') scale(' + (1 / k) + ')'); });
+    }
+    bmUpdate();
   }
+  function applyViewSoon() { if (mp.raf) return; mp.raf = requestAnimationFrame(function () { mp.raf = 0; applyView(); }); }
   function declutter(k) {
     // étiquettes d'aérodromes : on garde les plus graves, on masque celles qui se chevauchent
     var boxes = [], list = (mp.items || []).filter(function (o) { return o.t === 'ad'; }).sort(function (a, b) { return a.rank - b.rank || b.rows.length - a.rows.length; });
@@ -1363,7 +1367,7 @@ const NotamCore = (() => {
     var wx = v.cx - v.w / 2 + (sx / s.w) * v.w, wy = v.cy - h / 2 + (sy / s.h) * h;
     var nh = nw * s.h / s.w;
     mp.view = { w: nw, cx: wx - (sx / s.w - .5) * nw, cy: wy - (sy / s.h - .5) * nh };
-    applyView();
+    applyViewSoon();
   }
   function buildBase(svg) {
     svgEl('rect', { x: -60, y: -80, width: 120, height: 120, class: 'msea' }, svg);
@@ -1507,7 +1511,7 @@ const NotamCore = (() => {
     var card = $('#mapcard'), a = state.last;
     if (!a || !a.total) { card.hidden = true; return; }
     card.hidden = false;
-    var svg = $('#msvg'); svg.innerHTML = ''; mp.shapes = []; mp.texts = []; mp.byKey = {};
+    var svg = $('#msvg'); svg.innerHTML = ''; mp.shapes = []; mp.lastR = null; mp.texts = []; mp.byKey = {};
     buildBase(svg); bmInit(svg);
     var nfN = 0, counts = {}, order = [];
     vis.forEach(function (r) {
@@ -1888,7 +1892,11 @@ const NotamCore = (() => {
   function bmUiInit() {
     var st = null; try { st = JSON.parse(localStorage.getItem('easynotam.base') || 'null'); } catch (e) { /* ignoré */ }
     if (st) { BM.on = !!st.on; BM.op = Math.max(.2, Math.min(1, +st.op || 1)); }
-    $('#bBase').addEventListener('click', function () { var p = $('#basebar'); p.hidden = !p.hidden; this.setAttribute('aria-expanded', p.hidden ? 'false' : 'true'); });
+    function baseOpen(on) { $('#basebar').classList.toggle('open', on); $('#bBase').setAttribute('aria-expanded', on ? 'true' : 'false'); $('#basebar').setAttribute('aria-hidden', on ? 'false' : 'true'); }
+    baseOpen(false);
+    $('#bBase').addEventListener('click', function () { baseOpen(!$('#basebar').classList.contains('open')); });
+    document.addEventListener('pointerdown', function (e) { if (!$('#basebar').classList.contains('open')) return; if (e.target.closest && e.target.closest('.basebar, #bBase')) return; baseOpen(false); }, true);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') baseOpen(false); });
     $('#baseChoose').addEventListener('click', function () { $('#baseFile').click(); });
     $('#baseFile').addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; if (f) bmOpen(f, f.name.replace(/\.mbtiles$/i, ''), true); });
     $('#baseOn').addEventListener('change', function () { BM.on = this.checked; bmSave(); bmSync(); bmUpdate(); });
@@ -1945,7 +1953,7 @@ const NotamCore = (() => {
       var s = mapSize(), r = v.getBoundingClientRect();
       if (mp.ptrs.size === 1) {
         var dx = e.clientX - p0.x, dy = e.clientY - p0.y; mp.moved += Math.abs(dx) + Math.abs(dy);
-        var k = mp.view.w / s.w; mp.view.cx -= dx * k; mp.view.cy -= dy * k; applyView();
+        var k = mp.view.w / s.w; mp.view.cx -= dx * k; mp.view.cy -= dy * k; applyViewSoon();
       } else if (mp.ptrs.size === 2) {
         mp.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
         var p = Array.from(mp.ptrs.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
@@ -2103,14 +2111,15 @@ const NotamCore = (() => {
     else { state.done.delete(k); state.pinned.delete(k); state.known.delete(k); }
     s.classList.toggle('done', d);
     s.setAttribute('aria-expanded', d ? 'false' : 'true');
-    renderCats(); updateStatus(); updateHideBtn();
-    if (state.hideDone) setTimeout(function () {
+    requestAnimationFrame(function () { renderCats(); updateStatus(); updateHideBtn(); });
+    clearTimeout(toggleStrip.t);
+    if (state.hideDone) toggleStrip.t = setTimeout(function () {
       var y = window.pageYOffset, h = document.documentElement.style.scrollBehavior;
       document.documentElement.style.scrollBehavior = 'auto';
       render();
       window.scrollTo(0, y);
       requestAnimationFrame(function () { window.scrollTo(0, y); document.documentElement.style.scrollBehavior = h; });
-    }, 380); else mapRefresh();
+    }, 480); else toggleStrip.t = setTimeout(mapRefresh, 520);
   }
   function stamp() {
     var d = new Date(), m = ['janv', 'fevr', 'mars', 'avr', 'mai', 'juin', 'juil', 'aout', 'sept', 'oct', 'nov', 'dec'];
