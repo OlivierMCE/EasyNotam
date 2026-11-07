@@ -8,7 +8,7 @@ from build_zones import polygones, cercle, rayon_nm
 ICI = os.path.dirname(os.path.abspath(__file__))
 DOSSIER = os.path.join(ICI, 'supaip')
 SORTIE = os.path.join(ICI, 'supzones.js')
-VERSION = 7  # à augmenter quand la lecture est améliorée : tout est relu
+VERSION = 8  # à augmenter quand la lecture est améliorée : tout est relu
 RE_FICHIER = re.compile(r'SUP-AIP-(\d+)-(\d{4})\.pdf$')
 
 # ---------- liens avec l'AIP : positions d'aérodromes, radiales, renvois vers des zones publiées ----------
@@ -250,8 +250,13 @@ def meilleur(chemin):
         cand.append(zones_tableau(chemin))
     except Exception as e:
         print('  tableau:', e)
+    # on écarte les « zones » dont le nom est un mot de description (arc, cercle, limites…) : lecture ratée
+    cand = [[o for o in z if not re.match(r'\s*(arc|cercle|limites?|lat[ée]rales?)\b', o['n'], re.I)] for z in cand]
+
+    def score(z):
+        return (sum(len(o['p']) for o in z), len(z), -sum(len(o['n']) for o in z), sum(len(p) for o in z for p in o['p']))
     for z in cand:
-        if (sum(len(o['p']) for o in z), len(z)) > (sum(len(o['p']) for o in best), len(best)):
+        if score(z) > score(best):
             best = z
     # on ajoute les zones trouvées par les autres méthodes et absentes du meilleur résultat
     connus = [_sig(p) for o in best for p in o['p']]
@@ -265,6 +270,14 @@ def meilleur(chemin):
                 best.append(o)
                 connus += [_sig(p) for p in neufs]
                 sommets |= {tuple(p[0]) for p in neufs}
+    if len(best) == 1 and not best[0]['n'].strip():
+        try:
+            t = subprocess.run(['pdftotext', '-layout', chemin, '-'], capture_output=True, text=True).stdout
+            m = re.search(r"\b((?:ZRT|ZDT|ZIT|TSA|TRA)(?:/(?:ZRT|ZDT))?\s+['‘’\"][^'‘’\"\n]{2,40}['‘’\"])", t)
+            if m:
+                best[0]['n'] = m.group(1).strip()
+        except Exception:
+            pass
     return best
 
 
