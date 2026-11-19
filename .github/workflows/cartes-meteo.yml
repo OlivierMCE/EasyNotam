@@ -1,0 +1,95 @@
+name: Cartes TEMSI et WINTEM
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'   # toutes les 30 minutes
+  workflow_dispatch:          # bouton « Run workflow » pour lancer à la main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cartes-meteo
+  cancel-in-progress: false
+
+jobs:
+  cartes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Installer le navigateur
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Télécharger les cartes depuis SOFIA-Briefing
+        run: |
+          cat > /tmp/cartes.cjs <<'JS'
+          const { chromium } = require('playwright');
+          const fs = require('fs'), path = require('path');
+          const PAGES = {
+            temsi:  'https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/meteotemsi.html',
+            wintem: 'https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/meteowintem.html'
+          };
+          const OUT = 'cartes';
+          (async () => {
+            fs.mkdirSync(OUT, { recursive: true });
+            const browser = await chromium.launch();
+            const ctx = await browser.newContext({ locale: 'fr-FR' });
+            const index = {};
+            for (const [type, url] of Object.entries(PAGES)) {
+              let liens = [];
+              for (let essai = 1; essai <= 4 && !liens.length; essai++) {
+                const page = await ctx.newPage();
+                try {
+                  await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+                  await page.waitForSelector('a[href*="affiche_image.php"]', { timeout: 30000 });
+                  liens = await page.$$eval('a[href*="affiche_image.php"]', as => as.map(a => a.href));
+                } catch (e) { console.log(type, 'essai', essai, 'échec :', e.message.split('\n')[0]); }
+                await page.close();
+              }
+              const garde = [];
+              for (const href of liens) {
+                const ech = (/echeance=(\d{14})/.exec(href) || [])[1];
+                if (!ech) continue;
+                const fichier = `${type}-${ech}.pdf`, chemin = path.join(OUT, fichier);
+                if (!fs.existsSync(chemin)) {
+                  const r = await ctx.request.get(href, { timeout: 60000 });
+                  const buf = await r.body();
+                  if (!r.ok() || buf.slice(0, 4).toString() !== '%PDF') { console.log('refusé :', type, ech, r.status()); continue; }
+                  fs.writeFileSync(chemin, buf);
+                  console.log('téléchargé :', fichier, buf.length, 'octets');
+                }
+                garde.push({ ech, fichier });
+              }
+              if (liens.length) index[type] = garde.sort((a, b) => a.ech.localeCompare(b.ech));
+              else console.log(type, ': aucune carte trouvée, on garde l’ancien état');
+            }
+            await browser.close();
+            // état précédent si une page a échoué
+            let ancien = {}; try { ancien = JSON.parse(fs.readFileSync(path.join(OUT, 'index.json'), 'utf8')); } catch (e) {}
+            const final = { temsi: index.temsi || ancien.temsi || [], wintem: index.wintem || ancien.wintem || [] };
+            // supprimer les PDF qui ne sont plus listés
+            const utiles = new Set([...final.temsi, ...final.wintem].map(c => c.fichier));
+            for (const f of fs.readdirSync(OUT)) if (f.endsWith('.pdf') && !utiles.has(f)) fs.unlinkSync(path.join(OUT, f));
+            const prec = fs.existsSync(path.join(OUT, 'index.json')) ? JSON.parse(fs.readFileSync(path.join(OUT, 'index.json'), 'utf8')) : null;
+            const memes = prec && JSON.stringify([prec.temsi, prec.wintem]) === JSON.stringify([final.temsi, final.wintem]);
+            if (!memes) fs.writeFileSync(path.join(OUT, 'index.json'), JSON.stringify({ maj: new Date().toISOString(), ...final }, null, 1));
+            console.log('TEMSI :', final.temsi.length, '· WINTEM :', final.wintem.length);
+          })().catch(e => { console.error(e); process.exit(1); });
+          JS
+          node /tmp/cartes.cjs
+      - name: Enregistrer les changements
+        run: |
+          git config user.name "cartes-meteo"
+          git config user.email "cartes-meteo@users.noreply.github.com"
+          git add -A cartes
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau."
+          else
+            git commit -m "Cartes TEMSI et WINTEM"
+            git pull --rebase
+            git push
+          fi
