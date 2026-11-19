@@ -305,20 +305,18 @@
 
   <h3 class="sect">Cartes</h3>
   <nav class="list" aria-label="Cartes météo">
-    <a href="https://aviation.meteo.fr" target="_blank" rel="noopener">
+    <a id="lien-temsi" href="https://aviation.meteo.fr/accueil.php" target="_blank" rel="noopener">
       <span class="ico" style="background:#ff9500"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>TEMSI France</b><small>Temps significatif · SFC–FL150</small></span><span class="chev">›</span></a>
-    <a href="https://aviation.meteo.fr" target="_blank" rel="noopener">
-      <span class="ico" style="background:#007aff"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h8"/></svg></span>
-      <span class="txt"><b>WINTEM</b><small>Vents et températures en altitude</small></span><span class="chev">›</span></a>
-    <a href="https://aviation.meteo.fr" target="_blank" rel="noopener">
-      <span class="ico" style="background:#34c759"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="m3 20 5-8 4 5 3-4 6 7"/><path d="M4 6h16" stroke-dasharray="2 3"/></svg></span>
-      <span class="txt"><b>Coupe verticale</b><small>Le long de ta route</small></span><span class="chev">›</span></a>
+      <span class="txt"><b>TEMSI France</b><small id="temsi-info">Carte directe · il faut être connecté à AEROWEB</small></span><span class="chev">›</span></a>
+    <a href="https://aviation.meteo.fr/accueil.php" target="_blank" rel="noopener">
+      <span class="ico" style="background:#007aff"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
+      <span class="txt"><b>AEROWEB</b><small>TEMSI, WINTEM et coupe verticale</small></span><span class="chev">›</span></a>
     <a href="https://sofia-briefing.aviation-civile.gouv.fr" target="_blank" rel="noopener">
       <span class="ico" style="background:#5856d6"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-6-3-2-6 1-5-5H6l3 6-4 1-2-2H1z"/></svg></span>
       <span class="txt"><b>SOFIA-Briefing</b><small>TEMSI, WINTEM et NOTAM sur ta navigation</small></span><span class="chev">›</span></a>
   </nav>
-  <p class="foot" style="text-align:left;margin-top:-6px">Connexion avec ton identifiant aviation.meteo.fr. Les cartes s'ouvrent dans un nouvel onglet.</p>
+  <div class="deco" style="margin:0 0 10px"><label for="temsi-h">TEMSI valable à <small>UTC</small></label><select id="temsi-h" style="font:600 17px -apple-system,sans-serif;border:0;border-radius:12px;background:var(--fill);color:var(--ink);padding:5px 8px"></select><span class="deco-info" id="temsi-j"></span></div>
+  <p class="foot" style="text-align:left;margin-top:-6px">Connecte-toi à AEROWEB, puis choisis TEMSI, WINTEM ou coupe. S'ouvre dans un nouvel onglet.</p>
 
   <p class="foot">Données CheckWX · actualisation automatique toutes les 10 min</p>
 </main>
@@ -695,6 +693,21 @@
   montrer(depart, false);
   // EasyNotam se charge en arrière-plan pour que la bascule soit instantanée
   addEventListener('load', () => setTimeout(chargerNotam, 1500));
+}
+
+/* ---------- Lien direct vers la carte TEMSI (AEROWEB) ---------- */
+{
+  const lien = document.getElementById('lien-temsi'), sel = document.getElementById('temsi-h'), jour = document.getElementById('temsi-j');
+  const p2 = n => String(n).padStart(2, '0');
+  sel.innerHTML = [0,3,6,9,12,15,18,21].map(h => `<option value="${h}">${p2(h)}:00</option>`).join('');
+  let h0 = Math.floor(new Date().getUTCHours() / 3) * 3; try { const m = localStorage.getItem('temsi_h'); if (m !== null && m !== '') h0 = +m; } catch (e) {}
+  sel.value = String(h0);
+  function adresse() {
+    const d = new Date(), date = d.getUTCFullYear() + p2(d.getUTCMonth() + 1) + p2(d.getUTCDate()) + p2(+sel.value) + '0000';
+    return 'https://aviation.meteo.fr/affiche_image.php?time=' + Math.floor(Date.now() / 1000) + '&type=sigwx/fr/france&date=' + date + '&mode=img&comment=';
+  }
+  const maj = () => { lien.href = adresse(); jour.textContent = 'Aujourd\u2019hui · ' + p2(+sel.value) + ':00 UTC'; try { localStorage.setItem('temsi_h', sel.value); } catch (e) {} };
+  sel.onchange = maj; lien.addEventListener('click', maj); lien.addEventListener('touchstart', maj, { passive: true }); maj();
 }
 if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
 </script>
