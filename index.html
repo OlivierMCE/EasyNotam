@@ -673,6 +673,25 @@
   setInterval(chargerWebcams, 9 * 60000);   // les liens d'images Windy expirent après 10 min
 
   document.write('<script src="https://api.checkwx.com/widget?key=' + CLE + '&refresh=10"><\/script>');
+
+  /* Plan B : si le widget CheckWX ne remplit pas un cadre (cas observé sur l'iPhone en mode application),
+     on demande directement METAR et TAF à l'API CheckWX. */
+  async function planB(box) {
+    const type = box.dataset.type.toLowerCase(), id = box.dataset.station;
+    try {
+      const r = await fetch('https://api.checkwx.com/' + type + '/' + id, { headers: { 'X-API-Key': CLE } });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json(), txt = (j.data && j.data[0]) || '';
+      if (!txt) throw new Error('aucune donnée');
+      box.dataset.fb = '1'; box.innerHTML = '';
+      const it = document.createElement('div'); it.className = 'checkwx-item'; it.textContent = txt; box.appendChild(it);
+    } catch (e) {
+      if (!box.querySelector('.checkwx-item')) box.innerHTML = '<p class="vide">' + box.dataset.type + ' indisponible (' + esc(String(e.message || e)) + ')</p>';
+    }
+  }
+  const verifier = () => document.querySelectorAll('.checkwx-container').forEach(b => { if (!b.querySelector('.checkwx-item')) planB(b); });
+  addEventListener('load', () => setTimeout(verifier, 7000));
+  setInterval(() => document.querySelectorAll('.checkwx-container[data-fb]').forEach(planB), 10 * 60000);
 </script>
 <div id="vue-notam" hidden><iframe id="notam" title="NOTAM" allow="fullscreen"></iframe></div>
 
