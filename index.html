@@ -504,7 +504,7 @@
     .observe(document.getElementById('liste'), { childList: true, subtree: true });
 
   /* ---------- Webcams Windy ---------- */
-  const CLE_WINDY = localStorage.getItem('windy_key') || '4cyn995Nba8L9drUxfq0eaM3Prx5VBTN';   // clé « Webcams API » de api.windy.com/keys
+  const CLE_WINDY = localStorage.getItem('windy_key') || '4cyn995Nba8L9drUxfqOeaM3Prx5VBTN';   // clé « Webcams API » de api.windy.com/keys
   const RAYON_KM = 30;
   const COORDS = { LFBG:[45.6583,-0.3175], LFBL:[45.8628,1.1794], LFBU:[45.7292,0.2214], LFBH:[46.1792,-1.1953] };
   const km = (a, b, c, d) => { const r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)); };
