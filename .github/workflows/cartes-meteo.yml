@@ -80,7 +80,7 @@ jobs:
             console.log('TEMSI :', final.temsi.length, '· WINTEM :', final.wintem.length);
           })().catch(e => { console.error(e); process.exit(1); });
           JS
-          node /tmp/cartes.cjs
+          NODE_PATH="$PWD/node_modules" node /tmp/cartes.cjs
       - name: Enregistrer les changements
         run: |
           git config user.name "cartes-meteo"
