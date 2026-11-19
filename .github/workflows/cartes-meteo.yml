@@ -42,17 +42,19 @@ jobs:
             // échauffement : visite de l'accueil pour obtenir une session, comme un vrai visiteur
             { const w = await ctx.newPage(); try { await w.goto('https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/homepage.html', { waitUntil: 'networkidle', timeout: 60000 }); await w.goto('https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/prepavol.html', { waitUntil: 'networkidle', timeout: 60000 }); console.log('échauffement OK'); } catch (e) { console.log('échauffement :', e.message.split('\n')[0]); } await w.close(); }
             const index = {};
-            for (const [type, url] of Object.entries(PAGES)) {
+            const OPS = { temsi: { ':operation': 'postTemsi', zone: 'FRANCE' }, wintem: { ':operation': 'postWintem', zone: 'FRANCE', level: '100' } };
+            for (const type of Object.keys(OPS)) {
               let liens = [];
-              for (let essai = 1; essai <= 4 && !liens.length; essai++) {
-                const page = await ctx.newPage();
-                page.on('response', async r => { if (r.url().endsWith('/sofia') && r.request().method() === 'POST') { let t = ''; try { t = (await r.text()).slice(0, 200).replace(/\s+/g, ' '); } catch (e) {} console.log('  POST /sofia ->', r.status(), t); } });
+              for (let essai = 1; essai <= 3 && !liens.length; essai++) {
                 try {
-                  await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-                  await page.waitForSelector('a[href*="affiche_image.php"]', { timeout: 20000 });
-                  liens = await page.$$eval('a[href*="affiche_image.php"]', as => as.map(a => a.href));
-                } catch (e) { console.log(type, 'essai', essai, 'échec :', e.message.split('\n')[0]); try { console.log('  texte de la page :', (await page.innerText('body')).replace(/\s+/g, ' ').slice(0, 300)); } catch (e2) {} }
-                await page.close();
+                  const r = await ctx.request.post('https://sofia-briefing.aviation-civile.gouv.fr/sofia', {
+                    form: OPS[type], timeout: 60000,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', Referer: PAGES[type], Accept: 'application/json, text/javascript, */*; q=0.01' } });
+                  const brut = (await r.text()).replace(/&quot;/g, '"').replace(/\\/g, '');
+                  liens = [...brut.matchAll(/"link":"([^"]+)"/g)].map(m => 'https://aviation.meteo.fr' + m[1].replace(/&amp;/g, '&'));
+                  console.log(type, 'essai', essai, ': HTTP', r.status(), '·', liens.length, 'carte(s)');
+                  if (!liens.length) console.log('  réponse :', brut.replace(/\s+/g, ' ').slice(0, 300));
+                } catch (e) { console.log(type, 'essai', essai, 'échec :', e.message.split('\n')[0]); }
               }
               const garde = [];
               for (const href of liens) {
