@@ -305,18 +305,21 @@
 
   <h3 class="sect">Cartes</h3>
   <nav class="list" aria-label="Cartes météo">
-    <a id="lien-temsi" href="https://aviation.meteo.fr/accueil.php" target="_blank" rel="noopener">
+    <a id="lien-temsi" href="https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/meteotemsi.html" target="_blank" rel="noopener">
       <span class="ico" style="background:#ff9500"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>TEMSI France</b><small id="temsi-info">Carte directe · il faut être connecté à AEROWEB</small></span><span class="chev">›</span></a>
+      <span class="txt"><b>TEMSI France</b><small id="temsi-info">Sans compte · via SOFIA-Briefing</small></span><span class="chev">›</span></a>
+    <a id="lien-wintem" href="https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/meteowintem.html" target="_blank" rel="noopener">
+      <span class="ico" style="background:#34c759"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
+      <span class="txt"><b>WINTEM</b><small >Sans compte · via SOFIA-Briefing</small></span><span class="chev">›</span></a>
     <a href="https://aviation.meteo.fr/accueil.php" target="_blank" rel="noopener">
       <span class="ico" style="background:#007aff"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>AEROWEB</b><small>TEMSI, WINTEM et coupe verticale</small></span><span class="chev">›</span></a>
+      <span class="txt"><b>AEROWEB</b><small>TEMSI, WINTEM et coupe verticale (connexion)</small></span><span class="chev">›</span></a>
     <a href="https://sofia-briefing.aviation-civile.gouv.fr" target="_blank" rel="noopener">
       <span class="ico" style="background:#5856d6"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-6-3-2-6 1-5-5H6l3 6-4 1-2-2H1z"/></svg></span>
       <span class="txt"><b>SOFIA-Briefing</b><small>TEMSI, WINTEM et NOTAM sur ta navigation</small></span><span class="chev">›</span></a>
   </nav>
-  <div class="deco" style="margin:0 0 10px"><label for="temsi-h">TEMSI valable à <small>UTC</small></label><select id="temsi-h" style="font:600 17px -apple-system,sans-serif;border:0;border-radius:12px;background:var(--fill);color:var(--ink);padding:5px 8px"></select><span class="deco-info" id="temsi-j"></span></div>
-  <p class="foot" style="text-align:left;margin-top:-6px">Connecte-toi à AEROWEB, puis choisis TEMSI, WINTEM ou coupe. S'ouvre dans un nouvel onglet.</p>
+  <div class="deco" hidden style="margin:0 0 10px"><label for="temsi-h">TEMSI valable à <small>UTC</small></label><select id="temsi-h" style="font:600 17px -apple-system,sans-serif;border:0;border-radius:12px;background:var(--fill);color:var(--ink);padding:5px 8px"></select><span class="deco-info" id="temsi-j"></span></div>
+  <p class="foot" style="text-align:left;margin-top:-6px">TEMSI et WINTEM : touche la ligne, puis le lien affiché sur SOFIA (sans compte). Coupe verticale : AEROWEB, avec connexion.</p>
 
   <p class="foot">Données CheckWX · actualisation automatique toutes les 10 min</p>
 </main>
@@ -706,7 +709,7 @@
     const d = new Date(), date = d.getUTCFullYear() + p2(d.getUTCMonth() + 1) + p2(d.getUTCDate()) + p2(+sel.value) + '0000';
     return 'https://aviation.meteo.fr/affiche_image.php?time=' + Math.floor(Date.now() / 1000) + '&type=sigwx/fr/france&date=' + date + '&mode=img&comment=';
   }
-  const maj = () => { lien.href = adresse(); jour.textContent = 'Aujourd\u2019hui · ' + p2(+sel.value) + ':00 UTC'; try { localStorage.setItem('temsi_h', sel.value); } catch (e) {} };
+  const maj = () => { jour.textContent = 'Aujourd\u2019hui · ' + p2(+sel.value) + ':00 UTC'; try { localStorage.setItem('temsi_h', sel.value); } catch (e) {} };
   sel.onchange = maj; lien.addEventListener('click', maj); lien.addEventListener('touchstart', maj, { passive: true }); maj();
 }
 if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
