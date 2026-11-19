@@ -2,11 +2,15 @@ name: Mise à jour des SUP AIP et des zones
 
 on:
   schedule:
-    - cron: '30 4 * * *'
-  workflow_dispatch:
+    - cron: '30 4 * * *'   # tous les jours vers 5 h 30 (heure de Paris)
+  workflow_dispatch:        # bouton « Run workflow » pour lancer à la main
 
 permissions:
   contents: write
+
+concurrency:
+  group: depot-commits
+  cancel-in-progress: false
 
 jobs:
   maj:
@@ -38,9 +42,11 @@ jobs:
           if [ -f zones.js ]; then git add zones.js; fi
           if [ -f adnames.js ]; then git add adnames.js; fi
           if [ -f supzones.js ]; then git add supzones.js; fi
+          if [ -f supzones_rapport.txt ]; then git add supzones_rapport.txt; fi
           if git diff --cached --quiet; then
             echo "Rien de nouveau."
           else
             git commit -m "Mise à jour des SUP AIP et des zones"
+            git pull --rebase
             git push
           fi
