@@ -306,9 +306,10 @@
 
   <h3 class="sect">Cartes</h3>
   <nav class="list" aria-label="Cartes météo">
-    <a id="lien-temsi" href="https://sofia-briefing.aviation-civile.gouv.fr/sofia/pages/meteotemsi.html" target="_blank" rel="noopener">
+    <a id="lien-temsi" href="#" role="button">
       <span class="ico" style="background:#ff9500"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>TEMSI France</b><small id="temsi-info">Dernière carte · sans compte</small></span><span class="chev">›</span></a>
+      <span class="txt"><b>TEMSI France</b><small>Choisis l’heure de validité</small></span><span class="chev">›</span></a>
+    <div id="tm-choix" style="display:none;flex-wrap:wrap;gap:8px;padding:10px 16px 14px"></div>
     <a id="lien-wintem" href="#" role="button">
       <span class="ico" style="background:#34c759"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
       <span class="txt"><b>WINTEM</b><small>Choisis l’heure de validité (FL20-100)</small></span><span class="chev">›</span></a>
@@ -320,7 +321,7 @@
       <span class="ico" style="background:#5856d6"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-6-3-2-6 1-5-5H6l3 6-4 1-2-2H1z"/></svg></span>
       <span class="txt"><b>SOFIA-Briefing</b><small>TEMSI, WINTEM et NOTAM sur ta navigation</small></span><span class="chev">›</span></a>
   </nav>
-  <p class="foot" style="text-align:left;margin-top:-6px">TEMSI et WINTEM : cartes publiées, sans compte. Coupe verticale : AEROWEB, avec connexion.</p>
+  <p class="foot" style="text-align:left;margin-top:-6px">TEMSI et WINTEM : sans compte. L’heure en bleu plein est la plus probable ; en cas d’erreur, la carte n’est pas encore publiée ou est périmée : essaie l’heure voisine. Coupe verticale : AEROWEB, avec connexion.</p>
 
   <p class="foot">Données CheckWX · actualisation automatique toutes les 10 min</p>
 </main>
@@ -699,41 +700,36 @@
   addEventListener('load', () => setTimeout(chargerNotam, 1500));
 }
 
-/* ---------- Lien direct vers la dernière TEMSI (SOFIA, sans compte) ---------- */
+/* ---------- TEMSI / WINTEM : choix de l'heure (sans compte, via SOFIA) ---------- */
 {
-  const lien = document.getElementById('lien-temsi'), p2 = n => String(n).padStart(2, '0');
-  const maj = () => {
-    const d = new Date(Date.now() + 3600e3);               // la carte est publiée environ 1 h avant sa validité
-    const h = Math.floor(d.getUTCHours() / 3) * 3;
-    const ech = d.getUTCFullYear() + p2(d.getUTCMonth() + 1) + p2(d.getUTCDate()) + p2(h) + '0000';
-    lien.href = 'https://aviation.meteo.fr//FR/aviation/affiche_image.php?login=hqOkpbt8tYqGebAK4GqcaWlin2tkZm%2Fd1uE%3D&layer=sigwx/fr/france&echeance=' + ech;
-  };
-  maj(); lien.addEventListener('click', maj); lien.addEventListener('touchstart', maj, { passive: true });
-}
-/* ---------- WINTEM : choix de l'échéance ---------- */
-{
-  const ligne = document.getElementById('lien-wintem'), zone = document.getElementById('wt-choix'), p2 = n => String(n).padStart(2, '0');
-  const base = 'https://aviation.meteo.fr//FR/aviation/affiche_image.php?login=hqOkpbt8tYqGebAK4GqcaWlin2tkZm%2Fd1uE%3D&layer=wintemp/fr/france/fl020&echeance=';
-  function remplir() {
-    const d0 = new Date(Date.now() + 3600e3), t0 = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth(), d0.getUTCDate(), Math.floor(d0.getUTCHours() / 3) * 3);
-    const auj = new Date().getUTCDate();
-    zone.innerHTML = '';
-    for (let i = 0; i < 5; i++) {
-      const d = new Date(t0 + i * 3 * 3600e3);
-      const a = document.createElement('a');
-      a.href = base + d.getUTCFullYear() + p2(d.getUTCMonth() + 1) + p2(d.getUTCDate()) + p2(d.getUTCHours()) + '0000';
-      a.target = '_blank'; a.rel = 'noopener';
-      a.textContent = p2(d.getUTCHours()) + ' UTC' + (d.getUTCDate() !== auj ? ' · demain' : '');
-      a.style.cssText = 'padding:8px 14px;border-radius:999px;background:var(--fill);color:var(--blue);font-weight:600;font-size:15px;text-decoration:none';
-      zone.appendChild(a);
+  const TOK = 'hqOkpbt8tYqGebAK4GqcaWlin2tkZm%2Fd1uE%3D', p2 = n => String(n).padStart(2, '0');
+  const BASE = 'https://aviation.meteo.fr//FR/aviation/affiche_image.php?login=' + TOK + '&layer=';
+  function installer(idLigne, idZone, layer, nbAvant, nbApres) {
+    const ligne = document.getElementById(idLigne), zone = document.getElementById(idZone);
+    function remplir() {
+      const d0 = new Date(Date.now() + 3600e3);               // une carte est publiée environ 1 h avant sa validité
+      const t0 = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth(), d0.getUTCDate(), Math.floor(d0.getUTCHours() / 3) * 3);
+      const auj = new Date().getUTCDate();
+      zone.innerHTML = '';
+      for (let i = -nbAvant; i <= nbApres; i++) {
+        const d = new Date(t0 + i * 3 * 3600e3), a = document.createElement('a'), best = i === 0;
+        a.href = BASE + layer + '&echeance=' + d.getUTCFullYear() + p2(d.getUTCMonth() + 1) + p2(d.getUTCDate()) + p2(d.getUTCHours()) + '0000';
+        a.target = '_blank'; a.rel = 'noopener';
+        const j = d.getUTCDate() === auj ? '' : (d.getTime() > Date.now() ? ' · demain' : ' · hier');
+        a.textContent = p2(d.getUTCHours()) + ' UTC' + j;
+        a.style.cssText = 'padding:8px 14px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;' + (best ? 'background:var(--blue);color:#fff' : 'background:var(--fill);color:var(--blue)');
+        zone.appendChild(a);
+      }
     }
+    ligne.addEventListener('click', ev => {
+      ev.preventDefault();
+      const ouvert = zone.style.display === 'flex';
+      if (!ouvert) remplir();
+      zone.style.display = ouvert ? 'none' : 'flex';
+    });
   }
-  ligne.addEventListener('click', ev => {
-    ev.preventDefault();
-    const ouvert = zone.style.display === 'flex';
-    if (!ouvert) remplir();
-    zone.style.display = ouvert ? 'none' : 'flex';
-  });
+  installer('lien-temsi', 'tm-choix', 'sigwx/fr/france', 3, 3);
+  installer('lien-wintem', 'wt-choix', 'wintemp/fr/france/fl020', 2, 4);
 }
 if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
 </script>
