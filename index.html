@@ -509,7 +509,7 @@
 
   /* ---------- Webcams Windy ---------- */
   const CLE_WINDY = localStorage.getItem('windy_key') || '4cyn995Nba8L9drUxfqOeaM3Prx5VBTN';   // clé « Webcams API » de api.windy.com/keys
-  const RAYON_KM = 30;
+  const RAYON_KM = 46; // 25 NM
   const COORDS = { LFBG:[45.6583,-0.3175], LFBL:[45.8628,1.1794], LFBU:[45.7292,0.2214], LFBH:[46.1792,-1.1953] };
   const km = (a, b, c, d) => { const r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)); };
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -553,7 +553,7 @@
         .filter(w => w.images?.current?.preview && w.status !== 'inactive')
         .map(w => ({ ...w, d: km(lat, lon, w.location.latitude, w.location.longitude) }))
         .sort((a, b) => a.d - b.d).slice(0, 6);
-      if (!list.length) { box.innerHTML = `<p class="vide">Aucune webcam dans un rayon de ${RAYON_KM} km.</p>`; return; }
+      if (!list.length) { box.innerHTML = `<p class="vide">Aucune webcam dans un rayon de 25 NM.</p>`; return; }
       box.innerHTML = list.map(w => {
         const maj = w.lastUpdatedOn ? Math.round((Date.now() - new Date(w.lastUpdatedOn)) / 60000) : null;
         return `<a class="cam" href="${esc(w.urls?.detail || 'https://www.windy.com/webcams/' + w.webcamId)}" target="_blank" rel="noopener">
