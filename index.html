@@ -300,6 +300,81 @@
   #seg-vue{display:none}
   @media(max-width:600px){.carte{padding:8px}.map{height:min(78vh,720px);min-height:480px;border-radius:14px}}
   #vue-notam[hidden]{display:none}
+  /* ---------- Carte de France (METAR / TAF) ---------- */
+  .frc{padding:14px}
+  .fr-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px}
+  .fr-mode{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;letter-spacing:-.005em;padding:5px 11px 5px 9px;border-radius:999px;background:var(--accent-soft);color:var(--blue)}
+  .fr-mode i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 currentColor;animation:frpouls 2.4s ease-out infinite}
+  @keyframes frpouls{0%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 50%,transparent)}70%,100%{box-shadow:0 0 0 7px transparent}}
+  .fr-age{font-size:12px;color:var(--sub);white-space:nowrap}
+  .frc .fr-seg{margin-bottom:10px}
+  .fr-sat{display:flex;align-items:center;gap:10px;margin:0 2px 10px}
+  .fr-sat>span{font-size:13px;font-weight:600;color:var(--sub);flex:none}
+  .fr-sat .seg{margin:0;flex:1;min-width:0}
+  .fr-sat input{flex:0 0 74px;width:74px;accent-color:var(--blue);display:none}
+  .fr-sat.on input{display:block}
+  .sat-on .terre{fill:none !important;stroke:rgba(255,255,255,.7) !important;filter:none !important}
+  .sat-on #fr-svg .st .oaci{stroke:rgba(0,0,0,.65);fill:#fff;opacity:1}
+  .fr-zone{position:relative;overflow:hidden;border-radius:18px;touch-action:none;aspect-ratio:500/480;cursor:grab;user-select:none;-webkit-user-select:none;
+    background:radial-gradient(120% 90% at 30% 20%,color-mix(in srgb,var(--blue) 9%,var(--fill)),color-mix(in srgb,var(--blue) 15%,var(--fill)));
+    box-shadow:inset 0 0 0 1px var(--sep)}
+  .fr-zone:active{cursor:grabbing}
+  #fr-svg{display:block;width:100%;height:100%}
+  #fr-svg .terre{fill:color-mix(in srgb,var(--card) 70%,#fff);stroke:color-mix(in srgb,var(--sub) 55%,transparent);stroke-width:1;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+    filter:drop-shadow(0 1px 3px rgba(0,0,0,.10))}
+  @media (prefers-color-scheme: dark){#fr-svg .terre{fill:#26262a;stroke:rgba(255,255,255,.22)}}
+  #fr-svg .st{cursor:pointer}
+  #fr-svg .st circle{stroke:#fff;stroke-width:1.6;filter:drop-shadow(0 1.5px 2px rgba(0,0,0,.28));transition:r .2s var(--spring)}
+  #fr-svg .st:hover circle{r:13.5}
+  #fr-svg .st text{font:700 8.6px -apple-system,"SF Pro Text",sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none;letter-spacing:-.01em}
+  #fr-svg .st .t1{font-size:5.9px;font-weight:800;letter-spacing:.3px;opacity:.92}
+  #fr-svg .st .oaci{paint-order:stroke;stroke:color-mix(in srgb,var(--card) 85%,#fff);stroke-width:3px;stroke-linejoin:round;font:600 7.4px -apple-system,"SF Pro Text",sans-serif;fill:var(--ink);opacity:.82;dominant-baseline:hanging}
+  @media (prefers-color-scheme: dark){#fr-svg .st .oaci{stroke:#1c1c1e;fill:#f2f2f7}#fr-svg .st circle{stroke:#1c1c1e}}
+  #fr-svg .st .fle{fill:var(--ink);opacity:.8}
+  #fr-svg .st.vieux{opacity:.45}
+  #fr-svg .st.sel circle{stroke:var(--ink);stroke-width:2.6}
+  #fr-svg .st.mien circle{stroke:var(--blue);stroke-width:2.8}
+  #fr-svg.init .st{animation:frpop .5s var(--spring) both}
+  @keyframes frpop{from{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.2)}}
+  .fr-zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;
+    background:var(--glass-hi,rgba(255,255,255,.9));-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 2px 10px rgba(0,0,0,.14),inset 0 0 0 1px var(--glass-edge,rgba(0,0,0,.06))}
+  @media (prefers-color-scheme: dark){.fr-zoom{background:rgba(58,58,60,.85)}}
+  .fr-zoom button{width:38px;height:38px;border:0;background:transparent;color:var(--ink);font:500 21px/1 -apple-system,sans-serif;cursor:pointer;display:grid;place-items:center;-webkit-tap-highlight-color:transparent;transition:background .15s}
+  .fr-zoom button+button{border-top:1px solid var(--sep)}
+  .fr-zoom button:active{background:var(--pill)}
+  .fr-zoom svg{width:17px;height:17px}
+  .fr-satinfo{position:absolute;left:10px;top:10px;font-size:11.5px;font-weight:600;color:#fff;padding:4px 10px;border-radius:999px;pointer-events:none;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .fr-cpt{position:absolute;left:10px;bottom:10px;font-size:11.5px;font-weight:600;color:var(--sub);padding:4px 10px;border-radius:999px;pointer-events:none;
+    background:var(--glass-hi,rgba(255,255,255,.9));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 1px 6px rgba(0,0,0,.10)}
+  @media (prefers-color-scheme: dark){.fr-cpt{background:rgba(58,58,60,.85)}}
+  .fr-leg{margin:12px 2px 0}
+  .fr-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .fr-bar span{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--sub);text-align:center;font-variant-numeric:tabular-nums}
+  .fr-bar b{height:6px;border-radius:3px}
+  .fr-bar span:first-child b{border-radius:3px 1px 1px 3px}.fr-bar span:nth-child(5) b{border-radius:1px 3px 3px 1px}
+  .fr-unite{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:11.5px;color:var(--sub)}
+  .fr-unite em{font-style:normal;white-space:nowrap}
+  .fr-unite em i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9a9aa0;margin-right:5px}
+  .fr-detail{margin-top:14px;padding:14px;border-radius:18px;background:var(--fill);box-shadow:inset 0 0 0 1px var(--sep);animation:frdet .4s var(--spring)}
+  @keyframes frdet{from{opacity:0;transform:translateY(8px) scale(.98)}}
+  .fr-dh{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .fr-dh h4{margin:0;font-size:19px;font-weight:700;letter-spacing:-.025em}
+  .fr-dh .oa{font-size:11.5px;font-weight:700;letter-spacing:.04em;color:var(--sub);padding:2px 8px;border-radius:999px;background:var(--pill)}
+  .fr-dh .nom{font-size:12px;color:var(--sub);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fr-dh button{margin-left:auto;border:0;width:28px;height:28px;border-radius:50%;background:var(--pill);color:var(--sub);font-size:13px;cursor:pointer;flex:none}
+  .fr-t{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .fr-t div{background:var(--card);border-radius:14px;padding:10px 11px;box-shadow:inset 0 0 0 1px var(--sep);min-width:0}
+  .fr-t small{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--sub)}
+  .fr-t small i{width:8px;height:8px;border-radius:50%;flex:none}
+  .fr-t b{display:block;font-size:17px;font-weight:650;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+  .fr-t em{display:block;font-style:normal;font-size:11.5px;color:var(--sub);margin-top:1px}
+  .fr-nu{margin:10px 2px 0;font-size:13px;color:var(--sub)}
+  .fr-nu b{color:var(--ink);font-weight:600}
+  .fr-brut{margin-top:10px;display:grid;gap:8px}
+  .fr-brut div{background:var(--card);border-radius:12px;padding:9px 11px;box-shadow:inset 0 0 0 1px var(--sep)}
+  .fr-brut span{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--blue);margin-bottom:2px}
+  .fr-brut p{margin:0;font:12.5px/1.55 ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+  @media (max-width:380px){.fr-t b{font-size:15px}}
 </style>
 </head>
 <body>
@@ -336,6 +411,25 @@
   </div>
 
   <div id="liste"></div>
+
+  <h3 class="sect">Carte de France</h3>
+  <section class="carte frc">
+    <div class="fr-tete"><span class="fr-mode" id="fr-mode"><i></i>Chargement…</span><span class="fr-age" id="fr-age"></span></div>
+    <div class="seg fr-seg" id="fr-couche" role="tablist"></div>
+    <div class="fr-sat"><span>Satellite</span><div class="seg petit" id="fr-sat-seg" role="tablist"></div><input type="range" id="fr-op" min="20" max="100" step="5" value="85" aria-label="Transparence de l’image satellite"></div>
+    <div class="fr-zone" id="fr-zone">
+      <svg id="fr-svg" viewBox="0 0 500 480" role="img" aria-label="Carte de France des METAR et TAF"><g id="fr-fond"></g><g id="fr-pts"></g></svg>
+      <span class="fr-satinfo" id="fr-satinfo" hidden></span>
+      <span class="fr-cpt" id="fr-cpt"></span>
+      <div class="fr-zoom">
+        <button type="button" id="fr-plus" aria-label="Zoomer">+</button>
+        <button type="button" id="fr-moins" aria-label="Dézoomer">−</button>
+        <button type="button" id="fr-reset" aria-label="Recentrer la carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+    </div>
+    <div class="fr-leg" id="fr-leg"></div>
+    <div class="fr-detail" id="fr-detail" hidden></div>
+  </section>
 
   <h3 class="sect">Carte Windy</h3>
   <section class="carte">
@@ -524,9 +618,9 @@
     document.getElementById('deco-x').style.visibility = f ? 'visible' : 'hidden';
   }
   const majJour = () => segment(document.getElementById('seg-jour'), { 0: 'Aujourd\u2019hui', 1: 'Demain' },
-    localStorage.getItem('deco_jour') || '0', k => { localStorage.setItem('deco_jour', k); majJour(); infoVol(); toutRendre(); carte(); });
-  champH.onchange = () => { localStorage.setItem('deco', champH.value); infoVol(); toutRendre(); carte(); };
-  document.getElementById('deco-x').onclick = () => { champH.value = ''; localStorage.removeItem('deco'); infoVol(); toutRendre(); carte(); };
+    localStorage.getItem('deco_jour') || '0', k => { localStorage.setItem('deco_jour', k); majJour(); infoVol(); toutRendre(); carte(); window.majFrance && majFrance(); });
+  champH.onchange = () => { localStorage.setItem('deco', champH.value); infoVol(); toutRendre(); carte(); window.majFrance && majFrance(); };
+  document.getElementById('deco-x').onclick = () => { champH.value = ''; localStorage.removeItem('deco'); infoVol(); toutRendre(); carte(); window.majFrance && majFrance(); };
   infoVol();
   setTimeout(majJour);                                            // après la définition de segment()
   setInterval(() => { infoVol(); toutRendre(); }, 5 * 60000);
@@ -798,6 +892,293 @@
   installer('lien-fronts', 'fr-choix', 'fronts');
 }
 if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
+</script>
+<script>
+/* ---------- Carte de France : METAR (sans heure de décollage) ou TAF (avec heure) ---------- */
+{
+  const K = 48, KX = K * 0.688, X = lon => (lon + 5.3) * KX, Y = lat => (51.2 - lat) * K;
+  const FRANCE = [[2.55,51.05],[1.6,50.9],[1.55,50.2],[1.4,49.95],[0.1,49.5],[-0.2,49.3],[-1.25,49.7],[-1.9,49.7],[-1.6,48.65],[-2.0,48.65],[-3.0,48.8],[-3.5,48.8],[-4.7,48.5],[-4.4,47.8],[-3.4,47.7],[-2.4,47.3],[-2.2,47.0],[-1.8,46.4],[-1.15,46.15],[-1.05,45.55],[-1.25,44.65],[-1.45,43.5],[-1.78,43.37],[-0.7,42.95],[0.7,42.8],[1.45,42.5],[2.0,42.35],[3.1,42.45],[3.0,43.1],[4.1,43.4],[4.5,43.35],[5.3,43.3],[6.0,43.1],[6.7,43.15],[7.5,43.75],[7.0,44.4],[6.95,45.1],[7.1,45.4],[6.85,45.85],[6.1,46.2],[6.1,46.55],[6.9,47.1],[7.0,47.5],[7.55,47.6],[7.6,48.0],[8.2,48.97],[6.35,49.45],[5.8,49.55],[4.85,50.15],[4.2,50.3],[3.6,50.4],[3.1,50.78]];
+  const CORSE = [[9.4,43.0],[9.55,42.5],[9.4,41.9],[9.4,41.4],[9.15,41.4],[8.6,41.9],[8.6,42.1],[8.65,42.4],[9.2,42.7]];
+  const trace = pts => 'M' + pts.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join('L') + 'Z';
+
+  const COUL = ['#4f9d73', '#9bb64a', '#e0b83c', '#e58a3a', '#d9534f'];          // bon → mauvais
+  const COUCHES_FR = {
+    nuages: { nom: 'Nuages', unite: 'Couche et base (centaines de ft) · couleur = plafond BKN/OVC', seuils: [2500, 1500, 700, 300], sens: 1,
+      val: s => s.plafond, txt: s => s.plafond == null ? '–' : String(Math.round(s.plafond / 100)).padStart(3, '0'),
+      bulle: s => {                                                  // [type de couche, base en centaines de ft]
+        const h = x => String(Math.round(x / 100)).padStart(3, '0');
+        if (s.plafond != null) return [s.couv === 'VV' ? 'VV' : s.couv, h(s.plafond)];
+        if (s.bas) return [s.bas.c, h(s.bas.h)];
+        return ['CLR', ''];
+      },
+      leg: ['≥ 2500 ft', '≥ 1500', '≥ 700', '≥ 300', '< 300'] },
+    vent: { nom: 'Vent', unite: 'Vent ou rafales en kt · flèche = origine du vent', seuils: [10, 15, 20, 28], sens: -1,
+      val: s => s.spd == null ? null : Math.max(s.spd, s.gst || 0), txt: s => s.spd == null ? '–' : String(Math.max(s.spd, s.gst || 0)),
+      leg: ['≤ 10 kt', '≤ 15', '≤ 20', '≤ 28', '> 28'] },
+    visi: { nom: 'Visibilité', unite: 'Visibilité en kilomètres', seuils: [8000, 5000, 3700, 1600], sens: 1,
+      val: s => s.vis, txt: s => s.vis == null ? '–' : s.vis >= 9999 ? '10+' : (s.vis / 1000).toFixed(s.vis >= 5000 ? 0 : 1),
+      leg: ['≥ 8 km', '≥ 5 km', '≥ 3,7 km', '≥ 1,6 km', '< 1,6 km'] }
+  };
+  const classe = (c, v) => {                                       // v null → on prend « bon » (pas de plafond, etc.)
+    if (v == null) return c === COUCHES_FR.vent ? 0 : 0;
+    const t = c.seuils;
+    for (let i = 0; i < 4; i++) if (c.sens > 0 ? v >= t[i] : v <= t[i]) return i;
+    return 4;
+  };
+
+  // Lit les groupes d'un message (METAR ou période de TAF) : renvoie seulement ce qui y figure
+  function lire(toks) {
+    const r = {}, nu = [];
+    for (const t of toks) {
+      let m;
+      if (t === 'RMK') break;
+      if ((m = t.match(/^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/))) {
+        const f = m[4] === 'MPS' ? 1.944 : 1;
+        r.dir = m[1] === 'VRB' ? null : +m[1]; r.spd = Math.round(+m[2] * f); r.gst = m[3] ? Math.round(+m[3] * f) : 0; r.v = 1;
+      } else if (t === 'CAVOK') { r.vis = 9999; r.nuages = []; }
+      else if (/^\d{4}$/.test(t) && !r.vis) r.vis = +t;
+      else if (/^(NSC|SKC|NCD|CLR)$/.test(t)) r.nuages = [];
+      else if ((m = t.match(/^(FEW|SCT|BKN|OVC|VV)(\d{3})/))) nu.push({ c: m[1], h: +m[2] * 100 });
+    }
+    if (nu.length) r.nuages = nu;
+    return r;
+  }
+  const plafondDe = n => (n || []).filter(x => x.c === 'BKN' || x.c === 'OVC' || x.c === 'VV').reduce((a, x) => Math.min(a, x.h), Infinity);
+  const fin = (s, flags = {}) => {
+    const lay = [...(s.nuages || [])].sort((a, b) => a.h - b.h), bk = lay.find(x => x.c === 'BKN' || x.c === 'OVC' || x.c === 'VV');
+    return { dir: s.dir ?? null, spd: s.spd ?? null, gst: s.gst || 0, vis: s.vis ?? null,
+      plafond: bk ? bk.h : null, couv: bk ? bk.c : null, bas: lay[0] || null, nuages: s.nuages || [], ...flags };
+  };
+
+  function etatMetar(raw) {
+    const toks = raw.replace(/=\s*$/, '').trim().split(/\s+/), cut = toks.findIndex(t => /^(TEMPO|BECMG|NOSIG)$/.test(t));
+    const m = raw.match(/\b(\d\d)(\d\d)(\d\d)Z\b/);
+    return { ...fin(lire(cut > 0 ? toks.slice(0, cut) : toks)), quand: m ? dateMsg(m[1], m[2], m[3]) : null };
+  }
+
+  // TAF : état dominant (de base / FM / BECMG) à plusieurs instants du vol, pire cas avec les TEMPO / PROB
+  function etatTaf(raw, f) {
+    const toks = raw.replace(/=\s*$/, '').trim().split(/\s+/), per = periodesTaf(toks);
+    const valid = plage(toks.find(t => plage(t)) || '');
+    if (!valid || f.fin <= valid[0] || f.debut >= valid[1]) return null;
+    const tempo = p => p.toks[0] === 'TEMPO' || /^PROB/.test(p.toks[0]);
+    const effet = p => p.toks[0] === 'BECMG' ? ((p.toks.slice(0, 3).map(plage).find(Boolean) || [])[1] || p.deb) : p.deb;
+    const bases = per.filter(p => !tempo(p) && p.deb).map(p => ({ p, t: effet(p) })).sort((a, b) => a.t - b.t);
+    const aTemp = per.filter(p => tempo(p) && p.deb && p.fin && p.deb < f.fin && p.fin > f.debut);
+    const instants = [f.debut, new Date(+f.debut + 3600e3), new Date(+f.fin - 60e3)];
+    let pire = null, temp = false;
+    const pirer = (a, b) => { const pa = a.plafond ?? 1e9, pb = b.plafond ?? 1e9;
+      return { spd: Math.max(a.spd ?? -1, b.spd ?? -1), gst: Math.max(a.gst || 0, b.gst || 0),
+        vis: Math.min(a.vis ?? 1e5, b.vis ?? 1e5), plafond: Math.min(pa, pb), couv: pb < pa ? b.couv : a.couv,
+        bas: !a.bas ? b.bas : !b.bas ? a.bas : (b.bas.h < a.bas.h ? b.bas : a.bas),
+        dir: (b.spd ?? -1) > (a.spd ?? -1) ? b.dir : a.dir, nuages: b.nuages && b.nuages.length ? b.nuages : a.nuages }; };
+    for (const t of instants) {
+      let cur = {};
+      for (const b of bases) if (b.t <= t) cur = { ...cur, ...lire(b.p.toks) };
+      pire = pire ? pirer(pire, fin(cur)) : fin(cur);
+    }
+    for (const p of aTemp) { pire = pirer(pire, fin({ ...lire(p.toks) })); temp = true; }
+    const nul = v => v === 1e5 || v === 1e9 || v === -1 ? null : v;
+    return { dir: pire.dir ?? null, spd: nul(pire.spd), gst: pire.gst, vis: nul(pire.vis), plafond: nul(pire.plafond), couv: pire.couv || null, bas: pire.bas || null, nuages: pire.nuages || [], temp };
+  }
+
+  const VILLES = {LFPG:'Paris CDG',LFPO:'Paris Orly',LFPB:'Le Bourget',LFPT:'Pontoise',LFPN:'Toussus',LFLL:'Lyon',LFLY:'Lyon Bron',LFML:'Marseille',LFMN:'Nice',LFBO:'Toulouse',LFBD:'Bordeaux',LFRS:'Nantes',LFRN:'Rennes',LFRB:'Brest',LFQQ:'Lille',LFST:'Strasbourg',LFSB:'Bâle-Mulhouse',LFBG:'Cognac',LFBL:'Limoges',LFBU:'Angoulême',LFBH:'La Rochelle',LFKJ:'Ajaccio',LFKB:'Bastia',LFKF:'Figari',LFKC:'Calvi',LFMP:'Perpignan',LFTH:'Toulon',LFTW:'Nîmes',LFMT:'Montpellier',LFMK:'Carcassonne',LFMU:'Béziers',LFMD:'Cannes',LFMV:'Avignon',LFMI:'Istres',LFMH:'Saint-Étienne',LFLC:'Clermont-Ferrand',LFLB:'Chambéry',LFLS:'Grenoble',LFLP:'Annecy',LFLW:'Aurillac',LFLX:'Châteauroux',LFJL:'Metz-Nancy',LFSN:'Nancy',LFSR:'Reims',LFSD:'Dijon',LFSQ:'Belfort',LFGJ:'Dole',LFOB:'Beauvais',LFAC:'Calais',LFAT:'Le Touquet',LFAQ:'Albert',LFAV:'Valenciennes',LFOH:'Le Havre',LFRK:'Caen',LFRC:'Cherbourg',LFRD:'Dinard',LFRO:'Lannion',LFRH:'Lorient',LFRV:'Vannes',LFRQ:'Quimper',LFRZ:'Saint-Nazaire',LFRI:'La Roche-sur-Yon',LFOT:'Tours',LFOJ:'Orléans',LFOE:'Évreux',LFOK:'Vatry',LFOP:'Rouen',LFOC:'Châteaudun',LFRM:'Le Mans',LFRG:'Deauville',LFBZ:'Biarritz',LFBP:'Pau',LFBT:'Tarbes',LFBM:'Mont-de-Marsan',LFCR:'Rodez',LFCC:'Cahors',LFBI:'Poitiers',LFBN:'Niort',LFBE:'Bergerac',LFBA:'Agen',LFBX:'Périgueux',LFBV:'Brive',LFBK:'Montluçon',LFCK:'Castres',LFMO:'Orange',LFMY:'Salon',LFMA:'Aix',LFMC:'Le Luc',LFNA:'Gap',LFKS:'Solenzara',LFCI:'Albi',LFCY:'Royan',LFEY:'Île d’Yeu',LFGA:'Colmar',LFSX:'Luxeuil',LFQB:'Troyes',LFQG:'Nevers'};
+  const nomVille = s => VILLES[s.id] || String(s.nom || s.id).split(/[\/,]/)[0].replace(/\b(Airport|Aeroport|Intl|International|Aerodrome|Air Base|AFB|Aeroclub)\b/gi, '').replace(/\s+/g, ' ').trim() || s.id;
+
+  const svg = document.getElementById('fr-svg'), zone = document.getElementById('fr-zone');
+  const detail = document.getElementById('fr-detail'), leg = document.getElementById('fr-leg'), modeEl = document.getElementById('fr-mode'), ageEl = document.getElementById('fr-age'), cptEl = document.getElementById('fr-cpt');
+  let data = null, couche = 'nuages', choisie = null;
+  try { couche = localStorage.getItem('fr_couche') || 'nuages'; } catch (e) {}
+  if (!COUCHES_FR[couche]) couche = 'nuages';
+
+  const hm = d => d.toISOString().slice(11, 16), pad = n => String(n).padStart(2, '0');
+  const mesAd = () => (localStorage.getItem('cwx_ids') || '').split(',').filter(Boolean);
+  const NOMS = { nuages: 'Nuages', vent: 'Vent', visi: 'Visibilité' };
+  const W = 500, H = 480, ZMAX = 12;
+  const satUrl = (couche, b, w, h, t) => 'https://view.eumetsat.int/geoserver/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=' + couche + '&STYLES=&CRS=EPSG:4326&BBOX=' + b + '&WIDTH=' + w + '&HEIGHT=' + h + '&FORMAT=image/jpeg&TIME=' + t;
+  const SATS = { off: 'Aucun', couleurs: 'Couleur', ir: 'IR', vis: 'Visible' };
+  const COUCHES_SAT = { couleurs: 'mtg_fd:rgb_geocolour', ir: 'mtg_fd:ir105_hrfi', vis: 'mtg_fd:vis06_hrfi' };
+  let sat = 'off', opac = 85; try { sat = localStorage.getItem('fr_sat') || 'off'; opac = +(localStorage.getItem('fr_op') || 85); } catch (e) {}
+  if (!SATS[sat]) sat = 'off';
+  const fond = document.getElementById('fr-fond'), pts = document.getElementById('fr-pts'), infoSat = document.getElementById('fr-satinfo');
+  const bboxDe = (x, y, w, h) => [(51.2 - (y + h) / K).toFixed(4), (x / KX - 5.3).toFixed(4), (51.2 - y / K).toFixed(4), ((x + w) / KX - 5.3).toFixed(4)].join(',');
+  const iso = t => t.toISOString().slice(0, 19) + '.000Z';
+  let heureSat = null, cleDetail = '', jeton = 0;
+  function majSat() {                                             // fond : vue d'ensemble + détail net quand on zoome (même heure, même cadre)
+    zone.classList.toggle('sat-on', sat !== 'off');
+    document.querySelector('.fr-sat').classList.toggle('on', sat !== 'off');
+    infoSat.hidden = sat === 'off';
+    if (sat === 'off') { fond.innerHTML = ''; fond.dataset.sat = ''; cleDetail = ''; heureSat = null; return; }
+    const lay = COUCHES_SAT[sat];
+    fond.style.opacity = opac / 100;
+    if (fond.dataset.sat !== sat) {                               // nouvelle image de fond
+      fond.dataset.sat = sat; fond.innerHTML = ''; cleDetail = ''; heureSat = null;
+      infoSat.textContent = 'Chargement de l’image…';
+      // heure de l'image : donnée par le robot (dernière image publiée) ; sinon le service renvoie la plus récente
+      const mien = ++jeton, tr = data?.sat?.[sat] ? new Date(data.sat[sat]) : null, exacte = tr && Date.now() - tr < 3 * 3600e3;
+      const t = exacte ? tr : new Date(), url = satUrl(lay, bboxDe(0, 0, W, H), 1000, 960, iso(t)), im = new Image();
+      im.onload = () => {
+        if (mien !== jeton) return;
+        heureSat = t;
+        fond.innerHTML = `<image class="base" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="none" href="${url}"/>`;
+        infoSat.textContent = 'Meteosat · ' + (exacte ? 'image de ' + hm(t) + ' UTC' : 'dernière image disponible') + ' · © EUMETSAT';
+        majSat();
+      };
+      im.onerror = () => { if (mien === jeton) infoSat.textContent = 'Satellite indisponible'; };
+      im.src = url;
+      return;
+    }
+    const d = fond.querySelector('.detail');
+    if (!heureSat) return;
+    if (vue.z < 2.2) { if (d) d.remove(); cleDetail = ''; return; }
+    const x = vue.x, y = vue.y, w = W / vue.z, h = H / vue.z, cle = [sat, x.toFixed(2), y.toFixed(2), vue.z.toFixed(2)].join('|');
+    if (cle === cleDetail) return; cleDetail = cle;
+    const pxw = Math.min(1100, Math.round(ZONE_PX() * 2)), pxh = Math.round(pxw * H / W), url = satUrl(lay, bboxDe(x, y, w, h), pxw, pxh, iso(heureSat));
+    const img = new Image(); img.onload = () => {
+      if (cleDetail !== cle) return;                              // la vue a bougé entre-temps : on abandonne
+      fond.querySelector('.detail')?.remove();
+      fond.insertAdjacentHTML('beforeend', `<image class="detail" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="none" href="${url}"/>`);
+    }; img.src = url;
+  }
+  const vue = { z: 1, x: 0, y: 0 };                               // coin haut-gauche de la vue (unités de la carte) et zoom
+  const ZONE_PX = () => zone.clientWidth || 360;
+
+  function calculer() {                                           // état de chaque station selon METAR / TAF
+    const f = fenetreVol();
+    return (data?.stations || []).map(s => {
+      let e = null, src = 'METAR', vieux = false;
+      if (f) { src = 'TAF'; if (s.taf) e = etatTaf(s.taf, f); }
+      else if (s.metar) { e = etatMetar(s.metar); vieux = !e.quand || Date.now() - e.quand > 3 * 3600e3; }
+      return { s, e, src, vieux };
+    });
+  }
+
+  function cadrer() {                                             // garde la carte dans la vue
+    vue.z = Math.max(1, Math.min(ZMAX, vue.z));
+    const w = W / vue.z, h = H / vue.z;
+    vue.x = Math.max(0, Math.min(W - w, vue.x)); vue.y = Math.max(0, Math.min(H - h, vue.y));
+    svg.setAttribute('viewBox', `${vue.x.toFixed(2)} ${vue.y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)}`);
+  }
+
+  let calc = [];
+  function dessiner(recalc = true) {
+    if (!data) return;
+    cadrer();
+    const f = fenetreVol(), c = COUCHES_FR[couche], mes = mesAd();
+    if (recalc) calc = calculer();
+    const age = data.maj ? Math.round((Date.now() - new Date(data.maj)) / 60000) : null;
+    modeEl.innerHTML = '<i></i>' + (f ? `TAF · vol ${hm(f.debut)} → ${hm(f.fin)} UTC` : 'METAR · observations actuelles');
+    modeEl.title = f ? 'Pire cas des prévisions TAF pendant la durée du vol' : 'Choisissez une heure de décollage en haut pour passer aux TAF';
+    ageEl.textContent = age != null ? 'Données il y a ' + (age < 90 ? age + ' min' : Math.round(age / 60) + ' h') : '';
+    // aérodromes affichés : les plus importants d'abord (les miens, puis ceux avec TAF), sans chevauchement à l'écran
+    const w = W / vue.z, h = H / vue.z, px = ZONE_PX() / w, marge = 14 / px;      // px par unité de carte
+    const prio = o => (mes.includes(o.s.id) ? 3e6 : 0) + (o.s.taf ? 2e6 : 0) + (o.s.metar ? 1e6 : 0) + (VILLES[o.s.id] ? 5e5 : 0) - o.s.id.charCodeAt(3) * 100 - o.s.id.charCodeAt(2);
+    const visibles = calc.filter(o => { const x = X(o.s.lon), y = Y(o.s.lat); return x > vue.x - marge && x < vue.x + w + marge && y > vue.y - marge && y < vue.y + h + marge; })
+      .sort((a, b) => prio(b) - prio(a));
+    const pris = [], boites = [];
+    for (const o of visibles) {
+      const x = X(o.s.lon) * px, y = Y(o.s.lat) * px, nom = nomVille(o.s), lw = Math.max(26, nom.length * 4.6);
+      const b = { x1: x - lw / 2 - 2, x2: x + lw / 2 + 2, y1: y - 12, y2: y + 24 };
+      if (boites.some(q => b.x1 < q.x2 && b.x2 > q.x1 && b.y1 < q.y2 && b.y2 > q.y1) && !mes.includes(o.s.id)) continue;
+      boites.push(b); pris.push({ ...o, nom });
+    }
+    const k = 1.15 / vue.z * (W / H > 1 ? 1 : 1);
+    let g = `<path class="terre" d="${trace(FRANCE)}"/><path class="terre" d="${trace(CORSE)}"/>`;
+    pris.sort((a, b) => b.s.lat - a.s.lat).forEach(({ s, e, vieux, nom }) => {
+      const v = e ? c.val(e) : null, coul = !e ? '#9a9aa0' : COUL[classe(c, v)];
+      let fleche = '';
+      if (e && couche === 'vent' && e.spd != null && e.dir != null && e.spd > 0)
+        fleche = `<path class="fle" transform="rotate(${e.dir})" d="M0,-12 L-4,-19 L4,-19Z"/>`;
+      g += `<g class="st${vieux ? ' vieux' : ''}${mes.includes(s.id) ? ' mien' : ''}${choisie === s.id ? ' sel' : ''}" data-id="${s.id}" transform="translate(${X(s.lon).toFixed(1)},${Y(s.lat).toFixed(1)}) scale(${k.toFixed(3)})" style="--tx:${X(s.lon).toFixed(1)}px;--ty:${Y(s.lat).toFixed(1)}px">`
+        + `<circle r="${c.bulle && e ? 12 : 10}" fill="${coul}"/>${fleche}`
+        + (c.bulle && e ? (b2 => `<text class="t1" y="${b2[1] ? -3.8 : 0}">${b2[0]}</text>${b2[1] ? `<text y="4.6">${b2[1]}</text>` : ''}`)(c.bulle(e)) : `<text>${e ? c.txt(e) : '?'}</text>`)
+        + `<text class="oaci" y="${c.bulle && e ? 14 : 12}">${esc(nom)}</text></g>`;
+    });
+    pts.innerHTML = g; majSat();
+    if (!svg.dataset.fait) { svg.dataset.fait = 1; svg.classList.add('init'); setTimeout(() => svg.classList.remove('init'), 900); }
+    cptEl.textContent = pris.length + ' / ' + calc.length + ' aérodromes';
+    leg.innerHTML = '<div class="fr-bar">' + c.leg.map((t, i) => `<span><b style="background:${COUL[i]}"></b>${t}</span>`).join('') + '</div>'
+      + `<div class="fr-unite"><span>${c.unite}</span><em><i></i>sans donnée</em></div>`;
+    if (choisie) montrer(choisie, false);
+  }
+
+  function montrer(id, tourner = true) {
+    const o = calc.find(x => x.s.id === id); if (!o) return;
+    choisie = id; const { s, e, src } = o, f = fenetreVol();
+    const C = COUCHES_FR, pt = (cl, v) => `<i style="background:${v == null ? '#9a9aa0' : COUL[classe(cl, v)]}"></i>`;
+    const vent = !e || e.spd == null ? '–' : (e.dir == null ? 'Variable' : String(e.dir).padStart(3, '0') + '°') + ' ' + e.spd + ' kt';
+    const visi = !e || e.vis == null ? '–' : e.vis >= 9999 ? '10 km +' : (e.vis / 1000).toFixed(1).replace('.', ',') + ' km';
+    const pl = !e ? '–' : e.plafond == null ? 'Aucun' : e.couv + ' ' + String(Math.round(e.plafond / 100)).padStart(3, '0');
+    const tuiles = e ? `<div class="fr-t">
+        <div><small>${pt(C.vent, Math.max(e.spd ?? 0, e.gst || 0))}Vent</small><b>${vent}</b><em>${e.gst ? 'rafales ' + e.gst + ' kt' : 'pas de rafales'}</em></div>
+        <div><small>${pt(C.visi, e.vis)}Visibilité</small><b>${visi}</b><em>${e.vis != null && e.vis < 9999 ? e.vis + ' m' : '&nbsp;'}</em></div>
+        <div><small>${pt(C.nuages, e.plafond)}Plafond</small><b>${pl}</b><em>${e.plafond != null ? e.plafond + ' ft' : 'ni BKN ni OVC'}</em></div></div>
+      <p class="fr-nu">Nuages : <b>${e.nuages && e.nuages.length ? e.nuages.map(x => x.c + String(Math.round(x.h / 100)).padStart(3, '0')).join(' · ') : 'aucun'}</b>${e.temp ? ' · inclut des périodes TEMPO/PROB' : ''}</p>`
+      : `<p class="fr-nu">Pas de ${src} exploitable pour ${f ? 'ce vol' : 'cette station'}.</p>`;
+    detail.hidden = false;
+    detail.innerHTML = `<div class="fr-dh"><h4>${esc(nomVille(s))}</h4><span class="oa">${esc(s.id)}</span><span class="nom"></span><button type="button" id="fr-ferme" aria-label="Fermer">✕</button></div>${tuiles}`
+      + `<div class="fr-brut"><div><span>METAR</span><p>${esc((s.metar || 'indisponible').replace(/^(METAR|SPECI)\s+/, ''))}</p></div><div><span>TAF</span><p>${esc((s.taf || 'indisponible').replace(/^TAF\s+(AMD\s+|COR\s+)?/, ''))}</p></div></div>`;
+    document.getElementById('fr-ferme').onclick = () => { choisie = null; detail.hidden = true; dessiner(false); };
+    svg.querySelectorAll('.st').forEach(g => g.classList.toggle('sel', g.dataset.id === id));
+  }
+
+  /* ----- zoom et déplacement : un doigt = déplacer, deux doigts = pincer, molette, boutons ----- */
+  const ptrs = new Map(); let dep = 0, dernier = null, pince = null, minuteur = 0;
+  const planif = () => { clearTimeout(minuteur); minuteur = setTimeout(() => dessiner(false), 120); };
+  function zoomAutour(facteur, px, py) {                          // (px, py) en pixels dans la zone
+    const r = zone.getBoundingClientRect(), u = ZONE_PX() / (W / vue.z);
+    const ax = vue.x + px / u, ay = vue.y + py / u;               // point de la carte sous le doigt
+    vue.z = Math.max(1, Math.min(ZMAX, vue.z * facteur));
+    const u2 = ZONE_PX() / (W / vue.z);
+    vue.x = ax - px / u2; vue.y = ay - py / u2;
+    cadrer();
+  }
+  zone.addEventListener('pointerdown', e => { if (e.target.closest('.fr-zoom')) return; zone.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); dep = 0; dernier = null;
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pince = Math.hypot(a.x - b.x, a.y - b.y); } });
+  zone.addEventListener('pointermove', e => {
+    const p = ptrs.get(e.pointerId); if (!p) return;
+    const r = zone.getBoundingClientRect(), u = ZONE_PX() / (W / vue.z);
+    if (ptrs.size === 1) {
+      const dx = e.clientX - p.x, dy = e.clientY - p.y; dep += Math.abs(dx) + Math.abs(dy);
+      if (dep > 6) { vue.x -= dx / u; vue.y -= dy / u; cadrer(); planif(); }
+    } else if (ptrs.size === 2) {
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pince) { dep = 99; zoomAutour(d / pince, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top); planif(); }
+      pince = d; return;
+    }
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  });
+  const fini = e => {
+    if (!ptrs.has(e.pointerId)) return;
+    const etaitClic = ptrs.size === 1 && dep <= 6 && e.type === 'pointerup';
+    ptrs.delete(e.pointerId); pince = null;
+    if (etaitClic) { const g = document.elementFromPoint(e.clientX, e.clientY)?.closest('.st'); if (g) { choisie = g.dataset.id; montrer(choisie); } }
+    else dessiner(false);
+  };
+  zone.addEventListener('pointerup', fini); zone.addEventListener('pointercancel', fini);
+  zone.addEventListener('wheel', e => { e.preventDefault(); const r = zone.getBoundingClientRect();
+    zoomAutour(Math.exp(-e.deltaY * 0.0025), e.clientX - r.left, e.clientY - r.top); planif(); }, { passive: false });
+  zone.addEventListener('dblclick', e => { const r = zone.getBoundingClientRect(); zoomAutour(2, e.clientX - r.left, e.clientY - r.top); dessiner(false); });
+  const bouton = f => () => { zoomAutour(f, ZONE_PX() / 2, ZONE_PX() * H / W / 2); dessiner(false); };
+  document.getElementById('fr-plus').onclick = bouton(1.8);
+  document.getElementById('fr-moins').onclick = bouton(1 / 1.8);
+  document.getElementById('fr-reset').onclick = () => { vue.z = 1; vue.x = 0; vue.y = 0; dessiner(false); };
+
+  const segCouche = () => segment(document.getElementById('fr-couche'), NOMS, couche, k => {
+    couche = k; try { localStorage.setItem('fr_couche', k); } catch (e) {} segCouche(); dessiner(false); });
+  const segSat = () => { segment(document.getElementById('fr-sat-seg'), SATS, sat, k => { sat = k; try { localStorage.setItem('fr_sat', k); } catch (e) {} segSat(); dessiner(false); }); };
+  document.getElementById('fr-op').value = opac;
+  document.getElementById('fr-op').oninput = e => { opac = +e.target.value; fond.style.opacity = opac / 100; try { localStorage.setItem('fr_op', opac); } catch (er) {} };
+  window.majFrance = dessiner;
+  setTimeout(() => { segCouche(); segSat(); }, 0);
+  addEventListener('resize', () => dessiner(false));
+  fetch('cartes/meteo.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw 0; return r.json(); })
+    .then(d => { data = d; dessiner(); })
+    .catch(() => { modeEl.innerHTML = '<i></i>Données pas encore téléchargées'; ageEl.textContent = 'lancez le workflow GitHub'; });
+  setInterval(dessiner, 5 * 60000);
+}
 </script>
 </body>
 </html>
