@@ -24,6 +24,58 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+      - name: Télécharger les METAR et TAF de France
+        continue-on-error: true
+        run: |
+          mkdir -p cartes
+          cat > /tmp/meteo.cjs <<'JS'
+          const fs = require('fs');
+          const BBOX = '41,-5.5,51.5,10';
+          const get = async url => {
+            const r = await fetch(url, { headers: { 'User-Agent': 'EasyBrief/1.0 (github.com/OlivierMCE/EasyNotam)' } });
+            const t = await r.text();
+            console.log(url.split('?')[0].split('/').pop(), ': HTTP', r.status, '·', t.length, 'octets');
+            if (!r.ok || !t.trim()) return [];
+            return JSON.parse(t);
+          };
+          (async () => {
+            const metars = await get(`https://aviationweather.gov/api/data/metar?bbox=${BBOX}&format=json&hours=3`);
+            const tafs = await get(`https://aviationweather.gov/api/data/taf?bbox=${BBOX}&format=json`);
+            const st = {};
+            const fiche = (id, o) => (st[id] = st[id] || { id, nom: '', lat: null, lon: null, metar: null, taf: null, t: 0 });
+            for (const m of metars) {
+              const id = m.icaoId; if (!/^LF/.test(id || '')) continue;
+              const f = fiche(id); const t = +m.obsTime || 0;
+              if (t >= f.t) { f.t = t; f.metar = (m.rawOb || m.raw_text || '').trim() || null; }
+              f.nom = f.nom || m.name || ''; f.lat = m.lat ?? f.lat; f.lon = m.lon ?? f.lon;
+            }
+            for (const x of tafs) {
+              const id = x.icaoId; if (!/^LF/.test(id || '')) continue;
+              const f = fiche(id); f.taf = (x.rawTAF || x.raw_text || '').trim() || null;
+              f.nom = f.nom || x.name || ''; f.lat = x.lat ?? f.lat; f.lon = x.lon ?? f.lon;
+            }
+            let ancien = {}; try { ancien = JSON.parse(fs.readFileSync('cartes/meteo.json', 'utf8')); } catch (e) {}
+            const nouvelles = Object.values(st).filter(f => f.lat != null && f.lon != null && (f.metar || f.taf))
+              .map(({ t, ...f }) => f).sort((a, b) => a.id.localeCompare(b.id));
+            console.log('stations :', nouvelles.length);
+            // heure de la dernière image satellite publiée par EUMETSAT pour chaque couche
+            const sat = { ...(ancien.sat || {}) };
+            try {
+              const r = await fetch('https://view.eumetsat.int/geoserver/wms?service=WMS&version=1.3.0&request=GetCapabilities');
+              const xml = await r.text();
+              for (const [k, nom] of Object.entries({ couleurs: 'mtg_fd:rgb_geocolour', ir: 'mtg_fd:ir105_hrfi', vis: 'mtg_fd:vis06_hrfi' })) {
+                const i = xml.indexOf('<Name>' + nom + '</Name>'); if (i < 0) continue;
+                const m = /<Dimension[^>]*name="time"[^>]*>([^<]+)<\/Dimension>/.exec(xml.slice(i, i + 8000)); if (!m) continue;
+                const fins = [...m[1].matchAll(/\/(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(?:\.\d+)?Z\/PT/g)].map(x => x[1] + 'Z');
+                if (fins.length) sat[k] = fins[fins.length - 1];
+              }
+              console.log('satellite :', JSON.stringify(sat));
+            } catch (e) { console.log('satellite échec :', e.message); }
+            const stations = nouvelles.length ? nouvelles : (ancien.stations || []);
+            if (stations.length) fs.writeFileSync('cartes/meteo.json', JSON.stringify({ maj: nouvelles.length ? new Date().toISOString() : ancien.maj, stations, sat }));
+          })().catch(e => { console.log('METAR/TAF échec :', e.message); });
+          JS
+          node /tmp/meteo.cjs
       - name: Installer le navigateur
         run: |
           npm install --no-save playwright
