@@ -325,10 +325,10 @@
   @media (prefers-color-scheme: dark){#fr-svg .terre{fill:#26262a;stroke:rgba(255,255,255,.22)}}
   #fr-svg .st{cursor:pointer}
   #fr-svg .st circle{stroke:#fff;stroke-width:1.6;filter:drop-shadow(0 1.5px 2px rgba(0,0,0,.28));transition:r .2s var(--spring)}
-  #fr-svg .st:hover circle{r:13.5}
-  #fr-svg .st text{font:700 8.6px -apple-system,"SF Pro Text",sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none;letter-spacing:-.01em}
-  #fr-svg .st .t1{font-size:5.9px;font-weight:800;letter-spacing:.3px;opacity:.92}
-  #fr-svg .st .oaci{paint-order:stroke;stroke:color-mix(in srgb,var(--card) 85%,#fff);stroke-width:3px;stroke-linejoin:round;font:600 7.4px -apple-system,"SF Pro Text",sans-serif;fill:var(--ink);opacity:.82;dominant-baseline:hanging}
+  #fr-svg .st:hover circle{r:12}
+  #fr-svg .st text{font:700 9.6px -apple-system,"SF Pro Text",sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none;letter-spacing:-.01em}
+  #fr-svg .st .t1{font-size:6.8px;font-weight:800;letter-spacing:.3px;opacity:.92}
+  #fr-svg .st .oaci{paint-order:stroke;stroke:color-mix(in srgb,var(--card) 85%,#fff);stroke-width:3px;stroke-linejoin:round;font:600 8.6px -apple-system,"SF Pro Text",sans-serif;fill:var(--ink);opacity:.85;dominant-baseline:hanging}
   @media (prefers-color-scheme: dark){#fr-svg .st .oaci{stroke:#1c1c1e;fill:#f2f2f7}#fr-svg .st circle{stroke:#1c1c1e}}
   #fr-svg .st .fle{fill:var(--ink);opacity:.8}
   #fr-svg .st.vieux{opacity:.45}
@@ -355,7 +355,17 @@
   .fr-unite{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:11.5px;color:var(--sub)}
   .fr-unite em{font-style:normal;white-space:nowrap}
   .fr-unite em i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9a9aa0;margin-right:5px}
-  .fr-detail{margin-top:14px;padding:14px;border-radius:18px;background:var(--fill);box-shadow:inset 0 0 0 1px var(--sep);animation:frdet .4s var(--spring)}
+  .fr-pop{position:absolute;z-index:6;width:min(310px,calc(100% - 16px));max-height:calc(100% - 16px);overflow:auto;padding:12px;border-radius:16px;cursor:default;
+    background:#fff;color:var(--ink);box-shadow:0 8px 30px rgba(0,0,0,.28),inset 0 0 0 1px var(--sep);animation:frdet .3s var(--spring);-webkit-overflow-scrolling:touch;touch-action:pan-y}
+  @media (prefers-color-scheme: dark){.fr-pop{background:#2c2c2e}}
+  .fr-pop::after{content:"";position:absolute;left:var(--cx,50%);bottom:-6px;width:12px;height:12px;margin-left:-6px;background:inherit;transform:rotate(45deg);box-shadow:3px 3px 4px rgba(0,0,0,.08)}
+  .fr-pop.bas::after{bottom:auto;top:-6px;box-shadow:-3px -3px 4px rgba(0,0,0,.06)}
+  .fr-pop .fr-dh{margin-bottom:8px}.fr-pop .fr-dh h4{font-size:16px}
+  .fr-pop .fr-t{gap:6px}.fr-pop .fr-t div{padding:7px 8px;border-radius:11px}
+  .fr-pop .fr-t b{font-size:14px;margin-top:2px}.fr-pop .fr-t small{font-size:9.5px}.fr-pop .fr-t em{font-size:10.5px}
+  .fr-pop .fr-nu{font-size:12px;margin:7px 1px 0}
+  .fr-pop .fr-brut{margin-top:8px;gap:6px}.fr-pop .fr-brut div{padding:7px 9px;border-radius:10px}.fr-pop .fr-brut p{font-size:11.5px}
+  .fr-detail-OLD{margin-top:14px;padding:14px;border-radius:18px;background:var(--fill);box-shadow:inset 0 0 0 1px var(--sep);animation:frdet .4s var(--spring)}
   @keyframes frdet{from{opacity:0;transform:translateY(8px) scale(.98)}}
   .fr-dh{display:flex;align-items:center;gap:8px;margin-bottom:12px}
   .fr-dh h4{margin:0;font-size:19px;font-weight:700;letter-spacing:-.025em}
@@ -419,6 +429,7 @@
     <div class="fr-sat"><span>Satellite</span><div class="seg petit" id="fr-sat-seg" role="tablist"></div><input type="range" id="fr-op" min="20" max="100" step="5" value="85" aria-label="Transparence de l’image satellite"></div>
     <div class="fr-zone" id="fr-zone">
       <svg id="fr-svg" viewBox="0 0 500 480" role="img" aria-label="Carte de France des METAR et TAF"><g id="fr-fond"></g><g id="fr-pts"></g></svg>
+      <div class="fr-pop" id="fr-pop" hidden></div>
       <span class="fr-satinfo" id="fr-satinfo" hidden></span>
       <span class="fr-cpt" id="fr-cpt"></span>
       <div class="fr-zoom">
@@ -428,7 +439,6 @@
       </div>
     </div>
     <div class="fr-leg" id="fr-leg"></div>
-    <div class="fr-detail" id="fr-detail" hidden></div>
   </section>
 
   <h3 class="sect">Carte Windy</h3>
@@ -986,7 +996,7 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
   const nomVille = s => VILLES[s.id] || String(s.nom || s.id).split(/[\/,]/)[0].replace(/\b(Airport|Aeroport|Intl|International|Aerodrome|Air Base|AFB|Aeroclub)\b/gi, '').replace(/\s+/g, ' ').trim() || s.id;
 
   const svg = document.getElementById('fr-svg'), zone = document.getElementById('fr-zone');
-  const detail = document.getElementById('fr-detail'), leg = document.getElementById('fr-leg'), modeEl = document.getElementById('fr-mode'), ageEl = document.getElementById('fr-age'), cptEl = document.getElementById('fr-cpt');
+  const pop = document.getElementById('fr-pop'), leg = document.getElementById('fr-leg'), modeEl = document.getElementById('fr-mode'), ageEl = document.getElementById('fr-age'), cptEl = document.getElementById('fr-cpt');
   let data = null, couche = 'nuages', choisie = null;
   try { couche = localStorage.getItem('fr_couche') || 'nuages'; } catch (e) {}
   if (!COUCHES_FR[couche]) couche = 'nuages';
@@ -1072,17 +1082,17 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
     ageEl.textContent = age != null ? 'Données il y a ' + (age < 90 ? age + ' min' : Math.round(age / 60) + ' h') : '';
     // aérodromes affichés : les plus importants d'abord (les miens, puis ceux avec TAF), sans chevauchement à l'écran
     const w = W / vue.z, h = H / vue.z, px = ZONE_PX() / w, marge = 14 / px;      // px par unité de carte
-    const prio = o => (mes.includes(o.s.id) ? 3e6 : 0) + (o.s.taf ? 2e6 : 0) + (o.s.metar ? 1e6 : 0) + (VILLES[o.s.id] ? 5e5 : 0) - o.s.id.charCodeAt(3) * 100 - o.s.id.charCodeAt(2);
+    const prio = o => (o.s.id === choisie ? 4e6 : 0) + (mes.includes(o.s.id) ? 3e6 : 0) + (o.s.taf ? 2e6 : 0) + (o.s.metar ? 1e6 : 0) + (VILLES[o.s.id] ? 5e5 : 0) - o.s.id.charCodeAt(3) * 100 - o.s.id.charCodeAt(2);
     const visibles = calc.filter(o => { const x = X(o.s.lon), y = Y(o.s.lat); return x > vue.x - marge && x < vue.x + w + marge && y > vue.y - marge && y < vue.y + h + marge; })
       .sort((a, b) => prio(b) - prio(a));
     const pris = [], boites = [];
     for (const o of visibles) {
-      const x = X(o.s.lon) * px, y = Y(o.s.lat) * px, nom = nomVille(o.s), lw = Math.max(26, nom.length * 4.6);
-      const b = { x1: x - lw / 2 - 2, x2: x + lw / 2 + 2, y1: y - 12, y2: y + 24 };
-      if (boites.some(q => b.x1 < q.x2 && b.x2 > q.x1 && b.y1 < q.y2 && b.y2 > q.y1) && !mes.includes(o.s.id)) continue;
+      const x = X(o.s.lon) * px, y = Y(o.s.lat) * px, nom = nomVille(o.s), lw = Math.max(18, nom.length * 3.6);
+      const b = { x1: x - lw / 2 - 2, x2: x + lw / 2 + 2, y1: y - 10, y2: y + 19 };
+      if (boites.some(q => b.x1 < q.x2 && b.x2 > q.x1 && b.y1 < q.y2 && b.y2 > q.y1) && !mes.includes(o.s.id) && o.s.id !== choisie) continue;
       boites.push(b); pris.push({ ...o, nom });
     }
-    const k = 1.15 / vue.z * (W / H > 1 ? 1 : 1);
+    const k = 0.75 / px;                                            // taille des bulles fixe à l'écran, quel que soit l'écran ou le zoom
     let g = `<path class="terre" d="${trace(FRANCE)}"/><path class="terre" d="${trace(CORSE)}"/>`;
     pris.sort((a, b) => b.s.lat - a.s.lat).forEach(({ s, e, vieux, nom }) => {
       const v = e ? c.val(e) : null, coul = !e ? '#9a9aa0' : COUL[classe(c, v)];
@@ -1090,16 +1100,16 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
       if (e && couche === 'vent' && e.spd != null && e.dir != null && e.spd > 0)
         fleche = `<path class="fle" transform="rotate(${e.dir})" d="M0,-12 L-4,-19 L4,-19Z"/>`;
       g += `<g class="st${vieux ? ' vieux' : ''}${mes.includes(s.id) ? ' mien' : ''}${choisie === s.id ? ' sel' : ''}" data-id="${s.id}" transform="translate(${X(s.lon).toFixed(1)},${Y(s.lat).toFixed(1)}) scale(${k.toFixed(3)})" style="--tx:${X(s.lon).toFixed(1)}px;--ty:${Y(s.lat).toFixed(1)}px">`
-        + `<circle r="${c.bulle && e ? 12 : 10}" fill="${coul}"/>${fleche}`
+        + `<circle r="${c.bulle && e ? 11.5 : 10}" fill="${coul}"/>${fleche}`
         + (c.bulle && e ? (b2 => `<text class="t1" y="${b2[1] ? -3.8 : 0}">${b2[0]}</text>${b2[1] ? `<text y="4.6">${b2[1]}</text>` : ''}`)(c.bulle(e)) : `<text>${e ? c.txt(e) : '?'}</text>`)
-        + `<text class="oaci" y="${c.bulle && e ? 14 : 12}">${esc(nom)}</text></g>`;
+        + `<text class="oaci" y="${c.bulle && e ? 13.5 : 12}">${esc(nom)}</text></g>`;
     });
     pts.innerHTML = g; majSat();
     if (!svg.dataset.fait) { svg.dataset.fait = 1; svg.classList.add('init'); setTimeout(() => svg.classList.remove('init'), 900); }
     cptEl.textContent = pris.length + ' / ' + calc.length + ' aérodromes';
     leg.innerHTML = '<div class="fr-bar">' + c.leg.map((t, i) => `<span><b style="background:${COUL[i]}"></b>${t}</span>`).join('') + '</div>'
       + `<div class="fr-unite"><span>${c.unite}</span><em><i></i>sans donnée</em></div>`;
-    if (choisie) montrer(choisie, false);
+    if (choisie) { marquer(); posPop(); } else pop.hidden = true;
   }
 
   function montrer(id, tourner = true) {
@@ -1115,11 +1125,26 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
         <div><small>${pt(C.nuages, e.plafond)}Plafond</small><b>${pl}</b><em>${e.plafond != null ? e.plafond + ' ft' : 'ni BKN ni OVC'}</em></div></div>
       <p class="fr-nu">Nuages : <b>${e.nuages && e.nuages.length ? e.nuages.map(x => x.c + String(Math.round(x.h / 100)).padStart(3, '0')).join(' · ') : 'aucun'}</b>${e.temp ? ' · inclut des périodes TEMPO/PROB' : ''}</p>`
       : `<p class="fr-nu">Pas de ${src} exploitable pour ${f ? 'ce vol' : 'cette station'}.</p>`;
-    detail.hidden = false;
-    detail.innerHTML = `<div class="fr-dh"><h4>${esc(nomVille(s))}</h4><span class="oa">${esc(s.id)}</span><span class="nom"></span><button type="button" id="fr-ferme" aria-label="Fermer">✕</button></div>${tuiles}`
+    pop.hidden = false; pop.scrollTop = 0;
+    pop.innerHTML = `<div class="fr-dh"><h4>${esc(nomVille(s))}</h4><span class="oa">${esc(s.id)}</span><span class="nom"></span><button type="button" id="fr-ferme" aria-label="Fermer">✕</button></div>${tuiles}`
       + `<div class="fr-brut"><div><span>METAR</span><p>${esc((s.metar || 'indisponible').replace(/^(METAR|SPECI)\s+/, ''))}</p></div><div><span>TAF</span><p>${esc((s.taf || 'indisponible').replace(/^TAF\s+(AMD\s+|COR\s+)?/, ''))}</p></div></div>`;
-    document.getElementById('fr-ferme').onclick = () => { choisie = null; detail.hidden = true; dessiner(false); };
-    svg.querySelectorAll('.st').forEach(g => g.classList.toggle('sel', g.dataset.id === id));
+    document.getElementById('fr-ferme').onclick = fermer;
+    marquer(); posPop();
+  }
+  const marquer = () => svg.querySelectorAll('.st').forEach(g => g.classList.toggle('sel', g.dataset.id === choisie));
+  function fermer() { choisie = null; pop.hidden = true; marquer(); }
+  function posPop() {                                             // la bulle d'info suit l'aérodrome quand on déplace ou zoome la carte
+    if (!choisie || pop.hidden) return;
+    const o = calc.find(x => x.s.id === choisie); if (!o) { pop.hidden = true; return; }
+    const px = ZONE_PX() / (W / vue.z), bx = (X(o.s.lon) - vue.x) * px, by = (Y(o.s.lat) - vue.y) * px, zw = zone.clientWidth, zh = zone.clientHeight;
+    if (bx < -12 || bx > zw + 12 || by < -12 || by > zh + 12) { pop.style.visibility = 'hidden'; return; }
+    pop.style.visibility = 'visible';
+    const pw = pop.offsetWidth, ph = pop.offsetHeight, ecart = 14;
+    const left = Math.max(8, Math.min(zw - pw - 8, bx - pw / 2));
+    let top = by - ph - ecart, bas = false;
+    if (top < 8) { top = by + ecart; bas = true; }
+    top = Math.max(8, Math.min(zh - ph - 8, top));
+    pop.style.left = left + 'px'; pop.style.top = top + 'px'; pop.style.setProperty('--cx', Math.max(14, Math.min(pw - 14, bx - left)) + 'px'); pop.classList.toggle('bas', bas);
   }
 
   /* ----- zoom et déplacement : un doigt = déplacer, deux doigts = pincer, molette, boutons ----- */
@@ -1131,16 +1156,16 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
     vue.z = Math.max(1, Math.min(ZMAX, vue.z * facteur));
     const u2 = ZONE_PX() / (W / vue.z);
     vue.x = ax - px / u2; vue.y = ay - py / u2;
-    cadrer();
+    cadrer(); posPop();
   }
-  zone.addEventListener('pointerdown', e => { if (e.target.closest('.fr-zoom')) return; zone.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); dep = 0; dernier = null;
+  zone.addEventListener('pointerdown', e => { if (e.target.closest('.fr-zoom, .fr-pop')) return; zone.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); dep = 0; dernier = null;
     if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pince = Math.hypot(a.x - b.x, a.y - b.y); } });
   zone.addEventListener('pointermove', e => {
     const p = ptrs.get(e.pointerId); if (!p) return;
     const r = zone.getBoundingClientRect(), u = ZONE_PX() / (W / vue.z);
     if (ptrs.size === 1) {
       const dx = e.clientX - p.x, dy = e.clientY - p.y; dep += Math.abs(dx) + Math.abs(dy);
-      if (dep > 6) { vue.x -= dx / u; vue.y -= dy / u; cadrer(); planif(); }
+      if (dep > 6) { vue.x -= dx / u; vue.y -= dy / u; cadrer(); posPop(); planif(); }
     } else if (ptrs.size === 2) {
       ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
       const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
@@ -1153,11 +1178,11 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
     if (!ptrs.has(e.pointerId)) return;
     const etaitClic = ptrs.size === 1 && dep <= 6 && e.type === 'pointerup';
     ptrs.delete(e.pointerId); pince = null;
-    if (etaitClic) { const g = document.elementFromPoint(e.clientX, e.clientY)?.closest('.st'); if (g) { choisie = g.dataset.id; montrer(choisie); } }
+    if (etaitClic) { const g = document.elementFromPoint(e.clientX, e.clientY)?.closest('.st'); if (g) { choisie = g.dataset.id; montrer(choisie); } else fermer(); }
     else dessiner(false);
   };
   zone.addEventListener('pointerup', fini); zone.addEventListener('pointercancel', fini);
-  zone.addEventListener('wheel', e => { e.preventDefault(); const r = zone.getBoundingClientRect();
+  zone.addEventListener('wheel', e => { if (e.target.closest('.fr-pop')) return; e.preventDefault(); const r = zone.getBoundingClientRect();
     zoomAutour(Math.exp(-e.deltaY * 0.0025), e.clientX - r.left, e.clientY - r.top); planif(); }, { passive: false });
   zone.addEventListener('dblclick', e => { const r = zone.getBoundingClientRect(); zoomAutour(2, e.clientX - r.left, e.clientY - r.top); dessiner(false); });
   const bouton = f => () => { zoomAutour(f, ZONE_PX() / 2, ZONE_PX() * H / W / 2); dessiner(false); };
