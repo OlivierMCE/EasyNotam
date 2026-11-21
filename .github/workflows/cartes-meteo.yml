@@ -1,26 +1,24 @@
 name: Cartes TEMSI et WINTEM
 
-# GitHub retarde souvent les lancements programmés de plusieurs heures.
-# Ce workflow tourne donc en boucle : il vérifie les cartes toutes les 20 minutes pendant ~5 h 30,
-# puis relance lui-même une nouvelle exécution. La programmation (cron) ne sert que de filet de sécurité.
+# Lancé toutes les 30 minutes par un service extérieur (cron-job.org) via l'API GitHub.
+# Le programme GitHub (cron ci-dessous) n'est qu'un filet de sécurité : GitHub le retarde souvent de plusieurs heures.
 
 on:
   schedule:
-    - cron: '23 * * * *'
+    - cron: '23 */3 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
-  group: cartes-boucle
+  group: cartes-meteo
   cancel-in-progress: false
 
 jobs:
   cartes:
     runs-on: ubuntu-24.04
-    timeout-minutes: 355
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -30,7 +28,7 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Boucle de téléchargement des cartes (toutes les 20 minutes)
+      - name: Télécharger les cartes depuis SOFIA-Briefing
         run: |
           cat > /tmp/cartes.cjs <<'JS'
           const { chromium } = require('playwright');
@@ -92,26 +90,16 @@ jobs:
             console.log('TEMSI :', final.temsi.length, '· WINTEM :', final.wintem.length);
           })().catch(e => { console.error(e); process.exit(1); });
           JS
+          NODE_PATH="$PWD/node_modules" node /tmp/cartes.cjs
+      - name: Enregistrer les changements
+        run: |
           git config user.name "cartes-meteo"
           git config user.email "cartes-meteo@users.noreply.github.com"
-          fin=$(( $(date +%s) + 5*3600 + 30*60 ))
-          while true; do
-            echo "=== $(date -u '+%H:%M UTC') ==="
-            NODE_PATH="$PWD/node_modules" node /tmp/cartes.cjs || echo "échec de ce passage, on continue"
-            git add -A cartes
-            if git diff --cached --quiet; then
-              echo "Rien de nouveau."
-            else
-              git commit -m "Cartes TEMSI et WINTEM"
-              git pull --rebase && git push || echo "envoi impossible, nouvel essai au prochain passage"
-            fi
-            [ $(date +%s) -ge $fin ] && break
-            sleep 1200
-          done
-      - name: Relancer une nouvelle boucle
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          sleep 60
-          gh workflow run cartes-meteo.yml --ref "${{ github.ref_name }}"
+          git add -A cartes
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau."
+          else
+            git commit -m "Cartes TEMSI et WINTEM"
+            git pull --rebase
+            git push
+          fi
