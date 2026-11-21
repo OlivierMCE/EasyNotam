@@ -176,6 +176,56 @@
   .txt small{color:var(--sub);font-size:13px}
   .chev{color:#c7c7cc;font-size:24px;line-height:1}
 
+  /* Cartes TEMSI / WINTEM : tuiles animées */
+  .cartes-bloc{margin:0 0 14px}
+  .bloc{margin-bottom:12px;opacity:0;animation:in .6s var(--spring) .3s forwards}
+  .bloc+.bloc{animation-delay:.4s}
+  .bloc+.bloc+.bloc{animation-delay:.5s}
+  .tuile{appearance:none;border:0;font:inherit;text-align:left;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border-radius:20px;
+    background:var(--card);color:var(--ink);cursor:pointer;position:relative;overflow:hidden;box-shadow:var(--shadow),inset 0 0 0 .5px var(--sep);
+    transition:transform .4s var(--spring),box-shadow .4s var(--ease),background .25s;-webkit-tap-highlight-color:transparent}
+  @media (hover:hover){.tuile:hover{transform:translateY(-2px)}}
+  .tuile:active{transform:scale(.98)}
+  .tuile:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+  .tuile .pic{width:44px;height:44px;border-radius:14px;flex:none;display:grid;place-items:center;background:var(--accent-soft,rgba(0,122,255,.1));color:var(--blue);transition:transform .4s var(--spring)}
+  .tuile .pic svg{width:24px;height:24px;animation:flotte 4.5s ease-in-out infinite}
+  .t-wintem .pic svg{animation-name:souffle}
+  .tuile:active .pic{transform:scale(.9)}
+  @keyframes flotte{50%{transform:translateY(-2px)}}
+  @keyframes souffle{50%{transform:translateX(2px)}}
+  .tuile .tt{flex:1;display:grid;min-width:0;position:relative}
+  .tuile .tt b{font-size:17px;font-weight:600;letter-spacing:-.015em}
+  .tuile .tt small{font-size:13px;color:var(--sub)}
+  .tuile .fl{width:20px;height:20px;flex:none;color:var(--sub);transition:transform .5s var(--spring)}
+  .bloc.ouvert .fl{transform:rotate(90deg)}
+  .bloc.ouvert .tuile{box-shadow:0 8px 24px -10px rgba(0,0,0,.18),inset 0 0 0 .5px var(--sep)}
+  .volet{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--ease)}
+  .bloc.ouvert .volet{grid-template-rows:1fr}
+  .volet-in{overflow:hidden;min-height:0}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;padding:14px 2px 4px}
+  .chip{display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;position:relative;
+    background:var(--card);color:var(--blue);box-shadow:var(--shadow),inset 0 0 0 .5px var(--sep);transition:transform .3s var(--spring),background .2s;-webkit-tap-highlight-color:transparent}
+  .chip:active{transform:scale(.92)}
+  @media (hover:hover){.chip:hover{transform:translateY(-2px)}}
+  .chip.best{background:var(--blue);color:#fff;box-shadow:0 6px 16px -6px var(--blue)}
+  .chip.best::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;margin-right:8px;animation:point 1.8s ease-in-out infinite}
+  .chip-msg{font-size:14px;color:var(--sub);padding:6px 4px}
+  .bloc.ouvert .chip{animation:chipin .55s var(--spring) calc(var(--i,0) * 60ms + 150ms) both}
+  .bloc.ouvert .chip.best{animation:chipin .55s var(--spring) calc(var(--i,0) * 60ms + 150ms) both,halo 2.6s ease-out 1.2s infinite}
+  @keyframes chipin{from{opacity:0;transform:translateY(10px) scale(.85)}}
+  @keyframes halo{0%{box-shadow:0 6px 16px -6px var(--blue),0 0 0 0 rgba(10,132,255,.45)}70%,100%{box-shadow:0 6px 16px -6px var(--blue),0 0 0 12px rgba(10,132,255,0)}}
+  @keyframes point{50%{opacity:.35;transform:scale(.7)}}
+  .mini-tuiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px}
+  .mt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 6px 12px;border-radius:20px;background:var(--card);box-shadow:var(--shadow);
+    color:var(--ink);text-decoration:none;font-size:14px;font-weight:600;text-align:center;opacity:0;animation:in .6s var(--spring) .55s forwards;
+    transition:transform .35s var(--spring),box-shadow .35s;-webkit-tap-highlight-color:transparent}
+  .mt:nth-child(2){animation-delay:.62s}
+  .mt .ico{width:40px;height:40px;border-radius:13px;margin-bottom:6px;background:var(--fill);color:var(--sub)}
+  .mt .ico svg{width:22px;height:22px}
+  .mt small{font-size:12px;font-weight:400;color:var(--sub)}
+  .mt:active{transform:scale(.93)}
+  @media (hover:hover){.mt:hover{transform:translateY(-2px)}.mt:hover .ico{transform:scale(1.06)}}
+
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   }
@@ -305,23 +355,34 @@
   </section>
 
   <h3 class="sect">Cartes</h3>
-  <nav class="list" aria-label="Cartes météo">
-    <a id="lien-temsi" href="#" role="button">
-      <span class="ico" style="background:#ff9500"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>TEMSI France</b><small>Cartes disponibles</small></span><span class="chev">›</span></a>
-    <div id="tm-choix" style="display:none;flex-wrap:wrap;gap:8px;padding:10px 16px 14px"></div>
-    <a id="lien-wintem" href="#" role="button">
-      <span class="ico" style="background:#34c759"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>WINTEM</b><small>Choisis l’heure de validité (FL20-100)</small></span><span class="chev">›</span></a>
-    <div id="wt-choix" style="display:none;flex-wrap:wrap;gap:8px;padding:10px 16px 14px"></div>
-    <a href="https://aviation.meteo.fr/accueil.php" target="_blank" rel="noopener">
-      <span class="ico" style="background:#007aff"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
-      <span class="txt"><b>AEROWEB</b><small>TEMSI, WINTEM et coupe verticale (connexion)</small></span><span class="chev">›</span></a>
-    <a href="https://sofia-briefing.aviation-civile.gouv.fr" target="_blank" rel="noopener">
-      <span class="ico" style="background:#5856d6"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-6-3-2-6 1-5-5H6l3 6-4 1-2-2H1z"/></svg></span>
-      <span class="txt"><b>SOFIA-Briefing</b><small>TEMSI, WINTEM et NOTAM sur ta navigation</small></span><span class="chev">›</span></a>
-  </nav>
-  <p class="foot" style="text-align:left;margin-top:-6px">TEMSI et WINTEM : cartes téléchargées automatiquement depuis SOFIA-Briefing (sans compte), seules celles disponibles sont proposées. Coupe verticale : AEROWEB, avec connexion.</p>
+<div class="cartes-bloc" aria-label="Cartes météo">
+  <div class="bloc" id="bloc-temsi">
+    <button type="button" class="tuile t-temsi" id="lien-temsi" aria-expanded="false" aria-controls="tm-choix">
+      <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/><path d="m11 13-2 4h3l-2 4"/></svg></span>
+      <span class="tt"><b>TEMSI France</b><small>Basse altitude · SFC/FL150</small></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="volet"><div class="volet-in"><div class="chips" id="tm-choix"></div></div></div>
+  </div>
+  <div class="bloc" id="bloc-wintem">
+    <button type="button" class="tuile t-wintem" id="lien-wintem" aria-expanded="false" aria-controls="wt-choix">
+      <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h8a2.5 2.5 0 1 1-2.5 2.5"/></svg></span>
+      <span class="tt"><b>WINTEM France</b><small>Vent et température · FL20-100</small></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="volet"><div class="volet-in"><div class="chips" id="wt-choix"></div></div></div>
+  </div>
+  <div class="bloc" id="bloc-fronts">
+    <button type="button" class="tuile t-fronts" id="lien-fronts" aria-expanded="false" aria-controls="fr-choix">
+      <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c4 0 5-6 9-6s5 6 9 6"/><path d="m6 14 1.5-3 2.5 1.5"/><circle cx="16.5" cy="13.2" r="1.4" fill="currentColor"/></svg></span>
+      <span class="tt"><b>Carte des fronts</b><small>Analyse de surface · Europe</small></span><svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="volet"><div class="volet-in"><div class="chips" id="fr-choix"></div></div></div>
+  </div>
+  <div class="mini-tuiles">
+    <a class="mt" href="https://aviation.meteo.fr/accueil.php" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 12 3 3 0 0 1 18 18z"/></svg></span>AEROWEB<small>Connexion</small></a>
+    <a class="mt" href="https://sofia-briefing.aviation-civile.gouv.fr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-6-3-2-6 1-5-5H6l3 6-4 1-2-2H1z"/></svg></span>SOFIA<small>Briefing</small></a>
+  </div>
+</div>
+  <p class="foot" style="text-align:left;margin-top:-2px">TEMSI et WINTEM : cartes téléchargées automatiquement depuis SOFIA-Briefing (sans compte), seules celles disponibles sont proposées. Fronts : analyse de surface © Deutscher Wetterdienst (CC BY 4.0). Coupe verticale : AEROWEB, avec connexion.</p>
 
   <p class="foot">Données CheckWX · actualisation automatique toutes les 10 min</p>
 </main>
@@ -708,33 +769,33 @@
   const charger = () => fetch('cartes/index.json?t=' + Date.now(), { cache: 'no-store' })
     .then(r => { if (!r.ok) throw 0; return r.json(); }).then(d => { donnees = d; erreur = false; }).catch(() => { erreur = true; });
   function installer(idLigne, idZone, type) {
-    const ligne = document.getElementById(idLigne), zone = document.getElementById(idZone);
+    const ligne = document.getElementById(idLigne), zone = document.getElementById(idZone), bloc = ligne.closest('.bloc');
     async function remplir() {
-      zone.innerHTML = '<span style="font-size:14px;color:var(--sub)">Chargement…</span>';
+      zone.innerHTML = '<span class="chip-msg">Chargement…</span>';
       await charger();
       const liste = donnees && donnees[type] || [];
-      if (erreur || !liste.length) { zone.innerHTML = '<span style="font-size:14px;color:var(--sub)">' + (erreur ? 'Cartes pas encore téléchargées (workflow GitHub « Cartes TEMSI et WINTEM »).' : 'Aucune carte disponible pour le moment.') + '</span>'; return; }
+      if (erreur || !liste.length) { zone.innerHTML = '<span class="chip-msg">' + (erreur ? 'Cartes pas encore téléchargées (workflow GitHub « Cartes TEMSI et WINTEM »).' : 'Aucune carte disponible pour le moment.') + '</span>'; return; }
       const now = Date.now(), t = e => Date.UTC(+e.slice(0, 4), +e.slice(4, 6) - 1, +e.slice(6, 8), +e.slice(8, 10));
-      let best = liste.filter(c => t(c.ech) <= now).pop() || liste[0];
+      const best = liste.filter(c => t(c.ech) <= now).pop() || liste[0];
       const auj = new Date().getUTCDate();
       zone.innerHTML = '';
-      liste.forEach(c => {
+      liste.forEach((c, i) => {
         const d = new Date(t(c.ech)), a = document.createElement('a');
-        a.href = 'cartes/' + c.fichier; a.target = '_blank'; a.rel = 'noopener';
+        a.href = (/^https?:/.test(c.fichier) ? '' : 'cartes/') + c.fichier; a.target = '_blank'; a.rel = 'noopener';
+        a.className = 'chip' + (c === best ? ' best' : ''); a.style.setProperty('--i', i);
         a.textContent = p2(d.getUTCHours()) + ' UTC' + (d.getUTCDate() === auj ? '' : (d.getTime() > now ? ' · demain' : ' · hier'));
-        a.style.cssText = 'padding:8px 14px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;' + (c === best ? 'background:var(--blue);color:#fff' : 'background:var(--fill);color:var(--blue)');
         zone.appendChild(a);
       });
     }
-    ligne.addEventListener('click', ev => {
-      ev.preventDefault();
-      const ouvert = zone.style.display === 'flex';
-      if (!ouvert) remplir();
-      zone.style.display = ouvert ? 'none' : 'flex';
+    ligne.addEventListener('click', () => {
+      const ouvert = bloc.classList.contains('ouvert');
+      document.querySelectorAll('.bloc.ouvert').forEach(b => { b.classList.remove('ouvert'); b.querySelector('.tuile').setAttribute('aria-expanded', 'false'); });
+      if (!ouvert) { remplir(); bloc.classList.add('ouvert'); ligne.setAttribute('aria-expanded', 'true'); }
     });
   }
   installer('lien-temsi', 'tm-choix', 'temsi');
   installer('lien-wintem', 'wt-choix', 'wintem');
+  installer('lien-fronts', 'fr-choix', 'fronts');
 }
 if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
 </script>
