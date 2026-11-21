@@ -919,7 +919,7 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
         const h = x => String(Math.round(x / 100)).padStart(3, '0');
         if (s.plafond != null) return [s.couv === 'VV' ? 'VV' : s.couv, h(s.plafond)];
         if (s.bas) return [s.bas.c, h(s.bas.h)];
-        return ['CLR', ''];
+        return [s.cav ? 'CVK' : 'CLR', ''];
       },
       leg: ['≥ 2500 ft', '≥ 1500', '≥ 700', '≥ 300', '< 300'] },
     vent: { nom: 'Vent', unite: 'Vent ou rafales en kt · flèche = origine du vent', seuils: [10, 15, 20, 28], sens: -1,
@@ -945,19 +945,19 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
       if ((m = t.match(/^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/))) {
         const f = m[4] === 'MPS' ? 1.944 : 1;
         r.dir = m[1] === 'VRB' ? null : +m[1]; r.spd = Math.round(+m[2] * f); r.gst = m[3] ? Math.round(+m[3] * f) : 0; r.v = 1;
-      } else if (t === 'CAVOK') { r.vis = 9999; r.nuages = []; }
-      else if (/^\d{4}$/.test(t) && !r.vis) r.vis = +t;
-      else if (/^(NSC|SKC|NCD|CLR)$/.test(t)) r.nuages = [];
+      } else if (t === 'CAVOK') { r.vis = 9999; r.nuages = []; r.cav = true; }
+      else if (/^\d{4}$/.test(t) && !r.vis) { r.vis = +t; r.cav = false; }
+      else if (/^(NSC|SKC|NCD|CLR)$/.test(t)) { r.nuages = []; r.cav = false; }
       else if ((m = t.match(/^(FEW|SCT|BKN|OVC|VV)(\d{3})/))) nu.push({ c: m[1], h: +m[2] * 100 });
     }
-    if (nu.length) r.nuages = nu;
+    if (nu.length) { r.nuages = nu; r.cav = false; }
     return r;
   }
   const plafondDe = n => (n || []).filter(x => x.c === 'BKN' || x.c === 'OVC' || x.c === 'VV').reduce((a, x) => Math.min(a, x.h), Infinity);
   const fin = (s, flags = {}) => {
     const lay = [...(s.nuages || [])].sort((a, b) => a.h - b.h), bk = lay.find(x => x.c === 'BKN' || x.c === 'OVC' || x.c === 'VV');
     return { dir: s.dir ?? null, spd: s.spd ?? null, gst: s.gst || 0, vis: s.vis ?? null,
-      plafond: bk ? bk.h : null, couv: bk ? bk.c : null, bas: lay[0] || null, nuages: s.nuages || [], ...flags };
+      plafond: bk ? bk.h : null, couv: bk ? bk.c : null, bas: lay[0] || null, cav: !!s.cav && !lay.length, nuages: s.nuages || [], ...flags };
   };
 
   function etatMetar(raw) {
@@ -979,7 +979,7 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
     let pire = null, temp = false;
     const pirer = (a, b) => { const pa = a.plafond ?? 1e9, pb = b.plafond ?? 1e9;
       return { spd: Math.max(a.spd ?? -1, b.spd ?? -1), gst: Math.max(a.gst || 0, b.gst || 0),
-        vis: Math.min(a.vis ?? 1e5, b.vis ?? 1e5), plafond: Math.min(pa, pb), couv: pb < pa ? b.couv : a.couv,
+        vis: Math.min(a.vis ?? 1e5, b.vis ?? 1e5), plafond: Math.min(pa, pb), couv: pb < pa ? b.couv : a.couv, cav: !!(a.cav && b.cav),
         bas: !a.bas ? b.bas : !b.bas ? a.bas : (b.bas.h < a.bas.h ? b.bas : a.bas),
         dir: (b.spd ?? -1) > (a.spd ?? -1) ? b.dir : a.dir, nuages: b.nuages && b.nuages.length ? b.nuages : a.nuages }; };
     for (const t of instants) {
@@ -989,7 +989,7 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
     }
     for (const p of aTemp) { pire = pirer(pire, fin({ ...lire(p.toks) })); temp = true; }
     const nul = v => v === 1e5 || v === 1e9 || v === -1 ? null : v;
-    return { dir: pire.dir ?? null, spd: nul(pire.spd), gst: pire.gst, vis: nul(pire.vis), plafond: nul(pire.plafond), couv: pire.couv || null, bas: pire.bas || null, nuages: pire.nuages || [], temp };
+    return { dir: pire.dir ?? null, spd: nul(pire.spd), gst: pire.gst, vis: nul(pire.vis), plafond: nul(pire.plafond), couv: pire.couv || null, bas: pire.bas || null, cav: !!pire.cav, nuages: pire.nuages || [], temp };
   }
 
   const VILLES = {LFPG:'Paris CDG',LFPO:'Paris Orly',LFPB:'Le Bourget',LFPT:'Pontoise',LFPN:'Toussus',LFLL:'Lyon',LFLY:'Lyon Bron',LFML:'Marseille',LFMN:'Nice',LFBO:'Toulouse',LFBD:'Bordeaux',LFRS:'Nantes',LFRN:'Rennes',LFRB:'Brest',LFQQ:'Lille',LFST:'Strasbourg',LFSB:'Bâle-Mulhouse',LFBG:'Cognac',LFBL:'Limoges',LFBU:'Angoulême',LFBH:'La Rochelle',LFKJ:'Ajaccio',LFKB:'Bastia',LFKF:'Figari',LFKC:'Calvi',LFMP:'Perpignan',LFTH:'Toulon',LFTW:'Nîmes',LFMT:'Montpellier',LFMK:'Carcassonne',LFMU:'Béziers',LFMD:'Cannes',LFMV:'Avignon',LFMI:'Istres',LFMH:'Saint-Étienne',LFLC:'Clermont-Ferrand',LFLB:'Chambéry',LFLS:'Grenoble',LFLP:'Annecy',LFLW:'Aurillac',LFLX:'Châteauroux',LFJL:'Metz-Nancy',LFSN:'Nancy',LFSR:'Reims',LFSD:'Dijon',LFSQ:'Belfort',LFGJ:'Dole',LFOB:'Beauvais',LFAC:'Calais',LFAT:'Le Touquet',LFAQ:'Albert',LFAV:'Valenciennes',LFOH:'Le Havre',LFRK:'Caen',LFRC:'Cherbourg',LFRD:'Dinard',LFRO:'Lannion',LFRH:'Lorient',LFRV:'Vannes',LFRQ:'Quimper',LFRZ:'Saint-Nazaire',LFRI:'La Roche-sur-Yon',LFOT:'Tours',LFOJ:'Orléans',LFOE:'Évreux',LFOK:'Vatry',LFOP:'Rouen',LFOC:'Châteaudun',LFRM:'Le Mans',LFRG:'Deauville',LFBZ:'Biarritz',LFBP:'Pau',LFBT:'Tarbes',LFBM:'Mont-de-Marsan',LFCR:'Rodez',LFCC:'Cahors',LFBI:'Poitiers',LFBN:'Niort',LFBE:'Bergerac',LFBA:'Agen',LFBX:'Périgueux',LFBV:'Brive',LFBK:'Montluçon',LFCK:'Castres',LFMO:'Orange',LFMY:'Salon',LFMA:'Aix',LFMC:'Le Luc',LFNA:'Gap',LFKS:'Solenzara',LFCI:'Albi',LFCY:'Royan',LFEY:'Île d’Yeu',LFGA:'Colmar',LFSX:'Luxeuil',LFQB:'Troyes',LFQG:'Nevers'};
@@ -1087,12 +1087,12 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
       .sort((a, b) => prio(b) - prio(a));
     const pris = [], boites = [];
     for (const o of visibles) {
-      const x = X(o.s.lon) * px, y = Y(o.s.lat) * px, nom = nomVille(o.s), lw = Math.max(18, nom.length * 3.6);
-      const b = { x1: x - lw / 2 - 2, x2: x + lw / 2 + 2, y1: y - 10, y2: y + 19 };
+      const x = X(o.s.lon) * px, y = Y(o.s.lat) * px, nom = nomVille(o.s), lw = Math.max(22, nom.length * 4.6);
+      const b = { x1: x - lw / 2 - 2, x2: x + lw / 2 + 2, y1: y - 13, y2: y + 25 };
       if (boites.some(q => b.x1 < q.x2 && b.x2 > q.x1 && b.y1 < q.y2 && b.y2 > q.y1) && !mes.includes(o.s.id) && o.s.id !== choisie) continue;
       boites.push(b); pris.push({ ...o, nom });
     }
-    const k = 0.75 / px;                                            // taille des bulles fixe à l'écran, quel que soit l'écran ou le zoom
+    const k = 1.0 / px;                                            // taille des bulles fixe à l'écran, quel que soit l'écran ou le zoom
     let g = `<path class="terre" d="${trace(FRANCE)}"/><path class="terre" d="${trace(CORSE)}"/>`;
     pris.sort((a, b) => b.s.lat - a.s.lat).forEach(({ s, e, vieux, nom }) => {
       const v = e ? c.val(e) : null, coul = !e ? '#9a9aa0' : COUL[classe(c, v)];
