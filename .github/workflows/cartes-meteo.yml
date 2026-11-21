@@ -1,4 +1,4 @@
-name: Cartes TEMSI et WINTEM
+name: Cartes TEMSI, WINTEM et fronts
 
 # Lancé toutes les 30 minutes par un service extérieur (cron-job.org) via l'API GitHub.
 # Le programme GitHub (cron ci-dessous) n'est qu'un filet de sécurité : GitHub le retarde souvent de plusieurs heures.
@@ -77,15 +77,40 @@ jobs:
               if (liens.length) index[type] = garde.sort((a, b) => a.ech.localeCompare(b.ech));
               else console.log(type, ': aucune carte trouvée, on garde l’ancien état');
             }
+            // cartes des fronts : analyse de surface du DWD (Open Data, © Deutscher Wetterdienst, CC BY 4.0)
+            try {
+              const base = 'https://opendata.dwd.de/weather/charts/analysis/';
+              const html = await (await fetch(base)).text();
+              const parVal = {};
+              for (const m of html.matchAll(/href="([^"]*dwdna_O_000000_000000_(\d{12})_WV12\.png)"/g)) {
+                if (m[1].includes('LATEST')) continue;
+                if (!parVal[m[2]] || m[1] > parVal[m[2]]) parVal[m[2]] = m[1];
+              }
+              const vals = Object.keys(parVal).sort().slice(-4);
+              const gardeF = [];
+              for (const v of vals) {
+                const fichier = `fronts-${v}.png`, chemin = path.join(OUT, fichier);
+                if (!fs.existsSync(chemin)) {
+                  const r = await fetch(base + parVal[v]);
+                  const buf = Buffer.from(await r.arrayBuffer());
+                  if (!r.ok || buf.slice(1, 4).toString() !== 'PNG') { console.log('fronts refusé :', v, r.status); continue; }
+                  fs.writeFileSync(chemin, buf);
+                  console.log('téléchargé :', fichier, buf.length, 'octets');
+                }
+                gardeF.push({ ech: v + '00', fichier });
+              }
+              if (gardeF.length) index.fronts = gardeF;
+              else console.log('fronts : aucune carte trouvée, on garde l’ancien état');
+            } catch (e) { console.log('fronts échec :', e.message.split('\n')[0]); }
             await browser.close();
             // état précédent si une page a échoué
             let ancien = {}; try { ancien = JSON.parse(fs.readFileSync(path.join(OUT, 'index.json'), 'utf8')); } catch (e) {}
-            const final = { temsi: index.temsi || ancien.temsi || [], wintem: index.wintem || ancien.wintem || [] };
+            const final = { temsi: index.temsi || ancien.temsi || [], wintem: index.wintem || ancien.wintem || [], fronts: index.fronts || ancien.fronts || [] };
             // supprimer les PDF qui ne sont plus listés
-            const utiles = new Set([...final.temsi, ...final.wintem].map(c => c.fichier));
-            for (const f of fs.readdirSync(OUT)) if (f.endsWith('.pdf') && !utiles.has(f)) fs.unlinkSync(path.join(OUT, f));
+            const utiles = new Set([...final.temsi, ...final.wintem, ...final.fronts].map(c => c.fichier));
+            for (const f of fs.readdirSync(OUT)) if ((f.endsWith('.pdf') || f.endsWith('.png')) && !utiles.has(f)) fs.unlinkSync(path.join(OUT, f));
             const prec = fs.existsSync(path.join(OUT, 'index.json')) ? JSON.parse(fs.readFileSync(path.join(OUT, 'index.json'), 'utf8')) : null;
-            const memes = prec && JSON.stringify([prec.temsi, prec.wintem]) === JSON.stringify([final.temsi, final.wintem]);
+            const memes = prec && JSON.stringify([prec.temsi, prec.wintem, prec.fronts]) === JSON.stringify([final.temsi, final.wintem, final.fronts]);
             if (!memes) fs.writeFileSync(path.join(OUT, 'index.json'), JSON.stringify({ maj: new Date().toISOString(), ...final }, null, 1));
             console.log('TEMSI :', final.temsi.length, '· WINTEM :', final.wintem.length);
           })().catch(e => { console.error(e); process.exit(1); });
@@ -99,7 +124,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Rien de nouveau."
           else
-            git commit -m "Cartes TEMSI et WINTEM"
+            git commit -m "Cartes TEMSI, WINTEM et fronts"
             git pull --rebase
             git push
           fi
