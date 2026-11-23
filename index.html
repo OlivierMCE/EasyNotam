@@ -159,6 +159,8 @@
   .map{position:relative;width:100%;height:clamp(460px,74vh,820px);border-radius:12px;overflow:hidden;background:var(--fill)}
   .map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .6s}
   .map iframe.ok{opacity:1}
+  #w-pan{position:absolute;inset:0;z-index:3;touch-action:none;cursor:grab}
+  #w-pan.off{display:none}
 
   /* Liste groupée façon Réglages iOS */
   .sect{font-size:13px;font-weight:400;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;margin:28px 16px 8px}
@@ -532,8 +534,8 @@
     </div>
     <div class="seg petit" id="seg-vue" role="tablist" hidden></div>
     <p class="note-carte" id="note-carte"></p>
-    <div class="map"><iframe id="windy" title="Carte Windy" allowfullscreen></iframe>
-      <div class="map-zoom"><button type="button" id="z-plus" aria-label="Zoomer">+</button><button type="button" id="z-moins" aria-label="Dézoomer">−</button></div>
+    <div class="map"><iframe id="windy" title="Carte Windy" allowfullscreen></iframe><div id="w-pan" aria-hidden="true"></div>
+      <div class="map-zoom"><button type="button" id="z-plus" aria-label="Zoomer">+</button><button type="button" id="z-moins" aria-label="Dézoomer">−</button><button type="button" id="z-main" aria-label="Mode de la carte" title="Déplacer (position conservée) / Toucher la carte Windy">✋</button></div>
       <div class="alt" id="alt" aria-label="Altitude de la carte"><div class="alt-corps"><div class="gl vert" id="alt-gl"></div><div class="alt-lbl" id="alt-lbl"></div></div></div>
       <div class="hslide" id="hslide">
         <div class="hs-tete"><span class="hs-heure" id="hs-lbl">–</span><span class="hs-rel" id="hs-rel"></span><button type="button" class="hs-reset" id="hs-reset" hidden></button>
@@ -928,11 +930,11 @@
     sauver(); carte();
   });
 
-  /* ----- animation sur 2 h : 5 images (toutes les 30 min) à partir de l'heure choisie, en fondu enchaîné entre deux fenêtres Windy ----- */
+  /* ----- animation sur 2 h : 3 images (heure choisie, +1 h, +2 h), en fondu enchaîné entre deux fenêtres Windy ----- */
   const btnPlay = document.getElementById('hs-play'), mapW = document.querySelector('.map');
   const ICO_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
   const ICO_STOP = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';
-  const NB_IMG = 5, PAS_MIN = 30;
+  const NB_IMG = 3, PAS_MIN = 60;                                 // pas de 1 h = pas réel des modèles Windy
   let anim = null;
   const attendre = ms => new Promise(r => setTimeout(r, ms));
   const chargerFenetre = (fen, src) => new Promise(ok => {          // résout quand la page Windy est chargée (+ délai pour le dessin des données)
@@ -952,7 +954,7 @@
     B.id = 'windy2'; B.className = 'w2'; B.title = 'Carte Windy (animation)'; B.setAttribute('allowfullscreen', '');
     A.after(B);
     btnPlay.classList.add('on'); btnPlay.innerHTML = ICO_STOP + '<b>Stop</b>';
-    const t0 = etat.t0, tours = Array.from({ length: NB_IMG }, (_, i) => t0 + i * PAS_MIN * 60e3);
+    const t0 = Math.round(etat.t0 / 3600e3) * 3600e3, tours = Array.from({ length: NB_IMG }, (_, i) => t0 + i * PAS_MIN * 60e3);
     const srcDe = t => etat.srcPour(Math.max(0, (t - Date.now()) / 3600e3));
     const montrer = i => { texteCurseur(0, tours[i]); glTemps.set((tours[i] - hsBase) / 3600e3);
       document.getElementById('note-carte').textContent = `Animation · image ${i + 1}/${NB_IMG} · ${hm(new Date(tours[i]))} UTC`; };
@@ -1015,9 +1017,10 @@
     // vue choisie (route ou un aérodrome) + zoom réglé : conservés quand on change de couche
     etat.vue = 'route';                                           // vue unique : toute la route
     segment(document.getElementById('seg-vue'), { route: 'Route', ...Object.fromEntries(Object.keys(etat.vues).filter(k => k !== 'route').map(k => [k, k])) },
-      etat.vue, k => { etat.vue = k; etat.dz = 0; localStorage.setItem('w_vue', k); localStorage.setItem('w_dz', 0); carte(); });
+      etat.vue, k => { etat.vue = k; etat.dz = 0; etat.ctr = null; localStorage.removeItem('w_ctr'); localStorage.setItem('w_vue', k); localStorage.setItem('w_dz', 0); carte(); });
     const v = etat.vues[etat.vue] || { lat: 46.5, lon: 2.5, zoom: 6 };
-    const c = { lat: v.lat, lon: v.lon, zoom: Math.max(3, Math.min(13, v.zoom + etat.dz)) };
+    if (etat.ctr === undefined) { try { etat.ctr = JSON.parse(localStorage.getItem('w_ctr')); } catch (e) { etat.ctr = null; } }
+    const c = { lat: etat.ctr ? etat.ctr.lat : v.lat, lon: etat.ctr ? etat.ctr.lon : v.lon, zoom: Math.max(3, Math.min(13, v.zoom + etat.dz)) };
     const src = `https://embed.windy.com/embed2.html?lat=${c.lat}&lon=${c.lon}&detailLat=${c.lat}&detailLon=${c.lon}&zoom=${c.zoom}` +
       `&level=${lv}&overlay=${etat.ov}&product=${sat ? 'satellite' : etat.mod}&menu=&message=true&marker=${temps}&pressure=${sat ? '' : 'true'}&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
     etat.t0 = cible ? +cible : Date.now();
@@ -1029,6 +1032,28 @@
   const zoomer = d => { etat.dz += d; localStorage.setItem('w_dz', etat.dz); carte(); };
   document.getElementById('z-moins').onclick = () => zoomer(-1);
   document.getElementById('z-plus').onclick = () => zoomer(1);
+  /* ----- déplacement de la carte : la position est mémorisée, donc conservée quand la carte se recharge ----- */
+  const pan = document.getElementById('w-pan'), btnMain = document.getElementById('z-main');
+  const mx = (lo, z) => (lo + 180) / 360 * 256 * 2 ** z;
+  const my = (la, z) => (1 - Math.log(Math.tan(la * Math.PI / 180) + 1 / Math.cos(la * Math.PI / 180)) / Math.PI) / 2 * 256 * 2 ** z;
+  const lonDe = (x, z) => x / (256 * 2 ** z) * 360 - 180;
+  const latDe = (y, z) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / (256 * 2 ** z)))) * 180 / Math.PI;
+  let dep = null;
+  pan.onpointerdown = e => { if (anim) return; dep = { x: e.clientX, y: e.clientY }; pan.setPointerCapture(e.pointerId); pan.style.cursor = 'grabbing'; };
+  pan.onpointermove = e => { if (!dep) return; document.getElementById('windy').style.transform = `translate(${e.clientX - dep.x}px,${e.clientY - dep.y}px)`; };
+  const fin_ = e => {
+    if (!dep) return;
+    const dx = e.clientX - dep.x, dy = e.clientY - dep.y; dep = null; pan.style.cursor = '';
+    const f = document.getElementById('windy'); f.style.transform = '';
+    if (Math.abs(dx) + Math.abs(dy) < 4) return;
+    const src = f.src, z = +(src.match(/zoom=([\d.]+)/) || [0, 6])[1], la = +src.match(/[?&]lat=([-\d.]+)/)[1], lo = +src.match(/[?&]lon=([-\d.]+)/)[1];
+    const nl = { lat: +Math.max(-80, Math.min(80, latDe(my(la, z) - dy, z))).toFixed(3), lon: +lonDe(mx(lo, z) - dx, z).toFixed(3) };
+    etat.ctr = nl; localStorage.setItem('w_ctr', JSON.stringify(nl)); carte();
+  };
+  pan.onpointerup = fin_; pan.onpointercancel = fin_;
+  let tw; pan.onwheel = e => { e.preventDefault(); clearTimeout(tw); tw = setTimeout(() => zoomer(e.deltaY < 0 ? 1 : -1), 120); };
+  btnMain.onclick = () => { const off = pan.classList.toggle('off'); btnMain.textContent = off ? '👆' : '✋';
+    btnMain.title = off ? 'Mode toucher : la carte Windy réagit, mais sa position se perd au rechargement' : 'Mode déplacer : la position est conservée'; };
   // centrer la carte sur l'ensemble des aérodromes
   Promise.allSettled(ids.map(coords)).then(res => {
     const pts = res.filter(r => r.status === 'fulfilled').map(r => r.value);
