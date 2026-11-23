@@ -534,8 +534,8 @@
     </div>
     <div class="seg petit" id="seg-vue" role="tablist" hidden></div>
     <p class="note-carte" id="note-carte"></p>
-    <div class="map"><iframe id="windy" title="Carte Windy" allowfullscreen></iframe><div id="w-pan" aria-hidden="true"></div>
-      <div class="map-zoom"><button type="button" id="z-plus" aria-label="Zoomer">+</button><button type="button" id="z-moins" aria-label="Dézoomer">−</button><button type="button" id="z-main" aria-label="Mode de la carte" title="Déplacer (position conservée) / Toucher la carte Windy">✋</button></div>
+    <div class="map"><iframe id="windy" title="Carte Windy" allowfullscreen></iframe><div id="w-pan" class="off" aria-hidden="true"></div>
+      <div class="map-zoom"><button type="button" id="z-plus" aria-label="Zoomer">+</button><button type="button" id="z-moins" aria-label="Dézoomer">−</button><button type="button" id="z-main" aria-label="Mode de la carte" title="Mode actuel : Windy gère la carte. Touchez pour que l'appli mémorise la position">👆</button></div>
       <div class="alt" id="alt" aria-label="Altitude de la carte"><div class="alt-corps"><div class="gl vert" id="alt-gl"></div><div class="alt-lbl" id="alt-lbl"></div></div></div>
       <div class="hslide" id="hslide">
         <div class="hs-tete"><span class="hs-heure" id="hs-lbl">–</span><span class="hs-rel" id="hs-rel"></span><button type="button" class="hs-reset" id="hs-reset" hidden></button>
@@ -945,33 +945,35 @@
     if (!anim) return;
     anim.stop = true; anim = null;
     btnPlay.classList.remove('on', 'chg'); btnPlay.innerHTML = ICO_PLAY + '<b>2 h</b>';
-    document.getElementById('windy2')?.remove();
+    document.querySelectorAll('iframe.w2').forEach(f => f.remove());
   }
   async function lancerAnim() {
     if (anim || !etat.srcPour) return;
     const mien = anim = { stop: false };
-    const A = document.getElementById('windy'), B = document.createElement('iframe');
-    B.id = 'windy2'; B.className = 'w2'; B.title = 'Carte Windy (animation)'; B.setAttribute('allowfullscreen', '');
-    A.after(B);
-    btnPlay.classList.add('on'); btnPlay.innerHTML = ICO_STOP + '<b>Stop</b>';
+    const A = document.getElementById('windy');
     const t0 = Math.round(etat.t0 / 3600e3) * 3600e3, tours = Array.from({ length: NB_IMG }, (_, i) => t0 + i * PAS_MIN * 60e3);
     const srcDe = t => etat.srcPour(Math.max(0, (t - Date.now()) / 3600e3));
-    const montrer = i => { texteCurseur(0, tours[i]); glTemps.set((tours[i] - hsBase) / 3600e3);
-      document.getElementById('note-carte').textContent = `Animation · image ${i + 1}/${NB_IMG} · ${hm(new Date(tours[i]))} UTC`; };
-    const hm = d => d.toISOString().slice(11, 16);
-    let devant = A, derriere = B, i = 0;
-    btnPlay.classList.add('chg');
-    montrer(0); btnPlay.classList.remove('chg');
+    const hm = d => d.toISOString().slice(11, 16), note = document.getElementById('note-carte');
+    btnPlay.classList.add('on', 'chg'); btnPlay.innerHTML = ICO_STOP + '<b>Stop</b>';
+    // 1) on charge TOUTES les images d'abord (une fenêtre Windy par heure) et on attend qu'elles soient dessinées
+    const fen = tours.map((t, i) => { const f = document.createElement('iframe'); f.className = 'w2'; f.title = 'Carte Windy (animation)'; f.setAttribute('allowfullscreen', ''); A.after(f); return f; });
+    let prets = 0; note.textContent = `Animation · chargement des images 0/${NB_IMG}…`;
+    await Promise.all(fen.map((f, i) => new Promise(ok => {
+      let fini = false; const fin = () => { if (!fini) { fini = true; note.textContent = `Animation · chargement des images ${++prets}/${NB_IMG}…`; ok(); } };
+      f.onload = fin; setTimeout(fin, 15000); f.src = srcDe(tours[i]);
+    })));
+    if (anim !== mien) return;
+    await attendre(4500);                                          // temps à Windy pour dessiner les données une fois la page chargée
+    if (anim !== mien) return;
+    btnPlay.classList.remove('chg');
+    // 2) lecture : plus aucun chargement, on bascule seulement l'affichage d'une image à l'autre
+    let i = 0;
     while (anim === mien) {
-      const suivant = (i + 1) % NB_IMG;
-      btnPlay.classList.add('chg');
-      const [,] = await Promise.all([chargerFenetre(derriere, srcDe(tours[suivant])), attendre(suivant === 0 ? 1600 : 1100)]);
-      if (anim !== mien) return;
-      btnPlay.classList.remove('chg');
-      derriere.classList.add('ok');                                  // fondu : la nouvelle image apparaît, l'ancienne disparaît
-      await attendre(450); if (anim !== mien) return;
-      devant.classList.remove('ok');
-      [devant, derriere] = [derriere, devant]; i = suivant; montrer(i);
+      fen.forEach((f, k) => f.classList.toggle('ok', k === i));
+      texteCurseur(0, tours[i]); glTemps.set((tours[i] - hsBase) / 3600e3);
+      note.textContent = `Animation · image ${i + 1}/${NB_IMG} · ${hm(new Date(tours[i]))} UTC`;
+      await attendre(i === NB_IMG - 1 ? 2200 : 1600);
+      i = (i + 1) % NB_IMG;
     }
   }
   document.getElementById('hs-gl').addEventListener('pointerdown', () => { if (anim) { arreterAnim(); carte(); } }, true);
@@ -1053,7 +1055,7 @@
   pan.onpointerup = fin_; pan.onpointercancel = fin_;
   let tw; pan.onwheel = e => { e.preventDefault(); clearTimeout(tw); tw = setTimeout(() => zoomer(e.deltaY < 0 ? 1 : -1), 120); };
   btnMain.onclick = () => { const off = pan.classList.toggle('off'); btnMain.textContent = off ? '👆' : '✋';
-    btnMain.title = off ? 'Mode toucher : la carte Windy réagit, mais sa position se perd au rechargement' : 'Mode déplacer : la position est conservée'; };
+    btnMain.title = off ? 'Windy gère la carte (la position se perd au rechargement)' : 'L\'appli gère le déplacement : la position est conservée'; };
   // centrer la carte sur l'ensemble des aérodromes
   Promise.allSettled(ids.map(coords)).then(res => {
     const pts = res.filter(r => r.status === 'fulfilled').map(r => r.value);
