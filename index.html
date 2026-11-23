@@ -346,7 +346,9 @@
   .hs-reset{border:0;border-radius:999px;padding:4px 10px;font:600 12px -apple-system,sans-serif;background:var(--pill);color:var(--ink);cursor:pointer;white-space:nowrap;animation:hspop .5s var(--spring)}
   @keyframes hspop{from{opacity:0;transform:scale(.6)}}
   .hs-reset:active{transform:scale(.94)}
-  .hs-play{margin-left:auto;display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:5px 12px 5px 9px;background:var(--blue);color:#fff;font:700 12.5px -apple-system,sans-serif;cursor:pointer;
+  .hs-duree{margin-left:auto;border:0;border-radius:999px;padding:5px 10px;background:var(--pill);color:var(--ink);font:700 12.5px -apple-system,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .hs-duree:disabled{opacity:.4}
+  .hs-play{margin-left:6px;display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:5px 12px 5px 9px;background:var(--blue);color:#fff;font:700 12.5px -apple-system,sans-serif;cursor:pointer;
     transition:transform .3s var(--spring),background .3s;-webkit-tap-highlight-color:transparent}
   .hs-play svg{width:13px;height:13px;fill:currentColor}
   .hs-play:active{transform:scale(.93)}
@@ -539,7 +541,7 @@
       <div class="alt" id="alt" aria-label="Altitude de la carte"><div class="alt-corps"><div class="gl vert" id="alt-gl"></div><div class="alt-lbl" id="alt-lbl"></div></div></div>
       <div class="hslide" id="hslide">
         <div class="hs-tete"><span class="hs-heure" id="hs-lbl">–</span><span class="hs-rel" id="hs-rel"></span><button type="button" class="hs-reset" id="hs-reset" hidden></button>
-          <button type="button" class="hs-play" id="hs-play" aria-label="Animer la carte sur 2 heures" title="Animer sur 2 heures à partir de l’heure choisie"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><b>2 h</b></button></div>
+          <button type="button" class="hs-duree" id="hs-duree" aria-label="Durée de l’animation" title="Durée de l’animation : touchez pour changer">2 h</button><button type="button" class="hs-play" id="hs-play" aria-label="Lancer l’animation" title="Animer à partir de l’heure choisie"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><b>Lecture</b></button></div>
         <div class="gl" id="hs-gl"></div>
         <div class="hs-jours" id="hs-jours" aria-hidden="true"></div>
       </div>
@@ -934,7 +936,10 @@
   const btnPlay = document.getElementById('hs-play'), mapW = document.querySelector('.map');
   const ICO_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
   const ICO_STOP = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';
-  const NB_IMG = 3, PAS_MIN = 60;                                 // pas de 1 h = pas réel des modèles Windy
+  const PAS_MIN = 60, DUREES = [2, 3, 4, 6], btnDuree = document.getElementById('hs-duree');
+  let duree = +localStorage.getItem('w_duree') || 2; if (!DUREES.includes(duree)) duree = 2; btnDuree.textContent = duree + ' h';
+  btnDuree.onclick = () => { duree = DUREES[(DUREES.indexOf(duree) + 1) % DUREES.length]; localStorage.setItem('w_duree', duree); btnDuree.textContent = duree + ' h'; };
+  let NB_IMG = 3;                                 // pas de 1 h = pas réel des modèles Windy
   let anim = null;
   const attendre = ms => new Promise(r => setTimeout(r, ms));
   const chargerFenetre = (fen, src) => new Promise(ok => {          // résout quand la page Windy est chargée (+ délai pour le dessin des données)
@@ -944,19 +949,20 @@
   function arreterAnim() {
     if (!anim) return;
     anim.stop = true; anim = null;
-    btnPlay.classList.remove('on', 'chg'); btnPlay.innerHTML = ICO_PLAY + '<b>2 h</b>';
+    btnPlay.classList.remove('on', 'chg'); btnPlay.innerHTML = ICO_PLAY + '<b>Lecture</b>'; btnDuree.disabled = false;
     document.querySelectorAll('iframe.w2').forEach(f => f.remove());
   }
   async function lancerAnim() {
     if (anim || !etat.srcPour) return;
     const mien = anim = { stop: false };
+    NB_IMG = duree + 1; btnDuree.disabled = true;
     const A = document.getElementById('windy');
     const t0 = Math.round(etat.t0 / 3600e3) * 3600e3, tours = Array.from({ length: NB_IMG }, (_, i) => t0 + i * PAS_MIN * 60e3);
     const srcDe = t => etat.srcPour(Math.max(0, (t - Date.now()) / 3600e3));
     const hm = d => d.toISOString().slice(11, 16), note = document.getElementById('note-carte');
     btnPlay.classList.add('on', 'chg'); btnPlay.innerHTML = ICO_STOP + '<b>Stop</b>';
     // 1) on charge TOUTES les images d'abord (une fenêtre Windy par heure) et on attend qu'elles soient dessinées
-    const fen = tours.map((t, i) => { const f = document.createElement('iframe'); f.className = 'w2'; f.title = 'Carte Windy (animation)'; f.setAttribute('allowfullscreen', ''); A.after(f); return f; });
+    const fen = tours.map((t, i) => { const f = document.createElement('iframe'); f.className = 'w2'; f.style.opacity = '1'; f.style.transition = 'none'; f.style.zIndex = String(1 + (i === 0 ? 1 : 0)); f.title = 'Carte Windy (animation)'; f.setAttribute('allowfullscreen', ''); A.after(f); return f; });
     let prets = 0; note.textContent = `Animation · chargement des images 0/${NB_IMG}…`;
     await Promise.all(fen.map((f, i) => new Promise(ok => {
       let fini = false; const fin = () => { if (!fini) { fini = true; note.textContent = `Animation · chargement des images ${++prets}/${NB_IMG}…`; ok(); } };
@@ -969,7 +975,7 @@
     // 2) lecture : plus aucun chargement, on bascule seulement l'affichage d'une image à l'autre
     let i = 0;
     while (anim === mien) {
-      fen.forEach((f, k) => f.classList.toggle('ok', k === i));
+      fen.forEach((f, k) => { f.style.zIndex = k === i ? '2' : '1'; });   // toutes restent affichées (iOS ne dessine pas les fenêtres masquées) : on met seulement l'une au-dessus
       texteCurseur(0, tours[i]); glTemps.set((tours[i] - hsBase) / 3600e3);
       note.textContent = `Animation · image ${i + 1}/${NB_IMG} · ${hm(new Date(tours[i]))} UTC`;
       await attendre(i === NB_IMG - 1 ? 2200 : 1600);
