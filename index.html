@@ -300,6 +300,86 @@
   #seg-vue{display:none}
   @media(max-width:600px){.carte{padding:8px}.map{height:min(78vh,720px);min-height:480px;border-radius:14px}}
   #vue-notam[hidden]{display:none}
+  /* ---------- Curseurs (heure, altitude) et interrupteur de modèle ---------- */
+  .w-ligne{display:flex;align-items:center;gap:12px;margin:2px 0 12px}
+  .sw{display:inline-flex;align-items:center;gap:10px;border:0;background:transparent;padding:4px 2px;cursor:pointer;font:600 14px -apple-system,sans-serif;color:var(--sub);-webkit-tap-highlight-color:transparent}
+  .sw span{transition:color .3s,transform .4s var(--spring)}
+  .sw-l{color:var(--ink)}
+  .sw[aria-checked=true] .sw-l{color:var(--sub)}.sw[aria-checked=true] .sw-r{color:var(--ink)}
+  .sw-t{position:relative;width:50px;height:30px;border-radius:15px;background:var(--pill);box-shadow:inset 0 0 0 1px var(--sep);transition:background .35s,box-shadow .35s}
+  .sw-t i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .5s var(--spring)}
+  .sw[aria-checked=true] .sw-t{background:var(--blue);box-shadow:none}
+  .sw[aria-checked=true] .sw-t i{transform:translateX(20px)}
+  .sw:active .sw-t i{width:30px}.sw[aria-checked=true]:active .sw-t i{transform:translateX(14px)}
+  .sw:disabled{opacity:.45;cursor:default}
+  .sw-aide{font-size:12px;color:var(--sub);flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* curseur générique : piste + remplissage + bouton, mouvement à ressort */
+  .gl{--m:15px;position:relative;height:38px;touch-action:pan-y;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;outline:0}
+  .gl-piste{position:absolute;left:var(--m);right:var(--m);top:50%;height:10px;margin-top:-5px;border-radius:5px;background:var(--pill);box-shadow:inset 0 1px 2px rgba(0,0,0,.08);overflow:hidden}
+  .gl-remp{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0) * 100%);border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--blue) 55%,#7fd1ff),var(--blue));transition:width .45s var(--spring)}
+  .gl-bouton{position:absolute;top:50%;left:calc(var(--m) + (100% - 2 * var(--m)) * var(--p,0));width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,.28),0 0 0 .5px rgba(0,0,0,.12),0 0 0 0 var(--accent-soft);transition:left .45s var(--spring),transform .25s var(--spring),box-shadow .3s}
+  .gl:hover .gl-bouton,.gl:focus-visible .gl-bouton{box-shadow:0 2px 10px rgba(0,0,0,.28),0 0 0 .5px rgba(0,0,0,.12),0 0 0 7px var(--accent-soft)}
+  .gl.drag .gl-bouton{transform:scale(1.18);box-shadow:0 4px 16px rgba(0,0,0,.32),0 0 0 .5px rgba(0,0,0,.12),0 0 0 9px var(--accent-soft)}
+  .gl.drag .gl-bouton,.gl.drag .gl-remp{transition:transform .25s var(--spring),box-shadow .3s,width 0s,left 0s}
+  .gl.off{opacity:.4;pointer-events:none}
+  .gl.vert{width:30px;height:var(--h,220px);touch-action:none}
+  .gl.vert .gl-bouton{width:24px;height:24px}
+  .gl.vert .gl-piste{left:50%;right:auto;top:var(--m);bottom:var(--m);width:8px;height:auto;margin:0 0 0 -4px}
+  .gl.vert .gl-remp{left:0;right:0;top:auto;bottom:0;width:auto;height:calc(var(--p,0) * 100%);background:linear-gradient(0deg,color-mix(in srgb,var(--blue) 55%,#7fd1ff),var(--blue));transition:height .45s var(--spring)}
+  .gl.vert .gl-bouton{top:auto;left:50%;bottom:calc(var(--m) + (100% - 2 * var(--m)) * var(--p,0));margin:0 0 -12px -12px;transition:bottom .45s var(--spring),transform .25s var(--spring),box-shadow .3s}
+  .gl.vert.drag .gl-bouton,.gl.vert.drag .gl-remp{transition:transform .25s var(--spring),box-shadow .3s,height 0s,bottom 0s}
+  /* heure : bandeau en verre au bas de la carte */
+  .hslide{position:absolute;left:10px;right:10px;bottom:10px;z-index:4;padding:9px 14px 5px;border-radius:20px;
+    background:color-mix(in srgb,var(--card) 82%,#fff);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+    box-shadow:0 4px 20px rgba(0,0,0,.2),inset 0 0 0 1px var(--glass-edge,rgba(0,0,0,.06))}
+  @media (prefers-color-scheme: dark){.hslide{background:rgba(44,44,46,.8)}}
+  .hslide.off{opacity:.5;pointer-events:none}
+  .hs-tete{display:flex;align-items:center;gap:6px 8px;margin-bottom:0;min-height:30px;flex-wrap:wrap}
+  .hs-heure{white-space:nowrap;font-size:16px;font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums;display:inline-block}
+  .hs-heure.maj{animation:hsmaj .35s var(--spring)}
+  @keyframes hsmaj{from{opacity:.3;transform:translateY(5px)}}
+  .hs-rel{white-space:nowrap;font-size:11.5px;font-weight:600;color:var(--blue);background:var(--accent-soft);padding:2px 8px;border-radius:999px}
+  @media (max-width:440px){.hs-rel{display:none}.hs-heure{font-size:15.5px}}
+  .hs-reset{border:0;border-radius:999px;padding:4px 10px;font:600 12px -apple-system,sans-serif;background:var(--pill);color:var(--ink);cursor:pointer;white-space:nowrap;animation:hspop .5s var(--spring)}
+  @keyframes hspop{from{opacity:0;transform:scale(.6)}}
+  .hs-reset:active{transform:scale(.94)}
+  .hs-play{margin-left:auto;display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:5px 12px 5px 9px;background:var(--blue);color:#fff;font:700 12.5px -apple-system,sans-serif;cursor:pointer;
+    transition:transform .3s var(--spring),background .3s;-webkit-tap-highlight-color:transparent}
+  .hs-play svg{width:13px;height:13px;fill:currentColor}
+  .hs-play:active{transform:scale(.93)}
+  .hs-play:disabled{opacity:.4}
+  .hs-play.on{background:#e5484d}
+  .hs-play.chg svg{animation:hstourne 1s linear infinite}
+  @keyframes hstourne{50%{opacity:.35}}
+  .hslide .gl{height:30px}
+  .hslide .gl-piste{height:8px;margin-top:-4px}
+  .hslide .gl-bouton{width:26px;height:26px;margin:-13px 0 0 -13px}
+  .hs-jours{position:relative;height:14px}
+  .hs-jours span{position:absolute;top:1px;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--sub);white-space:nowrap;letter-spacing:.02em}
+  .hs-jours span::before{content:"";position:absolute;left:50%;top:-4px;width:1px;height:4px;background:var(--sub);opacity:.45}
+  /* zoom : en haut à droite de la carte */
+  .map-zoom{position:absolute;right:10px;top:10px;z-index:4;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;
+    background:color-mix(in srgb,var(--card) 85%,#fff);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 2px 12px rgba(0,0,0,.2),inset 0 0 0 1px var(--glass-edge,rgba(0,0,0,.06))}
+  @media (prefers-color-scheme: dark){.map-zoom{background:rgba(58,58,60,.85)}}
+  .map-zoom button{width:38px;height:38px;border:0;background:transparent;color:var(--ink);font:500 21px/1 -apple-system,sans-serif;cursor:pointer;display:grid;place-items:center;-webkit-tap-highlight-color:transparent;transition:background .15s}
+  .map-zoom button+button{border-top:1px solid var(--sep)}
+  .map-zoom button:active{background:var(--pill)}
+  /* seconde fenêtre Windy pour l'animation (fondu enchaîné) */
+  .map iframe.w2{z-index:1}
+  .map iframe{z-index:0}
+  /* altitude : curseur vertical sur le côté de la carte */
+  .alt{position:absolute;left:8px;top:calc(50% - 44px);transform:translateY(-50%);z-index:3;padding:6px 5px 6px 1px;border-radius:18px;
+    background:color-mix(in srgb,var(--card) 80%,#fff);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);box-shadow:0 4px 20px rgba(0,0,0,.18),inset 0 0 0 1px var(--glass-edge,rgba(0,0,0,.06));
+    transition:opacity .35s,transform .45s var(--spring)}
+  @media (prefers-color-scheme: dark){.alt{background:rgba(44,44,46,.78)}}
+  .alt[hidden]{display:none}
+  .alt.off{opacity:.5}.alt.off .gl{pointer-events:none}
+  .alt-titre{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);text-align:center;margin:0 0 2px 6px}
+  .alt-corps{display:flex;align-items:stretch}
+  .alt-lbl{position:relative;width:36px;height:var(--h,220px)}
+  .alt-lbl span{position:absolute;left:0;bottom:calc(15px + (100% - 30px) * var(--q));transform:translateY(50%);font-size:10.5px;font-weight:600;color:var(--sub);white-space:nowrap;transition:color .25s,transform .4s var(--spring);cursor:pointer}
+  .alt-lbl span.on{color:var(--ink);font-weight:700;transform:translateY(50%) translateX(2px) scale(1.06)}
   /* ---------- Carte de France (METAR / TAF) ---------- */
   .frc{padding:14px}
   .fr-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px}
@@ -444,11 +524,24 @@
   <h3 class="sect">Carte Windy</h3>
   <section class="carte">
     <div class="seg" id="seg-ov" role="tablist"></div>
-    <div class="ligne"><div class="seg petit" id="seg-mod" role="tablist"></div><div class="seg petit" id="seg-lv" role="tablist"></div></div>
-    <div class="ligne"><div class="seg petit" id="seg-vue" role="tablist"></div>
-      <div class="seg petit zoom"><button type="button" id="z-moins" aria-label="Dézoomer">−</button><button type="button" id="z-plus" aria-label="Zoomer">+</button></div></div>
+    <div class="w-ligne">
+      <button type="button" class="sw" id="sw-mod" role="switch" aria-checked="false" aria-label="Modèle météo : ECMWF ou AROME">
+        <span class="sw-l">ECMWF</span><span class="sw-t"><i></i></span><span class="sw-r">AROME</span>
+      </button>
+      <span class="sw-aide" id="sw-aide"></span>
+    </div>
+    <div class="seg petit" id="seg-vue" role="tablist" hidden></div>
     <p class="note-carte" id="note-carte"></p>
-    <div class="map"><iframe id="windy" title="Carte Windy" allowfullscreen></iframe></div>
+    <div class="map"><iframe id="windy" title="Carte Windy" allowfullscreen></iframe>
+      <div class="map-zoom"><button type="button" id="z-plus" aria-label="Zoomer">+</button><button type="button" id="z-moins" aria-label="Dézoomer">−</button></div>
+      <div class="alt" id="alt" aria-label="Altitude de la carte"><div class="alt-corps"><div class="gl vert" id="alt-gl"></div><div class="alt-lbl" id="alt-lbl"></div></div></div>
+      <div class="hslide" id="hslide">
+        <div class="hs-tete"><span class="hs-heure" id="hs-lbl">–</span><span class="hs-rel" id="hs-rel"></span><button type="button" class="hs-reset" id="hs-reset" hidden></button>
+          <button type="button" class="hs-play" id="hs-play" aria-label="Animer la carte sur 2 heures" title="Animer sur 2 heures à partir de l’heure choisie"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><b>2 h</b></button></div>
+        <div class="gl" id="hs-gl"></div>
+        <div class="hs-jours" id="hs-jours" aria-hidden="true"></div>
+      </div>
+    </div>
   </section>
 
   <h3 class="sect">Météogramme Windy</h3>
@@ -745,7 +838,7 @@
   const PAR_NIVEAU = { wind: true, icing: true };           // couches réglables en altitude (ECMWF)
   const etat = { ov: localStorage.getItem('w_ov') || 'wind', mod: localStorage.getItem('w_mod') || 'ecmwf',
                  lv: localStorage.getItem('w_lv') || 'surface',
-                 vue: localStorage.getItem('w_vue') || 'route', dz: +(localStorage.getItem('w_dz') || 0), vues: {} };
+                 vue: localStorage.getItem('w_vue') || 'route', dz: +(localStorage.getItem('w_dz') || 0), vues: {}, h: null };
   if (!COUCHES[etat.ov]) etat.ov = 'wind';
 
   function segment(el, items, actif, choisir, inactifs = []) {
@@ -757,7 +850,133 @@
   }
   const sauver = () => { localStorage.setItem('w_ov', etat.ov); localStorage.setItem('w_mod', etat.mod); localStorage.setItem('w_lv', etat.lv); };
 
+  /* ----- curseur générique à ressort : horizontal (heure) ou vertical (altitude) ; positions entières 0..max ----- */
+  function glisseur(el, o) {
+    el.innerHTML = '<div class="gl-piste"><div class="gl-remp"></div></div><div class="gl-bouton" tabindex="0" role="slider"></div>';
+    const bt = el.querySelector('.gl-bouton');
+    let max = o.max || 1, val = 0, depart = 0, actif = false;
+    const maj = (k, m) => { if (m != null) max = Math.max(1, m); val = Math.max(0, Math.min(max, k)); el.style.setProperty('--p', val / max); bt.setAttribute('aria-valuenow', val); bt.setAttribute('aria-valuemax', max); };
+    const depuis = e => {
+      const r = el.getBoundingClientRect(), m = 15;
+      const p = o.vertical ? 1 - (e.clientY - r.top - m) / (r.height - 2 * m) : (e.clientX - r.left - m) / (r.width - 2 * m);
+      return Math.max(0, Math.min(max, Math.round(Math.max(0, Math.min(1, p)) * max)));
+    };
+    const bouge = e => { const k = depuis(e); if (k !== val) { maj(k); o.entree && o.entree(k); } };
+    el.addEventListener('pointerdown', e => { if (el.classList.contains('off')) return; actif = true; depart = val; el.setPointerCapture(e.pointerId); el.classList.add('drag'); bouge(e); });
+    el.addEventListener('pointermove', e => { if (actif) bouge(e); });
+    const fin = () => { if (!actif) return; actif = false; el.classList.remove('drag'); if (val !== depart || o.toujours) o.change && o.change(val); };
+    el.addEventListener('pointerup', fin); el.addEventListener('pointercancel', fin);
+    el.addEventListener('keydown', e => {
+      const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key]; if (!d) return;
+      e.preventDefault(); const k = Math.max(0, Math.min(max, val + (o.vertical ? d : d) * (e.shiftKey ? 6 : 1))); if (k !== val) { maj(k); o.entree && o.entree(k); o.change && o.change(k); }
+    });
+    return { set: maj, get: () => val };
+  }
+
+  /* curseur d'heure : k = heures à partir du début de l'heure en cours */
+  const hsLbl = document.getElementById('hs-lbl'), hsRel = document.getElementById('hs-rel'), hsReset = document.getElementById('hs-reset');
+  const libelleHeure = t => new Date(t).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).replace('.', '') + ' · ' + new Date(t).toISOString().slice(11, 16) + ' UTC';
+  let hsBase = 0, hsMax = 72;
+  function texteCurseur(k, exacte) {
+    const t = exacte || hsBase + k * 3600e3, txt = !exacte && k === 0 ? 'Maintenant' : libelleHeure(t);
+    if (hsLbl.textContent !== txt) { hsLbl.textContent = txt; hsLbl.classList.remove('maj'); void hsLbl.offsetWidth; hsLbl.classList.add('maj'); }
+    const dh = Math.round((t - Date.now()) / 3600e3);
+    hsRel.textContent = dh <= 0 ? 'maintenant' : 'dans ' + dh + ' h';
+  }
+  const glTemps = glisseur(document.getElementById('hs-gl'), { max: 72, entree: k => texteCurseur(k), change: k => { etat.h = k; carte(); } });
+  function majCurseur(k, maxH, base, sat, aDeco, cible) {
+    hsBase = base; hsMax = maxH;
+    document.getElementById('hslide').classList.toggle('off', sat); document.getElementById('hs-gl').classList.toggle('off', sat);
+    glTemps.set(k, maxH); texteCurseur(k, etat.h == null ? cible : null);
+    const afficher = !(etat.h == null || sat);
+    if (hsReset.hidden === afficher) hsReset.hidden = !afficher;
+    hsReset.textContent = '↺ ' + (aDeco ? 'Décollage' : 'Maintenant');
+    const jours = []; for (let m = Math.ceil(base / 864e5) * 864e5; m <= base + maxH * 3600e3; m += 864e5)
+      jours.push(`<span style="left:calc(15px + (100% - 30px) * ${(m - base) / 3600e3 / maxH})">${new Date(m).toLocaleDateString('fr-FR', { weekday: 'short', timeZone: 'UTC' }).replace('.', '')} 00h</span>`);
+    document.getElementById('hs-jours').innerHTML = jours.join('');
+  }
+  hsReset.onclick = () => { etat.h = null; carte(); };
+
+  /* curseur d'altitude (côté de la carte) : bas = sol, haut = niveau de vol le plus élevé */
+  const altEl = document.getElementById('alt'), altLbl = document.getElementById('alt-lbl');
+  let altCles = [];
+  const glAlt = glisseur(document.getElementById('alt-gl'), { vertical: true, max: 1,
+    entree: k => marquerAlt(k),
+    change: k => { const cle = altCles[k]; if (!cle) return; etat.lv = cle; if (cle !== 'surface' && etat.mod === 'arome') etat.mod = 'ecmwf'; sauver(); carte(); } });
+  const marquerAlt = k => altLbl.querySelectorAll('span').forEach((sp, i) => sp.classList.toggle('on', i === k));
+  function majAlt(liste, lv, actif, sat) {
+    altEl.hidden = sat;
+    altEl.classList.toggle('off', !actif);
+    altEl.title = actif ? '' : 'Cette couche n’a pas de choix d’altitude';
+    const cles = Object.keys(liste);
+    if (cles.join() !== altCles.join()) {
+      altCles = cles;
+      altLbl.innerHTML = cles.map((c, i) => `<span data-i="${i}" style="--q:${cles.length > 1 ? i / (cles.length - 1) : 0}">${liste[c]}</span>`).join('');
+      const h = Math.max(104, cles.length * 36); document.getElementById('alt-gl').style.setProperty('--h', h + 'px'); altLbl.style.setProperty('--h', h + 'px');
+    }
+    const i = Math.max(0, cles.indexOf(lv)); glAlt.set(i, cles.length - 1); marquerAlt(i);
+  }
+  altLbl.addEventListener('click', e => { const sp = e.target.closest('span'); if (!sp || altEl.classList.contains('off')) return; const k = +sp.dataset.i; glAlt.set(k); marquerAlt(k);
+    const cle = altCles[k]; etat.lv = cle; if (cle !== 'surface' && etat.mod === 'arome') etat.mod = 'ecmwf'; sauver(); carte(); });
+
+  /* interrupteur ECMWF / AROME */
+  const swMod = document.getElementById('sw-mod');
+  swMod.addEventListener('click', () => {
+    if (swMod.disabled) return;
+    etat.mod = etat.mod === 'arome' ? 'ecmwf' : 'arome';
+    if (etat.mod === 'arome') etat.lv = 'surface';
+    sauver(); carte();
+  });
+
+  /* ----- animation sur 2 h : 5 images (toutes les 30 min) à partir de l'heure choisie, en fondu enchaîné entre deux fenêtres Windy ----- */
+  const btnPlay = document.getElementById('hs-play'), mapW = document.querySelector('.map');
+  const ICO_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+  const ICO_STOP = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';
+  const NB_IMG = 5, PAS_MIN = 30;
+  let anim = null;
+  const attendre = ms => new Promise(r => setTimeout(r, ms));
+  const chargerFenetre = (fen, src) => new Promise(ok => {          // résout quand la page Windy est chargée (+ délai pour le dessin des données)
+    let fini = false; const fin = () => { if (!fini) { fini = true; setTimeout(ok, 1100); } };
+    fen.onload = fin; setTimeout(fin, 12000); fen.src = src;
+  });
+  function arreterAnim() {
+    if (!anim) return;
+    anim.stop = true; anim = null;
+    btnPlay.classList.remove('on', 'chg'); btnPlay.innerHTML = ICO_PLAY + '<b>2 h</b>';
+    document.getElementById('windy2')?.remove();
+  }
+  async function lancerAnim() {
+    if (anim || !etat.srcPour) return;
+    const mien = anim = { stop: false };
+    const A = document.getElementById('windy'), B = document.createElement('iframe');
+    B.id = 'windy2'; B.className = 'w2'; B.title = 'Carte Windy (animation)'; B.setAttribute('allowfullscreen', '');
+    A.after(B);
+    btnPlay.classList.add('on'); btnPlay.innerHTML = ICO_STOP + '<b>Stop</b>';
+    const t0 = etat.t0, tours = Array.from({ length: NB_IMG }, (_, i) => t0 + i * PAS_MIN * 60e3);
+    const srcDe = t => etat.srcPour(Math.max(0, (t - Date.now()) / 3600e3));
+    const montrer = i => { texteCurseur(0, tours[i]); glTemps.set((tours[i] - hsBase) / 3600e3);
+      document.getElementById('note-carte').textContent = `Animation · image ${i + 1}/${NB_IMG} · ${hm(new Date(tours[i]))} UTC`; };
+    const hm = d => d.toISOString().slice(11, 16);
+    let devant = A, derriere = B, i = 0;
+    btnPlay.classList.add('chg');
+    montrer(0); btnPlay.classList.remove('chg');
+    while (anim === mien) {
+      const suivant = (i + 1) % NB_IMG;
+      btnPlay.classList.add('chg');
+      const [,] = await Promise.all([chargerFenetre(derriere, srcDe(tours[suivant])), attendre(suivant === 0 ? 1600 : 1100)]);
+      if (anim !== mien) return;
+      btnPlay.classList.remove('chg');
+      derriere.classList.add('ok');                                  // fondu : la nouvelle image apparaît, l'ancienne disparaît
+      await attendre(450); if (anim !== mien) return;
+      devant.classList.remove('ok');
+      [devant, derriere] = [derriere, devant]; i = suivant; montrer(i);
+    }
+  }
+  document.getElementById('hs-gl').addEventListener('pointerdown', () => { if (anim) { arreterAnim(); carte(); } }, true);
+  btnPlay.onclick = () => { if (anim) { arreterAnim(); carte(); } else lancerAnim(); };
+
   function carte() {
+    if (anim) arreterAnim();                                       // tout changement de réglage interrompt l'animation
     const sat = etat.ov === 'satellite';
     const aNiveaux = !sat && PAR_NIVEAU[etat.ov];                 // vent et givrage seulement
     let lv = aNiveaux ? etat.lv : 'surface';
@@ -768,22 +987,30 @@
     if (!sat && etat.mod === 'arome' && !aromeOk) etat.mod = 'ecmwf';
 
     segment(document.getElementById('seg-ov'), COUCHES, etat.ov, k => { etat.ov = k; sauver(); carte(); });
-    const sm = document.getElementById('seg-mod');
-    sm.style.display = sat ? 'none' : '';
-    segment(sm, MODELES, etat.mod, k => { etat.mod = k; if (k === 'arome') etat.lv = 'surface'; sauver(); carte(); },
-            aromeOk ? [] : ['arome']);
-    // sélecteur d'altitude toujours visible ; grisé quand la couche n'a pas d'altitude
-    const sl = document.getElementById('seg-lv');
-    const liste = etat.ov === 'icing' ? NIVEAUX_GIVRAGE : NIVEAUX;
-    segment(sl, liste, lv, k => { etat.lv = k; sauver(); carte(); }, aNiveaux ? [] : Object.keys(liste));
-    sl.title = aNiveaux ? '' : 'Cette couche n’a pas de choix d’altitude';
+    // interrupteur de modèle : AROME seulement pour les couches qu'il fournit (il force alors le sol)
+    swMod.style.display = sat ? 'none' : '';
+    swMod.setAttribute('aria-checked', String(etat.mod === 'arome'));
+    swMod.disabled = !DISPO.arome.includes(etat.ov);
+    document.getElementById('sw-aide').textContent = etat.mod === 'arome' ? 'France 1,3 km · sol · 48 h' : 'Mondial · tous niveaux · 72 h';
+    swMod.title = swMod.disabled ? 'AROME ne fournit pas cette couche' : '';
+    // altitude : curseur vertical, actif seulement pour les couches avec niveaux
+    majAlt(etat.ov === 'icing' ? NIVEAUX_GIVRAGE : NIVEAUX, lv, !!aNiveaux, sat);
     const fv = fenetreVol(), hm = d => d.toISOString().slice(11, 16);
+    // heure de la carte : curseur (prioritaire) sinon heure de décollage sinon maintenant
+    const refDeco = (localStorage.getItem('deco') || '') + '|' + (localStorage.getItem('deco_jour') || '0');
+    if (etat.hRef !== undefined && etat.hRef !== refDeco) etat.h = null;                 // l'heure de décollage a changé : on la suit de nouveau
+    etat.hRef = refDeco;
+    const maxH = etat.mod === 'arome' ? 48 : 72, base = Math.floor(Date.now() / 3600e3) * 3600e3;
+    if (etat.h != null) etat.h = Math.min(etat.h, maxH);
+    const k0 = etat.h != null ? etat.h : fv ? Math.max(0, Math.min(maxH, Math.round((fv.debut - base) / 3600e3))) : 0;
+    const cible = etat.h != null ? (etat.h === 0 ? null : new Date(base + etat.h * 3600e3)) : fv ? fv.debut : null;
+    majCurseur(k0, maxH, base, sat, !!fv, cible);
     document.getElementById('note-carte').textContent = sat ? 'Satellite : dernière image observée'
-      : !aNiveaux ? `${COUCHES[etat.ov]} : pas de choix d'altitude pour cette couche` + (fv ? ` · prévision ${hm(fv.debut)} UTC` : '')
-      : fv ? `Prévision pour ${hm(fv.debut)} UTC (décollage)` : 'Prévision actuelle · indique l’heure de décollage pour caler la carte';
+      : !aNiveaux ? `${COUCHES[etat.ov]} : pas de choix d'altitude pour cette couche` + (cible ? ` · prévision ${hm(cible)} UTC` : '')
+      : cible ? `Prévision pour ${hm(cible)} UTC` + (etat.h == null ? ' (décollage)' : '') : 'Prévision actuelle · glisse le curseur pour changer l’heure';
 
     // heure de la carte = heure de décollage (le widget compte en heures à partir de maintenant)
-    const dans = fv && !sat ? Math.max(0, (fv.debut - Date.now()) / 3600e3).toFixed(1) : null;
+    const dans = cible && !sat ? Math.max(0, (cible - Date.now()) / 3600e3).toFixed(1) : null;
     const temps = dans ? `&calendar=in&forecast=${dans}` : '&calendar=now';
     // vue choisie (route ou un aérodrome) + zoom réglé : conservés quand on change de couche
     etat.vue = 'route';                                           // vue unique : toute la route
@@ -793,6 +1020,9 @@
     const c = { lat: v.lat, lon: v.lon, zoom: Math.max(3, Math.min(13, v.zoom + etat.dz)) };
     const src = `https://embed.windy.com/embed2.html?lat=${c.lat}&lon=${c.lon}&detailLat=${c.lat}&detailLon=${c.lon}&zoom=${c.zoom}` +
       `&level=${lv}&overlay=${etat.ov}&product=${sat ? 'satellite' : etat.mod}&menu=&message=true&marker=${temps}&pressure=${sat ? '' : 'true'}&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
+    etat.t0 = cible ? +cible : Date.now();
+    etat.srcPour = d => src.replace(temps, '&calendar=in&forecast=' + d.toFixed(2));
+    btnPlay.disabled = sat;
     const f = document.getElementById('windy');
     if (f.src !== src) { f.classList.remove('ok'); f.onload = () => f.classList.add('ok'); f.src = src; }
   }
