@@ -487,6 +487,33 @@ h1,.date,.search,.carte{animation:rise .8s var(--ease2) both}
 .carte:nth-of-type(2){animation-delay:.18s}.carte:nth-of-type(3){animation-delay:.26s}.carte:nth-of-type(4){animation-delay:.34s}.carte:nth-of-type(n+5){animation-delay:.4s}
 @media (prefers-reduced-motion: reduce){h1,.date,.search,.carte{animation:none}}
 </style>
+<script src="auth-config.js"></script>
+<script>try{var c=window.EB_AUTH&&window.EB_AUTH.firebase;if(c&&c.apiKey)document.documentElement.classList.add('verrou')}catch(e){}</script>
+<script type="module" src="auth.js"></script>
+<style id="porte-css">
+html.verrou body>*:not(#porte){display:none!important}
+#porte{display:none;min-height:100vh;min-height:100dvh;place-items:center;padding:24px max(20px,env(safe-area-inset-left));background:var(--bg)}
+html.verrou #porte{display:grid}
+.porte-c{width:100%;max-width:380px;display:flex;flex-direction:column;gap:18px;animation:rise .8s var(--ease2) both}
+.porte-logo{display:flex;align-items:center;gap:10px;font:700 22px 'Inter Tight',Inter,sans-serif;letter-spacing:-.02em}
+.porte-c h2{margin:0;font:700 34px/1.05 'Inter Tight',Inter,sans-serif;letter-spacing:-.03em}
+.porte-c p.sous{margin:8px 0 0;color:var(--sub);font-size:14px}
+.porte-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:3px;border-radius:12px;background:var(--fill)}
+.porte-seg button{border:0;background:none;height:36px;font:500 13.5px Inter,sans-serif;color:var(--sub);cursor:pointer;border-radius:10px;transition:background .35s var(--ease2),color .35s var(--ease2)}
+.porte-seg button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(11,18,32,.14)}
+#porte-form{display:flex;flex-direction:column;gap:12px}
+#porte-form label{display:flex;flex-direction:column;gap:6px;font:600 11px Inter,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--sub)}
+#porte-form input{height:48px;border-radius:12px;border:1px solid var(--sep);background:var(--card);color:var(--ink);font:400 16px Inter,sans-serif;padding:0 14px;outline:0;text-transform:none;letter-spacing:0;transition:box-shadow .25s,border-color .25s}
+#porte-form input:focus{border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 25%,transparent)}
+#porte [data-seul=creation]{display:none}
+#porte[data-mode=creation] [data-seul=creation]{display:flex}
+#porte-go{height:50px;border:0;border-radius:12px;background:var(--ink);color:var(--bg);font:600 15px Inter,sans-serif;cursor:pointer;transition:transform .3s var(--ease2),opacity .3s}
+#porte-go:active{transform:scale(.98)}#porte-go:disabled{opacity:.5}
+#porte-msg{min-height:20px;font-size:13.5px;color:#B4232C}#porte-msg.ok{color:#0B7A55}
+#porte-oubli{border:0;background:none;color:var(--sub);font:500 13px Inter,sans-serif;cursor:pointer;align-self:flex-start;padding:0}
+#compte{text-align:center;font-size:12px;color:var(--sub);padding:6px 16px 28px}
+#compte button{border:0;background:none;color:var(--blue);font:600 12px Inter,sans-serif;cursor:pointer;padding:0 0 0 6px}
+</style>
 </head>
 <body>
 
@@ -1508,6 +1535,22 @@ if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.ser
   setInterval(dessiner, 5 * 60000);
 }
 </script>
+<div id="porte" data-mode="connexion">
+  <div class="porte-c">
+    <div class="porte-logo"><svg width="28" height="28" viewBox="0 0 26 26" fill="none" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="7" fill="currentColor"/><path d="M6 17.5 13 7l7 10.5" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>EasyBrief</div>
+    <div><h2>Accès privé</h2><p class="sous">Connectez-vous pour utiliser l’application.</p></div>
+    <div class="porte-seg" role="tablist"><button type="button" id="t-conn" role="tab" aria-selected="true">Connexion</button><button type="button" id="t-crea" role="tab" aria-selected="false">Créer un compte</button></div>
+    <form id="porte-form" novalidate>
+      <label>E-mail<input id="p-mail" type="email" autocomplete="username" inputmode="email" autocapitalize="off" required></label>
+      <label>Mot de passe<input id="p-mdp" type="password" autocomplete="current-password" required></label>
+      <label data-seul="creation">Code d’invitation<input id="p-code" type="text" autocapitalize="characters" autocomplete="off" spellcheck="false"></label>
+      <div id="porte-msg" role="status"></div>
+      <button id="porte-go" type="submit">Se connecter</button>
+      <button id="porte-oubli" type="button">Mot de passe oublié ?</button>
+    </form>
+  </div>
+</div>
+<div id="compte" hidden><span id="compte-mail"></span><button type="button" id="compte-sortie">Se déconnecter</button></div>
 </body>
 </html>
 
