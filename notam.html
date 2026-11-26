@@ -10,6 +10,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>:root{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 </head><body>
 <title>EasyBrief</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -406,6 +407,19 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 }
 @media (prefers-reduced-motion: reduce) { .fold, .sumrow, .strip, .btn, .cbtn { transition: none; } }
 </style>
+<style id="charte">
+/* Charte « instrument » (voir index.html) */
+:root{--font:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;--font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;--font-display:"Inter Tight",Inter,-apple-system,sans-serif;
+  --bg:#F4F5F7;--surface:#FFFFFF;--surface-2:#FFFFFF;--fill:#EEF0F4;--fill-2:#E4E7EC;--ink:#0B1220;--muted:#5B6577;--line:#E4E7EC;--line-strong:#D0D5DD;
+  --accent:#1747E8;--accent-soft:rgba(23,71,232,.09);--shadow:none;--shadow-hover:0 14px 34px -18px rgba(11,18,32,.28);
+  --blob-a:transparent;--blob-b:transparent;--blob-c:transparent;--spring:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.22,1,.36,1)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0A0F1A;--surface:#121A29;--surface-2:#121A29;--fill:#1A2436;--fill-2:#243049;--ink:#F3F5F8;--muted:#98A2B3;
+  --line:rgba(255,255,255,.09);--line-strong:rgba(255,255,255,.16);--accent:#5B86FF;--accent-soft:rgba(91,134,255,.16);--blob-a:transparent;--blob-b:transparent;--blob-c:transparent}}
+:root[data-theme="dark"]{--bg:#0A0F1A;--surface:#121A29;--surface-2:#121A29;--fill:#1A2436;--fill-2:#243049;--ink:#F3F5F8;--muted:#98A2B3;
+  --line:rgba(255,255,255,.09);--line-strong:rgba(255,255,255,.16);--accent:#5B86FF;--accent-soft:rgba(91,134,255,.16);--blob-a:transparent;--blob-b:transparent;--blob-c:transparent}
+h1,h2{font-family:var(--font-display);letter-spacing:-.025em}
+</style>
+
 
 <div class="shell">
   <header class="top">
@@ -485,7 +499,7 @@ body.peeking { padding-bottom: calc(46vh + 16px); }
 
 
   <p class="legal">Mentions légales : outil d’aide à la lecture, non officiel. Seul le briefing du site officiel (SOFIA-Briefing, SIA) fait foi. L’auteur décline toute responsabilité en cas d’erreur, d’omission ou de bug, notamment sur un vol réel ; le commandant de bord reste seul responsable de la préparation de son vol.</p>
-  <p class="ver" id="ver">EasyBrief · version 99 · 19 nov. 2026<span id="verMotion"></span></p>
+  <p class="ver" id="ver">EasyBrief · version 103 · 19 nov. 2026<span id="verMotion"></span></p>
 </div>
 
 <button type="button" class="toMap" id="toMap" aria-hidden="true" tabindex="-1">↑ Carte</button>
